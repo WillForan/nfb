@@ -37,8 +37,10 @@ Screen('TextColor', Window, White);
 %   BtoTPixels = 451
 %   LOffsetFromMid = 139 - 300 = -161
 %   BOffsetFromMid = 81 - 300 = -219
+%   OriginalSpeed = 451/4 = 112 pixels/second
 
-% 
+% *** NEW FEEDBACK RESOLUTION = 750 x 750
+%   LeftLocation = 
 
 % original BarResolution
 %   LeftLocation = round(0.1 * 600) = 60
@@ -60,7 +62,7 @@ KbStrokeWait;
 sca;
 
 % original resolution was set at 800 x 600
-% original figure resolution was set at 600x 600
+% original figure resolution was set at 600 x 600
 % assume resolution is 1024 x 768; let's start off with this
 % matlab position = [left bottom width height]
 % PTB position = [leftbegin bottombegin rightend topend]
