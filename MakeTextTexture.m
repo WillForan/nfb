@@ -12,15 +12,35 @@ function [texture, nx, ny] = MakeTextTexture(window, text, bgColor, textFont, te
         oldTextColor = Screen('TextColor', window, textColor);
     end
 
-    [~, ~, box] = DrawFormattedText(window, text, 'center', 'center', ...
-        textColor);
-    textureRect = ones(ceil((box(4) - box(2)) * 1.1), ...
-        ceil((box(3) - box(1)) * 1.1)) .* bgColor;
+    box = Screen('TextBounds', window, text);
+    nx = ceil((box(3) - box(1))*1.1);
+    if mod(nx, 2)
+        nx = nx + 1;
+    end
+
+    ny = ceil((box(4) - box(2))*1.1);
+    if mod(ny, 2)
+        ny = ny + 1;
+    end
+
+    textureRect = ones(ny, nx) .* bgColor;
     texture = Screen('MakeTexture', window, textureRect);
-    DrawFormattedText(texture, text, 'center', 'center', textColor);
-    nx = size(textureRect, 2);
-    ny = size(textureRect, 1);
+
+    if exist('textFont', 'var') && ~isempty(textFont)
+        Screen('TextFont', texture, textFont);
+    end
+
+    if exist('textSize', 'var') && ~isempty(textSize)
+        Screen('TextSize', texture, textSize);
+    end
+
+    if exist('textColor', 'var') && ~isempty(textColor)
+        Screen('TextColor', texture, textColor);
+    end
     
+    DrawFormattedText(texture, text, 'center', 'center', textColor);
+   
+    % reset window options 
     if exist('textFont', 'var') && ~isempty(textFont)
         Screen('TextFont', window, oldFont);
     end
