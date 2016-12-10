@@ -20,16 +20,14 @@ Grey = White * 0.5;
 [Window, Rect] = PsychImaging('OpenWindow', ScreenNumber, Grey);
 PriorityLevel = MaxPriority(Window);
 Priority(PriorityLevel);
-[XCenter, YCenter] = RectCenter(Rect); % get the center of the coordinate Window
+[XCenter, YCenter] = RectCenter(Rect);
 Refresh = Screen('GetFlipInterval', Window);
 
 % blend
 Screen('BlendFunction', Window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
 
-% draw the feedback screen objects from right to left
-FeedWin = Screen('OpenOffScreenWindow', Window, Grey);
-
-% start with feedback rect location
+% Feedback rect location; this is used as position reference for most
+% other drawn objects
 FeedbackRect = [0 0 750 750];
 FeedbackXCenter = 119 + XCenter; 
 FeedbackYCenter = YCenter;
@@ -38,70 +36,48 @@ CenteredFeedback = CenterRectOnPointd(FeedbackRect, ...
 RefX = CenteredFeedback(1);
 RefY = CenteredFeedback(2);
 
-% draw numbers
-Screen('DrawText', FeedWin, ...
-    '100', RefX - 57, RefY - 6, Black);
-Screen('DrawText', FeedWin, ...
-    '50', RefX - 38, RefY + 167, Black);
-Screen('DrawText', FeedWin, ...
-    '0', RefX - 19, RefY + 362, Black);
-Screen('DrawText', FeedWin, ...
-    '-50', RefX - 50, RefY + 548, Black);
-Screen('DrawText', FeedWin, ...
-    '-100', RefX - 69, RefY + 731, Black);
-
-% draw Neurofeedback Signal label
+% set "Neurofeedback Signal" label location
 [NeuroTexture NeuroBox] = MakeTextTexture(Window, ...
     'Neurofeedback Signal', Grey, [], 55);
 NeuroXLoc = RefX - 69 - 5;
-tmp = CenterRectOnPointd(NeuroBox, NeuroXLoc, YCenter);
-Screen('DrawTexture', FeedWin, NeuroTexture, [], tmp, -90);
+NeuroLoc = CenterRectOnPointd(NeuroBox, NeuroXLoc, YCenter);
 
-% dose rect location
+% set dose rect location
 BarRect = [0 0 50 750];
 BarXCenter = RefX - 69 -5 - NeuroBox(4);
 BarYCenter = YCenter;
 CenteredBar = CenterRectOnPointd(BarRect, ...
     BarXCenter, BarYCenter);
+[DoseX, DoseY] = RectCenter(CenteredBar);
 
-% draw dose number labels
-Screen('DrawText', FeedWin, ...
-    '100', CenteredBar(1) - 57, RefY - 6, Black);
-Screen('DrawText', FeedWin, ...
-    '0', CenteredBar(1) - 19, RefY + 731);
-
-% draw "% dose administered" label
+% set "% dose administered" label location
 [DoseTexture DoseBox] = MakeTextTexture(Window, ...
     '% dose administered', Grey, [], 55);
 DoseXLoc = CenteredBar(1) - 60;
-tmp = CenterRectOnPointd(DoseBox, DoseXLoc, YCenter);
-Screen('DrawTexture', FeedWin, DoseTexture, [], tmp, -90);
+DoseLoc = CenterRectOnPointd(DoseBox, DoseXLoc, YCenter);
 
-% draw feedback and does rects
-Screen('FillRect', FeedWin, Black, [CenteredFeedback' CenteredBar']);
+% create dose level rect
+DoseLevelRect = [0 0 50 5];
+DoseLevelRect = CenterRectOnPointd(DoseLevelRect, ...
+    DoseX, CenteredBar(2));
 
-% draw offscreen to screen
-Screen('DrawTexture', Window, FeedWin);
+% create changing time dose rect
+PerDoseRect = [0 0 48 0];
+PerDoseRect = CenterRectOnPointd(PerDoseRect, ...
+    DoseX, CenteredBar(4) - 1);
 
-% draw working space frame for my purposes
+
+% make a frame for my testing purposes
 Frame = [0 0 1025 769];
 CenteredFrame = CenterRectOnPointd(Frame, XCenter, YCenter);
-Screen('FrameRect', Window, Black, CenteredFrame);
-
-% draw center line for my purposes
-Screen('DrawLine', Window, White, ...
-    CenteredFeedback(1), ...
-    YCenter, ...
-    CenteredFeedback(3), ...
-    YCenter); 
 
 % now experiment with drawing signal
-Scale = 2; % move by this many points across signals
-FlipSecs = 1/30; % time to display signal
+Scale = 1; % move by this many points across signals
+FlipSecs = 1/60; % time to display signal
 WaitFrames = round(FlipSecs / Refresh); % display signal every this frame
 % set MaxX, this value determines the number of seconds to move from one
 % end of the screen to the other; FlipSecs and MaxX depend on each other
-MaxX = Scale*120;
+MaxX = Scale*240;
 
 % create original and plotted ranges
 XRange = [0 MaxX];
@@ -131,22 +107,158 @@ vbl = KbStrokeWait;
 tmp = vbl;
 vbls = zeros(1, MaxX/Scale + 1);
 
+% do bar movment calculation here
+NumPoints = (length(NewSignal_Line) - (2*(MaxX-1)))/2;
+Increment = (750 - 1)/NumPoints;
+
 Begin = 1;
 index = 1;
 for i = (2*(MaxX-1)):(2*Scale):length(NewSignal_Line)
-    Screen('DrawTexture', Window, FeedWin);
+
+    % draw feedback number labels
+    Screen('DrawText', Window, ...
+        '100', RefX - 57, RefY - 6, Black);
+    Screen('DrawText', Window, ...
+        '50', RefX - 38, RefY + 167, Black);
+    Screen('DrawText', Window, ...
+        '0', RefX - 19, RefY + 362, Black);
+    Screen('DrawText', Window, ...
+        '-50', RefX - 50, RefY + 548, Black);
+    Screen('DrawText', Window, ...
+        '-100', RefX - 69, RefY + 731, Black);
+
+    % draw graph text labels
+    Screen('DrawTextures', Window, ...
+        [NeuroTexture DoseTexture], [], ...
+        [NeuroLoc' DoseLoc'], ...
+        -90);
+
+    % draw dose number labels
+    Screen('DrawText', Window, ...
+        '100', CenteredBar(1) - 57, RefY - 6, Black);
+    Screen('DrawText', Window, ...
+        '0', CenteredBar(1) - 19, RefY + 731);
+    
+    % draw feedback and dose rects
+    Screen('FillRect', Window, ...
+    [0 0 0; 0 0 0; 1 0 0 ; 0.5 0.5 1]', ... 
+    [CenteredFeedback' CenteredBar' PerDoseRect' DoseLevelRect']);
+
+    % draw feedback line
     Screen('DrawLines', Window, ...
         [NewX_Line NewXRange(1) NewXRange(2); ...
         NewSignal_Line(Begin:i) sum(NewYRange)/2 sum(NewYRange)/2], ...
-        5, White);
+        5, [repmat([1 0 0]', 1, i-Begin+1) [1 1 1; 1 1 1]']);
+
+    % frame for testing purposes
+    Screen('FrameRect', Window, Black, CenteredFrame);
+
+    % do flip here
     vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5)*Refresh);
+
+    PerDoseRect(2) = PerDoseRect(2) - Increment;
     vbls(index) = vbl;
     Begin = Begin + 2 * Scale;
     index = index + 1;
 end
 
+vbl = 0;
+Screen('Flip', Window);
 
-KbStrokeWait;
+% get "NEXT INFUSION" size
+OldSize = Screen('TextSize', Window, 60);
+NextRect = Screen('TextBounds', Window, 'NEXT INFUSION');
+NextRect = CenterRectOnPointd(NextRect, XCenter, YCenter - 350);
+Screen('TextSize', Window, OldSize);
+
+% get "Continue infusion?" size
+OldSize = Screen('TextSize', Window, 60);
+ContinueRect = Screen('TextBounds', Window, 'Continue infusion?');
+ContinueRect = CenterRectOnPointd(ContinueRect, XCenter, YCenter + 150);
+Screen('TextSize', Window, OldSize);
+
+% get "YES" size
+OldSize = Screen('TextSize', Window, 70);
+OldStyle = Screen('TextStyle', Window, 1);
+YesRect = Screen('TextBounds', Window, 'YES');
+YesRect = CenterRectOnPointd(YesRect, ContinueRect(1), ContinueRect(4) + 75);
+Screen('TextSize', Window, OldSize);
+Screen('TextStyle', Window, OldStyle);
+
+% get "NOT" size
+OldSize = Screen('TextSize', Window, 70);
+OldSyle = Screen('TextStyle', Window, 1);
+NoRect = Screen('TextBounds', Window, 'NOT');
+NoRect = CenterRectOnPointd(NoRect, ContinueRect(3), ContinueRect(4) + 75);
+Screen('TextSize', Window, OldSize);
+Screen('TextStyle', Window, OldStyle);
+
+% set up keyboard response
+KbNames = KbName('KeyNames');
+KeyNamesOfInterest = {'1!', '2@', '1', '2'};
+KeysOfInterest = zeros(1, 256);
+for i = 1:numel(KeyNamesOfInterest)
+    KeysOfInterest(KbName(KeyNamesOfInterest{i})) = 1;
+end
+clear i
+KbQueueCreate(DeviceIndex, KeysOfInterest);
+
+Response = 0;
+for i = 5:-1:1
+
+    % "NEXT INFUSION" text
+    Screen('TextSize', Window, 60);
+    DrawFormattedText(Window, 'NEXT INFUSION', 'center', 'center',  ...
+        [0 1 0], [], [], [], [], [], NextRect);
+
+    % Time text
+    Screen('TextSize', Window, 200);
+    Screen('TextStyle', Window, 1);
+    DrawFormattedText(Window, sprintf('00:%02d', i), 'center', 'center', [1 0 0]);
+    Screen('TextStyle', Window, 0);
+
+    if i < 3
+        Screen('TextSize', Window, 60);
+        DrawFormattedText(Window, 'Continue infusion?', 'center', 'center', ...
+            White, [], [], [], [], [], ContinueRect);
+
+        Screen('TextSize', Window, 70);
+        Screen('TextStyle', Window, 1);
+        DrawFormattedText(Window, 'YES', 'center', 'center', ...
+            White, [], [], [], [], [], YesRect);
+        DrawFormattedText(Window, 'NOT', 'center', 'center', ...
+            White, [], [], [], [], [], NoRect);
+        Screen('TextStyle', Window, 0);
+    end
+
+    % frame for testing purposes
+    Screen('FrameRect', Window, Black, CenteredFrame);
+
+    vbl = Screen('Flip', Window, vbl + 1 - Refresh);
+    if i == 2
+        KbQueueStart(DeviceIndex);
+        ResponseOnset = vbl;
+    end
+end
+
+KbQueueStop(DeviceIndex);
+[DidRespond, TimeKeysPressed] = KbQueueCheck(DeviceIndex);
+if DidRespond
+    TimeKeysPressed(TimeKeysPressed == 0) = nan;
+    [RT, Idx] = min(TimeKeysPressed);
+    Response = KbNames{Idx};
+    RT = RT - ResponseOnset;
+end
+KbQueueFlush(DeviceIndex);
+% fprintf(1, 'Run: %d, Trial: %d, RT: %0.4f, Response: %s\n', ...
+%     i, k, RunDesign{k, FACERT}, RunDesign{k, FACERESPONSE});
+    
+    
+    
+    
+
+
+WaitSecs(1);
 sca;
 
 
