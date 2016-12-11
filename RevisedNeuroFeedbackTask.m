@@ -332,7 +332,7 @@ function RevisedNeuroFeedbackTask()
                     vbl = Screen('Flip', Window, Until);
                     RunDesign{k, ANTONSET} = vbl - BeginTime;
                 else
-                    vbl = Screen('Flip', Window, vbl + 1 - Refresh);
+                    vbl = Screen('Flip', Window, vbl + 1 - 0.5 * Refresh);
                     if iSec == 2
                         KbQueueStart(DeviceIndex);
                         ResponseOnset = vbl;
@@ -345,7 +345,7 @@ function RevisedNeuroFeedbackTask()
         
             %%% JITTER1 %%%
             Screen('FillRect', Window, Black);
-            vbl = Screen('Flip', Window, vbl + 1 - Refresh);
+            vbl = Screen('Flip', Window, vbl + 1 - 0.5 * Refresh);
     
             KbQueueStop(DeviceIndex);
             [DidRespond, TimeKeysPressed] = KbQueueCheck(DeviceIndex);
@@ -420,7 +420,8 @@ function RevisedNeuroFeedbackTask()
             
                 % do flip here
                 if Begin == 1
-                    vbl = Screen('Flip', Window, vbl + RunDesign{k, JITTER1DUR} - Refresh);
+                    vbl = Screen('Flip', Window, ...
+                        vbl + RunDesign{k, JITTER1DUR} - 0.5 * Refresh);
                     RunDesign{k, FEEDONSET} = vbl - BeginTime;
                 else
                     % can try no duration here to see what happens
@@ -442,7 +443,7 @@ function RevisedNeuroFeedbackTask()
             Screen('FillRect', Window, Black);
             vbl = Screen('Flip', Window);
             RunDesign{k, J2ONSET} = vbl - BeginTime;
-            Until = vbl + RunDesign{k, JITTER2DUR} - Refresh;
+            Until = vbl + RunDesign{k, JITTER2DUR} - 0.5 * Refresh;
             Screen('FillRect', Window, Grey);
         end
         WaitSecs('UntilTime', Until);
