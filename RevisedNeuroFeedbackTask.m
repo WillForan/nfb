@@ -1,6 +1,7 @@
 function RevisedNeuroFeedbackTask()
 
     sca;
+    clear all;
     DeviceIndex = [];
     
     if isunix
@@ -203,22 +204,22 @@ function RevisedNeuroFeedbackTask()
     % CenteredFrame = CenterRectOnPointd(Frame, XCenter, YCenter);
     
     % now experiment with drawing signal
-    Scale = 2; % move by this many points across signals
-    FlipSecs = 1/20; % time to display signal
+    Scale = 1; % move by this many points across signals
+    FlipSecs = 1/60; % time to display signal
     WaitFrames = round(FlipSecs / Refresh); % display signal every this frame
     % set MaxX, this value determines the number of seconds to move from one
     % end of the screen to the other; FlipSecs and MaxX depend on each other
-    MaxX = Scale*80;
+    MaxX = Scale*240;
     
     % create original and plotted ranges
-    XRange = [0 MaxX];
+    XRange = [0 (MaxX-1)];
     YRange = [-100 100];
     NewXRange = [CenteredFeedback(1) CenteredFeedback(3)];
     NewYRange = [CenteredFeedback(2) CenteredFeedback(4)];
     
     % dummy signals
     X = 0:(MaxX-1);
-    Noise = -99 + (99+99).*rand(1, Scale*4*20 + Scale*10*20);
+    Noise = -99 + (99+99).*rand(1, Scale*4*60 + Scale*10*60-1);
     % Line1 = 0:(100/119):100;
     % Steep = 1.33*Line1;
     % Slow = 0.75*Line1;
@@ -427,7 +428,7 @@ function RevisedNeuroFeedbackTask()
                     % can try no duration here to see what happens
                     % but will need duration if I plan to show signal everyth nth frame
                     % with n > 1, so might as well keep it for now
-                    vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5)*Refresh);
+                    vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5) * Refresh);
                     % vbl = Screen('Flip', Window);
                 end
            
@@ -441,7 +442,7 @@ function RevisedNeuroFeedbackTask()
         
             %%% JITTER2 %%%
             Screen('FillRect', Window, Black);
-            vbl = Screen('Flip', Window);
+            vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5) * Refresh);
             RunDesign{k, J2ONSET} = vbl - BeginTime;
             Until = vbl + RunDesign{k, JITTER2DUR} - 0.5 * Refresh;
             Screen('FillRect', Window, Grey);
