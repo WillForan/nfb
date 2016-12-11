@@ -23,32 +23,41 @@ Grey = White * 0.5;
 OffWindow = Screen('OpenOffScreenWindow', Window, Grey);
 PriorityLevel = MaxPriority(Window);
 Priority(PriorityLevel);
-[ScreenXpixels, ScreenYpixels] = Screen('WindowSize', Window); % get Window size
 [XCenter, YCenter] = RectCenter(Rect); % get the center of the coordinate Window
 Refresh = Screen('GetFlipInterval', Window);
 
 % set default text type for window
-Screen('TextFont', Window, 'Arial');
-Screen('TextSize', Window, 35);
 Screen('TextColor', Window, White);
 
+% blend
+Screen('BlendFunction', Window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
+
+% draw the feedback screen objects from right to left
+% start with feedback rect location
 FeedbackRect = [0 0 750 750];
-FeedbackXCenter = 119 + XCenter; % 256 more pixels to use
+FeedbackXCenter = 119 + XCenter; 
 FeedbackYCenter = YCenter;
 CenteredFeedback = CenterRectOnPointd(FeedbackRect, ...
     FeedbackXCenter, FeedbackYCenter);
 
+% dose rect location
 BarRect = [0 0 50 750];
-BarXCenter = XCenter - 437;
+BarXCenter = XCenter - 325 - 5 - NeuroBox(4);
 BarYCenter = YCenter;
 CenteredBar = CenterRectOnPointd(BarRect, ...
     BarXCenter, BarYCenter);
 
+% outline working space
 Frame = [0 0 1025 769];
 CenteredFrame = CenterRectOnPointd(Frame, XCenter, YCenter);
-
-% outline working space resolution
 Screen('FrameRect', OffWindow, Black, CenteredFrame);
+
+% draw Neurofeedback Signal label
+[NeuroTexture NeuroBox] = MakeTextTexture(Window, ...
+    'Neurofeedback Signal', Grey, [], 55);
+NeuroXLoc = XCenter - 325 - 5;
+tmp = CenterRectOnPointd(NeuroBox, NeuroXLoc, YCenter);
+Screen('DrawTexture', OffWindow, NeuroTexture, [], tmp, -90);
 
 % make feedback and does rects
 Screen('FillRect', OffWindow, Black, [CenteredFeedback' CenteredBar']);
