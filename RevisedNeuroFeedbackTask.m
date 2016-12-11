@@ -296,7 +296,7 @@ function RevisedNeuroFeedbackTask()
             % set timer color and prompt text
             if strcmp(RunDesign{k, ANTICIPATION}, 'Infusion')
                 TimerColor = [1 0 0];
-                PromptText = 'NEXT INUFSION';
+                PromptText = 'NEXT INFUSION';
             else
                 TimerColor = [1 1 1];
                 PromptText = 'NEXT NO INFUSION';
