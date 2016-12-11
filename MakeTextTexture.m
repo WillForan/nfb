@@ -1,4 +1,4 @@
-function [texture, nx, ny] = MakeTextTexture(window, text, bgColor, textFont, textSize, textColor)
+function [texture, bbox] = MakeTextTexture(window, text, bgColor, textFont, textSize, textColor)
 
     if exist('textFont', 'var') && ~isempty(textFont)
         oldFont = Screen('TextFont', window, textFont);
@@ -24,6 +24,7 @@ function [texture, nx, ny] = MakeTextTexture(window, text, bgColor, textFont, te
     end
 
     textureRect = ones(ny, nx) .* bgColor;
+    bbox = [0 0 nx ny];
     texture = Screen('MakeTexture', window, textureRect);
 
     if exist('textFont', 'var') && ~isempty(textFont)
@@ -38,7 +39,7 @@ function [texture, nx, ny] = MakeTextTexture(window, text, bgColor, textFont, te
         Screen('TextColor', texture, textColor);
     end
     
-    DrawFormattedText(texture, text, 'center', 'center', textColor);
+    DrawFormattedText(texture, text, 'center', 'center');
    
     % reset window options 
     if exist('textFont', 'var') && ~isempty(textFont)
