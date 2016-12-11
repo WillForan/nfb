@@ -3,11 +3,11 @@ clear;
 DeviceIndex = [];
 
 % use debugging for now
-% PsychDebugWindowConfiguration
+PsychDebugWindowConfiguration
 
 PsychDefaultSetup(2); % default settings
 Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
-Screen('Preference', 'DefaultFontSize', 60);
+Screen('Preference', 'DefaultFontSize', 35);
 Screen('Preference', 'DefaultFontName', 'Arial');
 Screens = Screen('Screens'); % get scren number
 ScreenNumber = max(Screens);
@@ -29,110 +29,72 @@ Refresh = Screen('GetFlipInterval', Window);
 % blend
 Screen('BlendFunction', Window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
 
-
-% make neurofeedback y label texture
-[~, ~, FeedbackLabel] = DrawFormattedText(Window, ...
-    'Neurofeedback Signal5  ', 'center', 'center', White);
-FeedbackTextureRect = ones(ceil((FeedbackLabel(4) - FeedbackLabel(2)) * 1.1), ...
-    ceil((FeedbackLabel(3) - FeedbackLabel(1)) * 1.1)) .* Grey;
-FeedbackLabelTexture = Screen('MakeTexture', Window, FeedbackTextureRect);
-DrawFormattedText(FeedbackLabelTexture, 'Neurofeedback Signal5  ', ...
-    'center', 'center', Black);
-[FunctionTexture, nx, ny] = MakeTextTexture(Window, ...
-    'Neurofeedback Signal5', ...
-    Grey, ...
-    'Arial', ...
-    60, ...
-    Black);
-
-% make dose y label texture
-[~, ~, DoseLabel] = DrawFormattedText(Window, ...
-    '% Dose Administered', 'center', 'center', White);
-DoseTextureRect = ones(ceil((DoseLabel(4) - DoseLabel(2)) * 1.1), ...
-    ceil((DoseLabel(3) - DoseLabel(1)) * 1.1)) .* Grey;
-DoseLabelTexture = Screen('MakeTexture', Window, DoseTextureRect);
-DrawFormattedText(DoseLabelTexture, 'Neurofeedback Signal', ...
-    'center', 'center', Black);
-
-% clear unwanted text from screen
-Screen('FillRect', Window, Grey);
-
-% set default text type for window
-Screen('TextSize', Window, 35);
-Screen('TextColor', Window, White);
-Screen('TextSize', OffWindow, 35);
-Screen('TextColor', OffWindow, White);
-
+% draw the feedback screen objects from right to left
+% start with feedback rect location
 FeedbackRect = [0 0 750 750];
-FeedbackXCenter = 119 + XCenter; % 256 more pixels to use
+FeedbackXCenter = 119 + XCenter; 
 FeedbackYCenter = YCenter;
 CenteredFeedback = CenterRectOnPointd(FeedbackRect, ...
     FeedbackXCenter, FeedbackYCenter);
+RefX = CenteredFeedback(1);
+RefY = CenteredFeedback(2);
 
+% draw numbers
+Screen('DrawText', OffWindow, ...
+    '100', RefX - 57, RefY - 6, Black);
+Screen('DrawText', OffWindow, ...
+    '50', RefX - 38, RefY + 167, Black);
+Screen('DrawText', OffWindow, ...
+    '0', RefX - 19, RefY + 362, Black);
+Screen('DrawText', OffWindow, ...
+    '-50', RefX - 50, RefY + 548, Black);
+Screen('DrawText', OffWindow, ...
+    '-100', RefX - 69, RefY + 731, Black);
+
+% draw Neurofeedback Signal label
+[NeuroTexture NeuroBox] = MakeTextTexture(Window, ...
+    'Neurofeedback Signal', Grey, [], 55);
+NeuroXLoc = RefX - 69 - 5;
+tmp = CenterRectOnPointd(NeuroBox, NeuroXLoc, YCenter);
+Screen('DrawTexture', OffWindow, NeuroTexture, [], tmp, -90);
+
+% dose rect location
 BarRect = [0 0 50 750];
-BarXCenter = XCenter - 437;
+BarXCenter = RefX - 69 -5 - NeuroBox(4);
 BarYCenter = YCenter;
 CenteredBar = CenterRectOnPointd(BarRect, ...
     BarXCenter, BarYCenter);
 
-Frame = [0 0 1025 769];
-CenteredFrame = CenterRectOnPointd(Frame, XCenter, YCenter);
+% draw dose number labels
+Screen('DrawText', OffWindow, ...
+    '100', CenteredBar(1) - 57, RefY - 6, Black);
+Screen('DrawText', OffWindow, ...
+    '0', CenteredBar(1) - 19, RefY + 731);
 
-% outline working space resolution
-Screen('FrameRect', OffWindow, Black, CenteredFrame);
+% draw "% dose administered" label
+[DoseTexture DoseBox] = MakeTextTexture(Window, ...
+    '% dose administered', Grey, [], 55);
+DoseXLoc = CenteredBar(1) - 60;
+tmp = CenterRectOnPointd(DoseBox, DoseXLoc, YCenter);
+Screen('DrawTexture', OffWindow, DoseTexture, [], tmp, -90);
 
-% make feedback and does rects
+% draw feedback and does rects
 Screen('FillRect', OffWindow, Black, [CenteredFeedback' CenteredBar']);
 
-% draw numbers
-
 % draw offscreen to screen
-Screen('DrawText', OffWindow, ...
-    '100', XCenter - 313, YCenter - 381, Black);
-Screen('DrawText', OffWindow, ...
-    '50', XCenter - 294, YCenter - 199, Black);
-Screen('DrawText', OffWindow, ...
-    '0', XCenter - 275, YCenter - 13, Black);
-Screen('DrawText', OffWindow, ...
-    '-50', XCenter - 306, YCenter + 173, Black);
-Screen('DrawText', OffWindow, ...
-    '-100', XCenter - 325, YCenter + 358, Black);
 Screen('DrawTexture', Window, OffWindow);
+
+% draw working space frame for my purposes
+Frame = [0 0 1025 769];
+CenteredFrame = CenterRectOnPointd(Frame, XCenter, YCenter);
+Screen('FrameRect', Window, Black, CenteredFrame);
+
+% draw center line for my purposes
 Screen('DrawLine', Window, White, ...
     CenteredFeedback(1), ...
     YCenter, ...
     CenteredFeedback(3), ...
     YCenter); 
-
-% bbox2 = Screen('TextBounds', Window, 'Neurofeedback Signal');
-% bbox2 = ceil(1.1 * bbox2);
-% woff = Screen('OpenOffscreenWindow', Window, Grey, bbox2);
-% Screen('TextFont', woff, 'Arial');
-% Screen('TextSize', woff, 35);
-% Screen('TextColor', woff, White);
-% Screen('DrawText', woff, 'Neurofeedback Signal', 0, 0, 0);
-% % DrawFormattedText(woff, 'Neurofeedback Signal', 'center', 'center', Black);
-% tmp = CenterRectOnPointd(bbox2, XCenter-100, YCenter);
-% Screen('DrawTexture', Window, woff, [], floor(tmp), -90);
-
-
-nx1 = size(FeedbackTextureRect, 2);
-ny1 = size(FeedbackTextureRect, 1);
-otherBbox = [0 0 nx1 ny1];
-tmp = CenterRectOnPointd(otherBbox, XCenter-51, YCenter);
-Screen('DrawTexture', Window, FeedbackLabelTexture, [], [], -90);
-Screen('DrawTexture', Window, FeedbackLabelTexture, [], tmp, -90);
-
-bbox = [0 0 nx ny];
-tmp = CenterRectOnPointd(bbox, XCenter+51, YCenter);
-Screen('DrawTexture', Window, FunctionTexture, [], tmp, -90);
-
-tmp = CenterRectOnPointd(bbox, XCenter+101, YCenter);
-Screen('DrawTexture', Window, FunctionTexture, [], tmp, -90);
-
-% text
-Screen('TextSize', Window, 60);
-Screen('DrawText', Window, 'Neurofeedback Signal5', 1, 1, Black);
 
 Screen('Flip', Window);
 KbStrokeWait;
