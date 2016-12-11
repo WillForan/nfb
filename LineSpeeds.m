@@ -11,12 +11,12 @@ Screens = Screen('Screens'); % get scren number
 ScreenNumber = max(Screens);
 
 % Define black and white
-White = [255 255 255];
-Black = [0 0 0];
+White = WhiteIndex(ScreenNumber);
+Black = BlackIndex(ScreenNumber);
 Grey = White * 0.5;
 
 % we want X = Left-Right, Y = top-bottom
-[Window, Rect] = Screen('OpenWindow', ScreenNumber, Grey); % open Window on Screen
+[Window, Rect] = PsychImaging('OpenWindow', ScreenNumber, Grey); % open Window on Screen
 PriorityLevel = MaxPriority(Window);
 Priority(PriorityLevel);
 [ScreenXpixels, ScreenYpixels] = Screen('WindowSize', Window); % get Window size
@@ -27,6 +27,7 @@ Refresh = Screen('GetFlipInterval', Window);
 Screen('TextFont', Window, 'Arial');
 Screen('TextSize', Window, 50);
 Screen('TextColor', Window, White);
+[OldMax OldClamp] = Screen('ColorRange', Window);
 
 % % how to use draw lines correctly
 % clear xy;
@@ -126,112 +127,113 @@ Screen('TextColor', Window, White);
 %     Begin = Begin + 4;
 % end
 
-while 1
-    % testing movement
-    FlipSecs = 1/60;
-    WaitFrames = round(FlipSecs / Refresh);
-    
-    MaxX = 240;
-    XRange = [0 MaxX];
-    YRange = [-1 1];
-    NewXRange = [XCenter-(750/2) XCenter+(750/2)-1];
-    NewYRange = [36 235];
-    X = 0:(MaxX-1);
-    Signal = [zeros(1, MaxX) + 0.1*rand(1, MaxX), ...
-        0.9*ones(1, MaxX) + 0.1*rand(1, MaxX)];
-        % -0.9*ones(1, MaxX) - 0.1*rand(1, MaxX), ...
-        % 0.9*ones(1, MaxX) + 0.1*rand(1, MaxX), ...
-        % zeros(1, MaxX) + 0.1*rand(1, MaxX)];
-    NewX = (X-XRange(1))/diff(XRange)*diff(NewXRange)+NewXRange(1);
-    NewSignal = (Signal-YRange(1))/diff(YRange)*diff(NewYRange)+NewYRange(1);
-    NewSignal = NewYRange(2) - NewSignal + NewYRange(1);
-    NewX_Line = zeros(1, 2*(length(NewX)-1));
-    NewX_Line(1:2:end) = NewX(1:end-1);
-    NewX_Line(2:2:end) = NewX(2:end);
-    NewSignal_Line =  zeros(1, 2*(length(NewSignal)-1));
-    NewSignal_Line(1:2:end) = NewSignal(1:end-1);
-    NewSignal_Line(2:2:end) = NewSignal(2:end);
-    Screen('DrawLines', Window, [NewX_Line; NewSignal_Line(1:(2*(MaxX-1)))], 5, [255 0 0]);
-    vbl = Screen('Flip', Window);
-    FirstVbl = vbl;
-    % KbStrokeWait;
-    
-    Begin = 3;
-    for i = (2*MaxX):2:length(NewSignal_Line)
-        Screen('DrawLines', Window, [NewX_Line NewXRange(1) NewXRange(2); NewSignal_Line(Begin:i) sum(NewYRange)/2 sum(NewYRange)/2], 5, [255 0 0 ]);
-        vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5)*Refresh);
-        Begin = Begin + 2;
-    end
-        
-    FlipSecs = 1/30;
-    WaitFrames = round(FlipSecs / Refresh);
-    
-    MaxX = 120;
-    XRange = [0 MaxX];
-    YRange = [-1 1];
-    NewXRange = [XCenter-(750/2) XCenter+(750/2)-1];
-    NewYRange = [36 235];
-    X = 0:(MaxX-1);
-    Signal = [zeros(1, MaxX) + 0.1*rand(1, MaxX), ...
-        0.9*ones(1, MaxX) + 0.1*rand(1, MaxX)];
-        % -0.9*ones(1, MaxX) - 0.1*rand(1, MaxX), ...
-        % 0.9*ones(1, MaxX) + 0.1*rand(1, MaxX), ...
-        % zeros(1, MaxX) + 0.1*rand(1, MaxX)];
-    NewX = (X-XRange(1))/diff(XRange)*diff(NewXRange)+NewXRange(1);
-    NewSignal = (Signal-YRange(1))/diff(YRange)*diff(NewYRange)+NewYRange(1);
-    NewSignal = NewYRange(2) - NewSignal + NewYRange(1);
-    NewX_Line = zeros(1, 2*(length(NewX)-1));
-    NewX_Line(1:2:end) = NewX(1:end-1);
-    NewX_Line(2:2:end) = NewX(2:end);
-    NewSignal_Line =  zeros(1, 2*(length(NewSignal)-1));
-    NewSignal_Line(1:2:end) = NewSignal(1:end-1);
-    NewSignal_Line(2:2:end) = NewSignal(2:end);
-    Screen('DrawLines', Window, [NewX_Line; NewSignal_Line(1:(2*(MaxX-1)))], 5, [255 0 0]);
-    vbl = Screen('Flip', Window);
-    FirstVbl = vbl;
-    % KbStrokeWait;
-    
-    Begin = 3;
-    for i = (2*MaxX):2:length(NewSignal_Line)
-        Screen('DrawLines', Window, [NewX_Line NewXRange(1) NewXRange(2); NewSignal_Line(Begin:i) sum(NewYRange)/2 sum(NewYRange)/2], 5, [255 0 0 ]);
-        vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5)*Refresh);
-        Begin = Begin + 2;
-    end
+% % testing movement
+% FlipSecs = 1/60;
+% WaitFrames = round(FlipSecs / Refresh);
+% 
+% MaxX = 240;
+% XRange = [0 MaxX];
+% YRange = [-1 1];
+% NewXRange = [XCenter-(750/2) XCenter+(750/2)-1];
+% NewYRange = [36 235];
+% X = 0:(MaxX-1);
+% Signal = [zeros(1, MaxX) + 0.1*rand(1, MaxX), ...
+%     0.9*ones(1, MaxX) + 0.1*rand(1, MaxX)];
+%     % -0.9*ones(1, MaxX) - 0.1*rand(1, MaxX), ...
+%     % 0.9*ones(1, MaxX) + 0.1*rand(1, MaxX), ...
+%     % zeros(1, MaxX) + 0.1*rand(1, MaxX)];
+% NewX = (X-XRange(1))/diff(XRange)*diff(NewXRange)+NewXRange(1);
+% NewSignal = (Signal-YRange(1))/diff(YRange)*diff(NewYRange)+NewYRange(1);
+% NewSignal = NewYRange(2) - NewSignal + NewYRange(1);
+% NewX_Line = zeros(1, 2*(length(NewX)-1));
+% NewX_Line(1:2:end) = NewX(1:end-1);
+% NewX_Line(2:2:end) = NewX(2:end);
+% NewSignal_Line =  zeros(1, 2*(length(NewSignal)-1));
+% NewSignal_Line(1:2:end) = NewSignal(1:end-1);
+% NewSignal_Line(2:2:end) = NewSignal(2:end);
+% Screen('DrawLines', Window, [NewX_Line; NewSignal_Line(1:(2*(MaxX-1)))], 5, [255 0 0]);
+% vbl = Screen('Flip', Window);
+% FirstVbl = vbl;
+% % KbStrokeWait;
+% 
+% Begin = 3;
+% for i = (2*MaxX):2:length(NewSignal_Line)
+%     Screen('DrawLines', Window, [NewX_Line NewXRange(1) NewXRange(2); NewSignal_Line(Begin:i) sum(NewYRange)/2 sum(NewYRange)/2], 5, [255 0 0 ]);
+%     vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5)*Refresh);
+%     Begin = Begin + 2;
+% end
+%     
+% FlipSecs = 1/30;
+% WaitFrames = round(FlipSecs / Refresh);
+% 
+% MaxX = 120;
+% XRange = [0 MaxX];
+% YRange = [-1 1];
+% NewXRange = [XCenter-(750/2) XCenter+(750/2)-1];
+% NewYRange = [36 235];
+% X = 0:(MaxX-1);
+% Signal = [zeros(1, MaxX) + 0.1*rand(1, MaxX), ...
+%     0.9*ones(1, MaxX) + 0.1*rand(1, MaxX)];
+%     % -0.9*ones(1, MaxX) - 0.1*rand(1, MaxX), ...
+%     % 0.9*ones(1, MaxX) + 0.1*rand(1, MaxX), ...
+%     % zeros(1, MaxX) + 0.1*rand(1, MaxX)];
+% NewX = (X-XRange(1))/diff(XRange)*diff(NewXRange)+NewXRange(1);
+% NewSignal = (Signal-YRange(1))/diff(YRange)*diff(NewYRange)+NewYRange(1);
+% NewSignal = NewYRange(2) - NewSignal + NewYRange(1);
+% NewX_Line = zeros(1, 2*(length(NewX)-1));
+% NewX_Line(1:2:end) = NewX(1:end-1);
+% NewX_Line(2:2:end) = NewX(2:end);
+% NewSignal_Line =  zeros(1, 2*(length(NewSignal)-1));
+% NewSignal_Line(1:2:end) = NewSignal(1:end-1);
+% NewSignal_Line(2:2:end) = NewSignal(2:end);
+% Screen('DrawLines', Window, [NewX_Line; NewSignal_Line(1:(2*(MaxX-1)))], 5, [255 0 0]);
+% vbl = Screen('Flip', Window);
+% FirstVbl = vbl;
+% % KbStrokeWait;
+% 
+% Begin = 3;
+% for i = (2*MaxX):2:length(NewSignal_Line)
+%     Screen('DrawLines', Window, [NewX_Line NewXRange(1) NewXRange(2); NewSignal_Line(Begin:i) sum(NewYRange)/2 sum(NewYRange)/2], 5, [255 0 0 ]);
+%     vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5)*Refresh);
+%     Begin = Begin + 2;
+% end
 
-    FlipSecs = 1/60;
-    WaitFrames = round(FlipSecs / Refresh);
-    
-    MaxX = 2*240;
-    XRange = [0 MaxX];
-    YRange = [-1 1];
-    NewXRange = [XCenter-(750/2) XCenter+(750/2)-1];
-    NewYRange = [36 235];
-    X = 0:(MaxX-1);
-    Signal = [zeros(1, MaxX) + 0.1*rand(1, MaxX), ...
-        0.9*ones(1, MaxX) + 0.1*rand(1, MaxX)];
-        % -0.9*ones(1, MaxX) - 0.1*rand(1, MaxX), ...
-        % 0.9*ones(1, MaxX) + 0.1*rand(1, MaxX), ...
-        % zeros(1, MaxX) + 0.1*rand(1, MaxX)];
-    NewX = (X-XRange(1))/diff(XRange)*diff(NewXRange)+NewXRange(1);
-    NewSignal = (Signal-YRange(1))/diff(YRange)*diff(NewYRange)+NewYRange(1);
-    NewSignal = NewYRange(2) - NewSignal + NewYRange(1);
-    NewX_Line = zeros(1, 2*(length(NewX)-1));
-    NewX_Line(1:2:end) = NewX(1:end-1);
-    NewX_Line(2:2:end) = NewX(2:end);
-    NewSignal_Line =  zeros(1, 2*(length(NewSignal)-1));
-    NewSignal_Line(1:2:end) = NewSignal(1:end-1);
-    NewSignal_Line(2:2:end) = NewSignal(2:end);
-    Screen('DrawLines', Window, [NewX_Line; NewSignal_Line(1:(2*(MaxX-1)))], 5, [255 0 0]);
-    vbl = Screen('Flip', Window);
-    FirstVbl = vbl;
-    % KbStrokeWait;
-    
-    Begin = 1;
-    for i = (2*MaxX+2):4:length(NewSignal_Line)
-        Screen('DrawLines', Window, [NewX_Line NewXRange(1) NewXRange(2); NewSignal_Line(Begin:i) sum(NewYRange)/2 sum(NewYRange)/2], 5, [255 0 0 ]);
-        vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5)*Refresh);
-        Begin = Begin + 4;
-    end
+Scale = 1;
+FlipSecs = 1/60;
+WaitFrames = round(FlipSecs / Refresh);
+
+MaxX = Scale*240;
+XRange = [0 MaxX];
+YRange = [-99 99];
+NewXRange = [XCenter-(750/2) XCenter+(750/2)-1];
+NewYRange = [36 235];
+X = 0:(MaxX-1);
+% Signal = [zeros(1, MaxX) + 0.1*rand(1, MaxX), ...
+%     0.9*ones(1, MaxX) + 0.1*rand(1, MaxX)];
+Signal = -99 + (99+99).*rand(1, 4*60 + 10*60);
+NewX = (X-XRange(1))/diff(XRange)*diff(NewXRange)+NewXRange(1);
+NewSignal = (Signal-YRange(1))/diff(YRange)*diff(NewYRange)+NewYRange(1);
+NewSignal = NewYRange(2) - NewSignal + NewYRange(1);
+NewX_Line = zeros(1, 2*(length(NewX)-1));
+NewX_Line(1:2:end) = NewX(1:end-1);
+NewX_Line(2:2:end) = NewX(2:end);
+NewSignal_Line =  zeros(1, 2*(length(NewSignal)-1));
+NewSignal_Line(1:2:end) = NewSignal(1:end-1);
+NewSignal_Line(2:2:end) = NewSignal(2:end);
+% Screen('DrawLines', Window, [NewX_Line; NewSignal_Line(1:(2*(MaxX-1)))], 5, [255 0 0]);
+% vbl = Screen('Flip', Window);
+vbl = KbStrokeWait;
+tmp = vbl;
+vbls = zeros(1, 241);
+
+Begin = 1;
+index = 1;
+for i = (2*(MaxX-1)):(2*Scale):length(NewSignal_Line)
+    Screen('DrawLines', Window, [NewX_Line NewXRange(1) NewXRange(2); NewSignal_Line(Begin:i) sum(NewYRange)/2 sum(NewYRange)/2], 5, White);
+    vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5)*Refresh);
+    vbls(index) = vbl;
+    Begin = Begin + 2 * Scale;
+    index = index + 1;
 end
 
 sca;
