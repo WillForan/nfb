@@ -198,7 +198,6 @@ function RevisedNeuroFeedbackTask()
         DoseX, CenteredBar(4) - 1);
     OrigPerDoseY = PerDoseRect(2);
     
-    
     % make a frame for my testing purposes
     % Frame = [0 0 1025 769];
     % CenteredFrame = CenterRectOnPointd(Frame, XCenter, YCenter);
@@ -293,7 +292,7 @@ function RevisedNeuroFeedbackTask()
         
             %%% ANTICIPATION RUNNING CODE %%%
     
-            % select time color
+            % set timer color and prompt text
             if strcmp(RunDesign{k, ANTICIPATION}, 'Infusion')
                 TimerColor = [1 0 0];
                 PromptText = 'NEXT INUFSION';
@@ -334,12 +333,12 @@ function RevisedNeuroFeedbackTask()
                     RunDesign{k, ANTONSET} = vbl - BeginTime;
                 else
                     vbl = Screen('Flip', Window, vbl + 1 - Refresh);
+                    if iSec == 2
+                        KbQueueStart(DeviceIndex);
+                        ResponseOnset = vbl;
+                    end
                 end
             
-                if iSec == 2
-                    KbQueueStart(DeviceIndex);
-                    ResponseOnset = vbl;
-                end
             end
             clear iSec
             
