@@ -32,16 +32,52 @@ Screen('BlendFunction', Window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
 Frame = [0 0 1025 769];
 CenteredFrame = CenterRectOnPointd(Frame, XCenter, YCenter);
 
+%%% INFUSION SETUP %%%
+InfGreyRect = [0 0 430 690];
+InfGreyRectCenter = CenterRectOnPointd(InfGreyRect, XCenter, YCenter);
+
+InfBlackRect = [0 0 300 560];
+InfBlackRectCenter = CenterRectOnPointd(InfBlackRect, XCenter, YCenter);
+
+%%% TEXT SETUP %%%
+OldSize = Screen('TextSize', Window, 100);
+WillImpText = 'Will\nImprove?';
+[~, ~, WillImpRect] = DrawFormattedText(Window, ...
+    WillImpText, 'center', 'center', White);
+WillImpRect = CenterRectOnPointd(WillImpRect, XCenter, YCenter - 138);
+
+Screen('TextStyle', Window, 1);
+[~, ~, YesRect] = DrawFormattedText(Window, ...
+    'YES', 'center', 'center', White);
+YesRect = CenterRectOnPointd(YesRect, XCenter - 200, YCenter);
+[~, ~, NoRect] = DrawFormattedText(Window, ...
+    'NO', 'center', 'center', White);
+NoRect = CenterRectOnPointd(NoRect, XCenter + 200, YCenter);
+
+% get "Improved?" size
+Screen('TextStyle', Window, 0);
+ImprovedText = 'Improved?';
+[~, ~, ImprovedRect] = DrawFormattedText(Window, ...
+    ImprovedText, 'center', 'center', White);
+ImprovedRect = CenterRectOnPointd(ImprovedRect, XCenter, YCenter - 95);
+
+Screen('FillRect', Window, Black);
 Text = {
 % 'SampleText', FontSize, FontType, FontStyle, 
-'Continue\nInfusion?', 100, 'Arial', 0, [];
-'YES', 100, 'Arial', 1, [];
-'NO', 100, 'Arial', 1, [];
-'Improved?', 100, 'Arial', 0, [];
+'Will\nImprove?', 100, 'Arial', 0, WillImpRect;
+'YES', 100, 'Arial', 1, YesRect;
+'NO', 100, 'Arial', 1, NoRect;
+'Improved?', 100, 'Arial', 0, ImprovedRect;
+% '100', 35, 'Arial', 0, [1512 430 1569 454];
+% '50', 35, 'Arial', 0, [1530 707 1568 731];
+% '0', 35, 'Arial', 0, [1549 986 1568 1010];
 };
 
 % Initialize all text positions to center
 Selected = 1;
+% Screen('FillRect', Window, ...
+%     [0.5 0.5 0.5; 0 0 0]', ...
+%     [InfGreyRectCenter' InfBlackRectCenter']);
 for i = 1:size(Text, 1)
     Screen('TextSize', Window, Text{i, 2});
     Screen('TextFont', Window, Text{i, 3});
@@ -51,7 +87,8 @@ for i = 1:size(Text, 1)
     else
         TextColor = [0.1 0.1 1];
     end
-    [~, ~, Rect] = DrawFormattedText(Window, Text{i, 1}, 'center', 'center', TextColor);
+    [~, ~, Rect] = DrawFormattedText(Window, Text{i, 1}, 'center', 'center', TextColor, ...
+        [], [], [], [], [], Text{i, 5});
     Text{i, end} = Rect;
 end
 Screen('DrawLine', Window, White, 0, YCenter, round(2*XCenter), YCenter);
@@ -115,6 +152,9 @@ while 1
         
         % redraw everything
         Screen('FillRect', Window, Black);
+        % Screen('FillRect', Window, ...
+        %     [0.5 0.5 0.5; 0 0 0]', ...
+        %     [InfGreyRectCenter' InfBlackRectCenter']);
         for iNum = 1:size(Text, 1)
             Screen('TextSize', Window, Text{iNum, 2});
             Screen('TextFont', Window, Text{iNum, 3});
