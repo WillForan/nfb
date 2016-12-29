@@ -54,7 +54,7 @@ function RevisedNeuroFeedbackTask()
     
     % read in design
     if Testing
-        DesignFid = fopen('TestOrder.csv', 'r');
+        DesignFid = fopen('TestBeta.csv', 'r');
     else
         DesignFid = fopen('Design.csv', 'r');
     end
