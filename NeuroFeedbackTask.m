@@ -10,6 +10,7 @@ function NeuroFeedbackTask()
         EndRun = -1;
         Testing = -1;
         Suppress = -1;
+        Version = -1;
     
         % Turns on PTB debugging
         while ~any(InScan == [1 0])
@@ -34,13 +35,19 @@ function NeuroFeedbackTask()
         while ~any(Suppress == [1 0])
             Suppress = input('Suppress? (1: Yes, 0:No): ');
         end
+
+        while ~any(Version == [1 2 3 4])
+            Version = input('Colors? (1, 2, 3, 4): ');
+        end
     else
         Responses = inputdlg({'Scan (1:Yes, 0:No):', ...
-            'Participant ID:', 'Start run: 1 - 2:', 'End run: 1 - 2:'});
+            'Participant ID:', 'Start run: 1 - 2:', 'End run: 1 - 2:', ...
+            'Colors: 1 - 4:'});
         InScan = str2num(Responses{1});
         Participant = Responses{2};
         StartRun = str2num(Responses{3});
         EndRun = str2num(Responses{4});
+        Version = str2num(Responses{5});
         Testing = 0;
         Suppress = 1;
     end
@@ -61,7 +68,7 @@ function NeuroFeedbackTask()
     Tmp = textscan(DesignFid, '%f%f%s%s%f%f%f', ...
         'Delimiter', ',', 'Headerlines', 1);
     fclose(DesignFid);
-    % more columns: AntOnset, ContinueOnset, J1Onset, Feed1Onset, Feed2Onset, Feed3Onset, ImprovedOnset, J2Onset, ContinueResp, ContinueRt, ImproveResp, ImprovedRt
+    % more columns: InfuisonNum, InfOnset, WillImpOnset, J1Onset, Feed1Onset, Feed2Onset, Feed3Onset, ImprovedOnset, J2Onset, WillImpResp, WillImpRt, ImproveResp, ImprovedRt
     % split feedback into baseline and feedback later
     Design = cell(numel(Tmp{1}), numel(Tmp) + 13);
     for i = 1:numel(Tmp)
@@ -74,6 +81,14 @@ function NeuroFeedbackTask()
         end
     end
     clear Tmp i k
+
+    % assign colors
+    InfColors =  {
+        {[1 0 0], [0 0 0]}, {[0 0 0], [0 1 0]}, {[0 0 1], [0 0 0]}, {[0 0 0], [1 1 0]}
+        {[1 0 0], [0 0 0]}, {[0 0 0], [0 1 0]}, {[1 1 0], [0 0 0]}, {[0 0 0], [0 0 1]}
+        {[0 1 0], [0 0 0]}, {[0 0 0], [1 0 0]}, {[0 0 1], [0 0 0]}, {[0 0 0], [1 1 0]}
+        {[0 1 0], [0 0 0]}, {[0 0 0], [1 0 0]}, {[1 1 0], [0 0 0]}, {[0 0 0], [0 0 1]}
+    };
     
     % assign constants
     RUN = 1;
@@ -83,18 +98,34 @@ function NeuroFeedbackTask()
     WAVEFORM = 5;
     JITTER1DUR = 6;
     JITTER2DUR = 7;
-    INFONSET = 8;
-    CONTINUEONSET = 9;
-    J1ONSET = 10;
-    FEED1ONSET = 11;
-    FEED2ONSET = 12;
-    FEED3ONSET = 13;
-    IMPROVEDONSET = 14;
-    J2ONSET = 15;
-    CONTINUERESP = 16;
-    CONTINUERT = 17;
-    IMPROVEDRESP = 18;
-    IMPROVEDRT = 19;
+    INFUSIONNUM = 8;
+    INFONSET = 9;
+    WILLIMPROVEONSET = 10;
+    J1ONSET = 11;
+    FEED1ONSET = 12;
+    FEED2ONSET = 13;
+    FEED3ONSET = 14;
+    IMPROVEDONSET = 15;
+    J2ONSET = 16;
+    WILLIMPROVERESP = 17;
+    WILLIMPROVERT = 18;
+    IMPROVEDRESP = 19;
+    IMPROVEDRT = 20;
+
+    % assign INFUSIONNUM
+    for i = 1:size(Design, 1)
+        if Design{i, INFUSION} == 'A'
+            Design{i, INFUSIONNUM} = 1;
+        elseif Design{i, INFUSION} == 'B'
+            Design{i, INFUSIONNUM} = 3;
+        elseif Design{i, INFUSION} == 'C'
+            Design{i, INFUSIONNUM} = 2;
+        elseif Design{i, INFUSION} == 'D'
+            Design{i, INFUSIONNUM} = 4;
+        else
+            error('Unknown infusion: %s, row: %d', Design{i, INFUSION}, i);
+        end
+    end
     
     PsychDefaultSetup(2); % default settings
     Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
@@ -138,6 +169,8 @@ function NeuroFeedbackTask()
     
     InfBlackRect = [0 0 300 560];
     InfBlackRectCenter = CenterRectOnPointd(InfBlackRect, XCenter, YCenter);
+    InfRefX = InfBlackRectCenter(1);
+    InfRefY = InfBlackRectCenter(2);
     
     InfFillRect = [0 0 300 0];
     InfFillRectCentered = CenterRectOnPointd(InfFillRect, XCenter, InfBlackRectCenter(4));
@@ -145,13 +178,13 @@ function NeuroFeedbackTask()
     InfFillRefreshes = 3 * round(1 / Refresh);
     InfFillInc = 560 / (InfFillRefreshes - 1);
     
-    %%% TEXT (Continue/Improved:Instrumental) SETUP %%%
-    % get "Continue\nInfusion?" size
+    %%% TEXT (WillImp/Improved:Instrumental) SETUP %%%
+    % get "WillImp\nInfusion?" size
     OldSize = Screen('TextSize', Window, 100);
-    ContinueText = 'Continue\nInfusion?';
-    [~, ~, ContinueRect] = DrawFormattedText(Window, ...
-        ContinueText, 'center', 'center', White);
-    ContinueRect = CenterRectOnPointd(ContinueRect, XCenter, YCenter - 135);
+    WillImpText = 'Will\nImprove?';
+    [~, ~, WillImpRect] = DrawFormattedText(Window, ...
+        WillImpText, 'center', 'center', White);
+    WillImpRect = CenterRectOnPointd(WillImpRect, XCenter, YCenter - 139);
     
     % get "YES" and "NO" size
     Screen('TextStyle', Window, 1);
@@ -207,30 +240,30 @@ function NeuroFeedbackTask()
     
     % dummy signals
     X = 0:(MaxX-1);
-    % load FeedbackSigs and NoFeedbackSigs
+    % load Signal and Baselines
     load('./DebugScripts/Development/Waveforms.mat');
     
     % modify signals to allow continuous plotting between them
-    ModFeedSigs = cell(size(FeedbackSigs));
-    ModNoFeedSigs = cell(size(NoFeedbackSigs));
-    for i = 1:size(ModFeedSigs, 1)
-        ModFeedSigs{i, 1} = FeedbackSigs{i, 1};
+    ModSignals = cell(size(Signals));
+    ModBaselines = cell(size(Baselines));
+    for i = 1:size(ModSignals, 1)
+        ModSignals{i, 1} = Signals{i, 1};
     
-        for k = 2:size(ModFeedSigs, 2)
-            BeginSig1 = length(FeedbackSigs{i, k - 1}) - MaxX + 1 + Scale;
-            ModFeedSigs{i, k} = [FeedbackSigs{i, k - 1}(BeginSig1:end) ...
-                FeedbackSigs{i, k}];
+        for k = 2:size(ModSignals, 2)
+            BeginSig1 = length(ModSignals{i, k - 1}) - MaxX + 1 + Scale;
+            ModSignals{i, k} = [ModSignals{i, k - 1}(BeginSig1:end) ...
+                Signals{i, k}];
         end
     end 
     clear i k
     
-    for i = 1:size(ModNoFeedSigs, 1)
-        ModNoFeedSigs{i, 1} = NoFeedbackSigs{i, 1};
+    for i = 1:size(ModBaselines, 1)
+        ModBaselines{i, 1} = Baselines{i, 1};
     
-        for k = 2:size(ModNoFeedSigs, 2)
-            BeginSig1 = length(NoFeedbackSigs{i, k - 1}) - MaxX + 1 + Scale;
-            ModNoFeedSigs{i, k} = [NoFeedbackSigs{i, k - 1}(BeginSig1:end) ...
-                NoFeedbackSigs{i, k}];
+        for k = 2:size(ModBaselines, 2)
+            BeginSig1 = length(ModBaselines{i, k - 1}) - MaxX + 1 + Scale;
+            ModBaselines{i, k} = [ModBaselines{i, k - 1}(BeginSig1:end) ...
+                Baselines{i, k}];
         end
     end
     clear i k
@@ -238,20 +271,20 @@ function NeuroFeedbackTask()
     % convert from old range values to new range values
     NewX = (X-XRange(1))/diff(XRange)*diff(NewXRange)+NewXRange(1);
     
-    for i = 1:size(ModFeedSigs, 1)
-        for k = 1:size(ModFeedSigs, 2)
-            ModFeedSigs{i, k} = (ModFeedSigs{i, k} - YRange(1)) / ...
+    for i = 1:size(ModSignals, 1)
+        for k = 1:size(ModSignals, 2)
+            ModSignals{i, k} = (ModSignals{i, k} - YRange(1)) / ...
                 diff(YRange)*diff(NewYRange)+NewYRange(1);
-            ModFeedSigs{i, k} = NewYRange(2) - ModFeedSigs{i, k} + NewYRange(1);
+            ModSignals{i, k} = NewYRange(2) - ModSignals{i, k} + NewYRange(1);
         end
     end
     clear i k
     
-    for i = 1:size(ModNoFeedSigs, 1)
-        for k = 1:size(ModNoFeedSigs, 2)
-            ModNoFeedSigs{i, k} = (ModNoFeedSigs{i, k} - YRange(1)) / ...
+    for i = 1:size(ModBaselines, 1)
+        for k = 1:size(ModBaselines, 2)
+            ModBaselines{i, k} = (ModBaselines{i, k} - YRange(1)) / ...
                 diff(YRange)*diff(NewYRange)+NewYRange(1);
-            ModNoFeedSigs{i, k} = NewYRange(2) - ModNoFeedSigs{i, k} + NewYRange(1);
+            ModBaselines{i, k} = NewYRange(2) - ModBaselines{i, k} + NewYRange(1);
         end
     end
     clear i k
@@ -261,34 +294,34 @@ function NeuroFeedbackTask()
     NewX_Line(1:2:end) = NewX(1:end-1);
     NewX_Line(2:2:end) = NewX(2:end);
     
-    LineFeedbackSigs = cell(size(ModFeedSigs));
-    for i = 1:size(LineFeedbackSigs, 1)
-        for k = 1:size(LineFeedbackSigs, 2)
-            LineFeedbackSigs{i, k} = zeros(1, 2*(length(ModFeedSigs{i, k})-1));
-            LineFeedbackSigs{i, k}(1:2:end) = ModFeedSigs{i, k}(1:end-1);
-            LineFeedbackSigs{i, k}(2:2:end) = ModFeedSigs{i, k}(2:end);
+    LineSignals = cell(size(ModSignals));
+    for i = 1:size(LineSignals, 1)
+        for k = 1:size(LineSignals, 2)
+            LineSignals{i, k} = zeros(1, 2*(length(ModSignals{i, k})-1));
+            LineSignals{i, k}(1:2:end) = ModSignals{i, k}(1:end-1);
+            LineSignals{i, k}(2:2:end) = ModSignals{i, k}(2:end);
         end
     end
     clear i k
     
-    LineNoFeedbackSigs = cell(size(ModNoFeedSigs));
-    for i = 1:size(LineNoFeedbackSigs, 1)
-        for k = 1:size(LineNoFeedbackSigs, 2)
-            LineNoFeedbackSigs{i, k} = zeros(1, 2*(length(ModNoFeedSigs{i, k})-1));
-            LineNoFeedbackSigs{i, k}(1:2:end) = ModNoFeedSigs{i, k}(1:end-1);
-            LineNoFeedbackSigs{i, k}(2:2:end) = ModNoFeedSigs{i, k}(2:end);
+    LineBaselines = cell(size(ModBaselines));
+    for i = 1:size(LineBaselines, 1)
+        for k = 1:size(LineBaselines, 2)
+            LineBaselines{i, k} = zeros(1, 2*(length(ModBaselines{i, k})-1));
+            LineBaselines{i, k}(1:2:end) = ModBaselines{i, k}(1:end-1);
+            LineBaselines{i, k}(2:2:end) = ModBaselines{i, k}(2:end);
         end
     end
     clear i k
-    
+   
     for i = StartRun:EndRun
         RunIdx = [Design{:, RUN}]' == i;
         RunDesign = Design(RunIdx, :);
     
         % pre-populate RT and Response with NaN
         for k = 1:size(RunDesign)
-            RunDesign{k, CONTINUERESP} = nan;
-            RunDesign{k, CONTINUERT} = nan;
+            RunDesign{k, WILLIMPROVERESP} = nan;
+            RunDesign{k, WILLIMPROVERT} = nan;
             RunDesign{k, IMPROVEDRESP} = nan;
             RunDesign{k, IMPROVEDRT} = nan;
         end
@@ -297,7 +330,7 @@ function NeuroFeedbackTask()
         KbEventFlush;
         
         % handle file naming
-        OutName = sprintf('%s_Run_%02d_%s', Participant, i, ...
+        OutName = sprintf('%s_V%d_Run_%02d_%s', Participant, Version, i, ...
             datestr(now, 'yyyymmdd_HHMMSS'));
         OutCsv = fullfile(OutDir, [OutName '.csv']);
         OutMat = fullfile(OutDir, [OutName '.mat']);
@@ -319,58 +352,84 @@ function NeuroFeedbackTask()
         for k = 1:size(RunDesign, 1)
         
             %%% INFUSION RUNNING CODE %%%
+            Screen('TextSize', Window, 35);
+            Screen('TextStyle', Window, 0);
             Screen('FillRect', Window, ...
-                [0.5 0.5 0.5; 0 0 0; 1 0 0]', ...
-                [InfGreyRectCenter' InfBlackRectCenter' InfFillRectCentered']);
+                [InfColors{Version, RunDesign{k, INFUSIONNUM}}{2}; ...
+                    0.5 0.5 0.5; ...
+                    0 0 0; ...
+                    InfColors{Version, RunDesign{k, INFUSIONNUM}}{1}]', ...
+                [Rect' ...
+                    InfGreyRectCenter' ...
+                    InfBlackRectCenter' ...
+                    InfFillRectCentered']);
+            Screen('DrawText', Window, ...
+                '100', InfRefX - 58, InfRefY - 10, Black);
+            Screen('DrawText', Window, ...
+                '50', InfRefX - 40, YCenter, Black);
+            Screen('DrawText', Window, ...
+                '0', InfRefX - 21, InfRefY + 547, Black); 
             InfVbl = Screen('Flip', Window, Until);
             if k == 1
                 BeginTime = InfVbl;
             end
             RunDesign{k, INFONSET} = InfVbl - BeginTime;
     
-            if strcmp(RunDesign{k, INFUSION}, 'Yes')
+            if any(strcmp(RunDesign{k, INFUSION}, {'A', 'B'}))
                 for iInc = 2:InfFillRefreshes
                     InfFillRectCentered(2) = InfFillRectCentered(2) - InfFillInc;
                     Screen('FillRect', Window, ...
-                        [0.5 0.5 0.5; 0 0 0; 1 0 0]', ...
+                        [0.5 0.5 0.5; 0 0 0; ...
+                            InfColors{Version, RunDesign{k, INFUSIONNUM}}{1}]', ...
                         [InfGreyRectCenter' InfBlackRectCenter' InfFillRectCentered']);
-                    Screen('Flip', Window);
+                    Screen('DrawText', Window, ...
+                        '100', InfRefX - 58, InfRefY - 10, Black);
+                    Screen('DrawText', Window, ...
+                        '50', InfRefX - 40, YCenter, Black);
+                    Screen('DrawText', Window, ...
+                        '0', InfRefX - 21, InfRefY + 540, Black); 
+                    Screen('Flip', Window, (1 - 0.5) * Refresh);
                 end
                 InfFillRectCentered = OrigInfFillRectCentered;
             end
             clear iInc
     
-            %%% CONTINUE RUNNING CODE %%%
-            DrawFormattedText(Window, ContinueText, 'center', 'center', ...
-                White, [], [], [], [], [], ContinueRect);
+            %%% WILLIMPROVE RUNNING CODE %%%
+            Screen('TextSize', Window, 100);
+            DrawFormattedText(Window, WillImpText, 'center', 'center', ...
+                White, [], [], [], [], [], WillImpRect);
+            Screen('TextStyle', Window, 1);
             DrawFormattedText(Window, 'YES', 'center', 'center', ...
                 White, [], [], [], [], [], YesRect);
             DrawFormattedText(Window, 'NO', 'center', 'center', ...
                 White, [], [], [], [], [], NoRect);
             if strcmp(RunDesign{k, INFUSION}, 'Yes')
-                ContVbl = Screen('Flip', Window);
+                ContVbl = Screen('Flip', Window, (1 - 0.5) * Refresh);
             else
                 ContVbl = Screen('Flip', Window, InfVbl + 3 - 0.5 * Refresh);
             end
             KbQueueStart(DeviceIndex);
-            RunDesign{k, CONTINUEONSET} = ContVbl - BeginTime;
+            RunDesign{k, WILLIMPROVEONSET} = ContVbl - BeginTime;
         
             %%% JITTER1 %%%
             Screen('FillRect', Window, Black);
-            vbl = Screen('Flip', Window, ContVbl + 2);
+            vbl = Screen('Flip', Window, ContVbl + 2 - 0.5 * Refresh);
     
             KbQueueStop(DeviceIndex);
             [DidRespond, TimeKeysPressed] = KbQueueCheck(DeviceIndex);
             if DidRespond
                 TimeKeysPressed(TimeKeysPressed == 0) = nan;
                 [RT, Idx] = min(TimeKeysPressed);
-                RunDesign{k, CONTINUERESP} = KbNames{Idx};
-                RunDesign{k, CONTINUERT} = RT - ContVbl;
+                RunDesign{k, WILLIMPROVERESP} = KbNames{Idx};
+                RunDesign{k, WILLIMPROVERT} = RT - ContVbl;
             end
             KbQueueFlush(DeviceIndex);
     
-            fprintf(1, 'Run: %d, Trial: %d, RT: %0.4f, Response: %s\n', ...
-                i, k, RunDesign{k, CONTINUERT}, RunDesign{k, CONTINUERESP});
+            fprintf(1, 'Run:              %d\n', i);
+            fprintf(1, 'Trial:            %d\n', k);
+            fprintf(1, 'Infusion:         %s\n', RunDesign{k, INFUSION});
+            fprintf(1, 'InfRT:            %0.4f\n', RunDesign{k, WILLIMPROVERT});
+            fprintf(1, 'InfResponse:      %s\n', RunDesign{k, WILLIMPROVERESP});
             RunDesign{k, J1ONSET} = vbl - BeginTime;
             
             %%% FEEDBACK RUNNING CODE %%%
@@ -379,121 +438,90 @@ function NeuroFeedbackTask()
             Screen('TextSize', Window, 35);
             Screen('TextFont', Window, 'Arial');
             Screen('TextStyle', Window, 0);
-    
-            if strcmp(RunDesign{k, FEEDBACK}, 'None')
-                % Draw feedback background
-                % Draw rectangles
-                Screen('FillRect', Window, ...
-                    [0.5 0.5 0.5; 0 0 0]', ...
-                    [Rect' CenteredFeedback']);
-                
-                % Draw "Neurofeedback Signal"
-                Screen('DrawTexture', Window, NeuroTexture, [], NeuroLoc, -90);
-                
-                % draw feedback number labels
-                Screen('DrawText', Window, ...
-                    '100', RefX - 57, RefY - 6, Black);
-                Screen('DrawText', Window, ...
-                    '50', RefX - 38, RefY + 167, Black);
-                Screen('DrawText', Window, ...
-                    '0', RefX - 19, RefY + 362, Black);
-                Screen('DrawText', Window, ...
-                    '-50', RefX - 50, RefY + 548, Black);
-                Screen('DrawText', Window, ...
-                    '-100', RefX - 69, RefY + 731, Black);
-                % end feedback background
-    
-                vbl = Screen('Flip', Window, ...
-                    vbl + RunDesign{k, JITTER1DUR} - 0.5 * Refresh);
-    
-                RunDesign{k, FEED1ONSET} = vbl - BeginTime;
-                RunDesign{k, FEED2ONSET} = nan;
-                RunDesign{k, FEED3ONSET} = nan;
+            
+            if strcmp(RunDesign{k, FEEDBACK}, 'Signal')
+                Waveforms = LineSignals(RunDesign{k, WAVEFORM}, :);
             else
-                if strcmp(RunDesign{k, FEEDBACK}, 'Positive')
-                    Signals = LineFeedbackSigs(RunDesign{k, WAVEFORM}, :);
-                else
-                    Signals = LineNoFeedbackSigs(RunDesign{k, WAVEFORM}, :);
-                end
+                Waveforms = LineBaselines(RunDesign{k, WAVEFORM}, :);
+            end
     
-                for iSig = 1:numel(Signals)
-                    Begin = 1;
-                    for iEnd = (2*(MaxX-1)):(2*Scale):length(Signals{iSig})
-                        % Draw feedback background
-                        % Draw rectangles
-                        Screen('FillRect', Window, ...
-                            [0.5 0.5 0.5; 0 0 0]', ...
-                            [Rect' CenteredFeedback']);
-                        
-                        % Draw "Neurofeedback Signal"
-                        Screen('DrawTexture', Window, NeuroTexture, [], NeuroLoc, -90);
-                        
-                        % draw feedback number labels
-                        Screen('DrawText', Window, ...
-                            '100', RefX - 57, RefY - 6, Black);
-                        Screen('DrawText', Window, ...
-                            '50', RefX - 38, RefY + 167, Black);
-                        Screen('DrawText', Window, ...
-                            '0', RefX - 19, RefY + 362, Black);
-                        Screen('DrawText', Window, ...
-                            '-50', RefX - 50, RefY + 548, Black);
-                        Screen('DrawText', Window, ...
-                            '-100', RefX - 69, RefY + 731, Black);
-                        % end feedback background
+            for iSig = 1:numel(Waveforms)
+                Begin = 1;
+                for iEnd = (2*(MaxX-1)):(2*Scale):length(Waveforms{iSig})
+                    % Draw feedback background
+                    % Draw rectangles
+                    Screen('FillRect', Window, ...
+                        [0.5 0.5 0.5; 0 0 0]', ...
+                        [Rect' CenteredFeedback']);
+                    
+                    % Draw "Neurofeedback Signal"
+                    Screen('DrawTexture', Window, NeuroTexture, [], NeuroLoc, -90);
+                    
+                    % draw feedback number labels
+                    Screen('DrawText', Window, ...
+                        '100', RefX - 57, RefY - 6, Black);
+                    Screen('DrawText', Window, ...
+                        '50', RefX - 38, RefY + 167, Black);
+                    Screen('DrawText', Window, ...
+                        '0', RefX - 19, RefY + 362, Black);
+                    Screen('DrawText', Window, ...
+                        '-50', RefX - 50, RefY + 548, Black);
+                    Screen('DrawText', Window, ...
+                        '-100', RefX - 69, RefY + 731, Black);
+                    % end feedback background
     
-                        % draw feedback line
-                        Screen('DrawLines', Window, ...
-                            [NewX_Line NewXRange(1) NewXRange(2); ...
-                            Signals{iSig}(Begin:iEnd) sum(NewYRange)/2 sum(NewYRange)/2], ...
-                            [repmat(4, length(Begin:iEnd)/2, 1); 1], ...
-                            [repmat([1 0 0]', 1, iEnd-Begin+1) [1 1 1; 1 1 1]']);
-                        if Begin == 1
-                            if iSig == 1
-                                Until = vbl + RunDesign{k, JITTER1DUR} - 0.5 * Refresh;
-                            else
-                                Until = vbl + (WaitFrames - 0.5) * Refresh;
-                            end
-    
-                            vbl = Screen('Flip', Window, Until);
-    
-                            if iSig == 1
-                                RunDesign{k, FEED1ONSET} = vbl - BeginTime;
-                            elseif iSig == 2
-                                RunDesign{k, FEED2ONSET} = vbl - BeginTime;
-                            else
-                                RunDesign{k, FEED3ONSET} = vbl - BeginTime;
-                            end
+                    % draw feedback line
+                    Screen('DrawLines', Window, ...
+                        [NewX_Line NewXRange(1) NewXRange(2); ...
+                        Waveforms{iSig}(Begin:iEnd) sum(NewYRange)/2 sum(NewYRange)/2], ...
+                        [repmat(4, length(Begin:iEnd)/2, 1); 1], ...
+                        [repmat([1 0 0]', 1, iEnd-Begin+1) [1 1 1; 1 1 1]']);
+                    Screen('DrawingFinished', Window);
+                    if Begin == 1
+                        if iSig == 1
+                            Until = vbl + RunDesign{k, JITTER1DUR} - 0.5 * Refresh;
                         else
-                            % can try no duration here to see what happens
-                            % but will need duration if I plan to show signal every nth frame
-                            % with n > 1, so might as well keep it for now
-                            vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5) * Refresh);
-                            % vbl = Screen('Flip', Window);
+                            Until = vbl + (WaitFrames - 0.5) * Refresh;
                         end
-                        Begin = Begin + 2 * Scale;
+    
+                        vbl = Screen('Flip', Window, Until);
+    
+                        if iSig == 1
+                            RunDesign{k, FEED1ONSET} = vbl - BeginTime;
+                        elseif iSig == 2
+                            RunDesign{k, FEED2ONSET} = vbl - BeginTime;
+                        else
+                            RunDesign{k, FEED3ONSET} = vbl - BeginTime;
+                        end
+                    else
+                        % can try no duration here to see what happens
+                        % but will need duration if I plan to show signal every nth frame
+                        % with n > 1, so might as well keep it for now
+                        vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5) * Refresh);
+                        % vbl = Screen('Flip', Window);
                     end
+                    Begin = Begin + 2 * Scale;
                 end
             end
+
             clear iSig iEnd
     
             %%% IMPROVED %%%
+            Screen('TextSize', Window, 100);
             DrawFormattedText(Window, ImprovedText, 'center', 'center', ...
-                White, [], [], [], [], [], ContinueRect);
+                White, [], [], [], [], [], ImprovedRect);
+            Screen('TextStyle', Window, 1);
             DrawFormattedText(Window, 'YES', 'center', 'center', ...
                 White, [], [], [], [], [], YesRect);
             DrawFormattedText(Window, 'NO', 'center', 'center', ...
                 White, [], [], [], [], [], NoRect);
-            if strcmp(RunDesign{k, FEEDBACK}, 'None')
-                ImpVbl = Screen('Flip', Window, vbl + 10 - 0.5 * Refresh);
-            else
-                ImpVbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5) * Refresh);
-            end
+            ImpVbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5) * Refresh);
             KbQueueStart(DeviceIndex);
             RunDesign{k, IMPROVEDONSET} = ImpVbl - BeginTime;
         
             %%% JITTER2 %%%
             Screen('FillRect', Window, Black);
-            vbl = Screen('Flip', Window, ImpVbl + 2 - 0.5 * Refresh);
+            vbl = Screen('Flip', Window, ImpVbl + 2);
             KbQueueStop(DeviceIndex);
             [DidRespond, TimeKeysPressed] = KbQueueCheck(DeviceIndex);
             if DidRespond
@@ -503,6 +531,10 @@ function NeuroFeedbackTask()
                 RunDesign{k, IMPROVEDRT} = RT - ImpVbl;
             end
             KbQueueFlush(DeviceIndex);
+
+            fprintf(1, 'ImprovedRT:       %0.4f\n', RunDesign{k, IMPROVEDRT});
+            fprintf(1, 'ImprovedResponse: %s\n\n', RunDesign{k, IMPROVEDRESP});
+
             RunDesign{k, J2ONSET} = vbl - BeginTime;
             Until = vbl + RunDesign{k, JITTER2DUR} - 0.5 * Refresh;
         end
@@ -512,44 +544,49 @@ function NeuroFeedbackTask()
         OutFid = fopen(OutCsv, 'w');
         fprintf(OutFid, ...
             ['Participant,', ...
+            'Version,', ...
             'Run,', ...
             'TrialNum,', ...
             'Infusion,', ...
+            'InfusionNum,', ...
             'Feedback,', ...
             'Waveform,', ...
             'Jitter1Dur,', ...
             'Jitter2Dur,', ...
             'InfOnset,', ...
-            'ContinueOnset,', ...
+            'WillImpOnset,', ...
             'J1Onset,', ...
             'Feed1Onset,', ...
             'Feed2Onset,', ...
             'Feed3Onset,', ...
             'ImprovedOnset,', ...
             'J2Onset,', ...
-            'ContinueResp,', ...
-            'ContinueRt,', ...
+            'WillImpResp,', ...
+            'WillImpRt,', ...
             'ImprovedResp,', ...
             'ImprovedRt\n']);
         for DesignIdx = 1:size(RunDesign, 1)
             fprintf(OutFid, '%s,', Participant);
+            fprintf(OutFid, '%d,', Version);
             fprintf(OutFid, '%d,', i);
             fprintf(OutFid, '%d,', RunDesign{DesignIdx, TRIALNUM});
             fprintf(OutFid, '%s,', RunDesign{DesignIdx, INFUSION});
+            fprintf(OutFid, '%d,', RunDesign{DesignIdx, INFUSIONNUM});
             fprintf(OutFid, '%s,', RunDesign{DesignIdx, FEEDBACK});
             fprintf(OutFid, '%d,', RunDesign{DesignIdx, WAVEFORM});
             fprintf(OutFid, '%0.1f,', RunDesign{DesignIdx, JITTER1DUR});
             fprintf(OutFid, '%0.1f,', RunDesign{DesignIdx, JITTER2DUR});
             fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, INFONSET});
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, CONTINUEONSET});
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, J1ONSET}); fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, FEED1ONSET});
+            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, WILLIMPROVEONSET});
+            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, J1ONSET}); 
+            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, FEED1ONSET});
             fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, FEED2ONSET});
             fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, FEED3ONSET});
             fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, IMPROVEDONSET});
             fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, J2ONSET});
     
             % handle resposne now
-            Response = RunDesign{DesignIdx, CONTINUERESP};
+            Response = RunDesign{DesignIdx, WILLIMPROVERESP};
             if ischar(Response)
                 if any(strcmp({'1', '1!'}, Response))
                     Response = 1;
@@ -560,7 +597,7 @@ function NeuroFeedbackTask()
                 end
             end
             fprintf(OutFid, '%d,', Response);
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, CONTINUERT});
+            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, WILLIMPROVERT});
         
             % handle resposne now
             Response = RunDesign{DesignIdx, IMPROVEDRESP};
@@ -581,6 +618,7 @@ function NeuroFeedbackTask()
         fprintf(1, '\n');
     end
     
+    Screen('TextSize', Window, 35);
     DrawFormattedText(Window, 'Goodbye!', 'center', 'center');
     Screen('Flip', Window);
     WaitSecs(3);
