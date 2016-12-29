@@ -1,9 +1,9 @@
 clear all;
 rng(1234567890);
 
-% 1 second of baseline
-% 5 seconds increment
-% 4 seconds at max
+% 0-2 seconds of extended baseline (0-120)
+% 0.5-4 seconds increment          (30-240) 
+% remaining seconds at max
 Refresh = 1/60;
 Scale = 2; % move by this many points across signals
 FlipSecs = 1/30; % time to display signal
@@ -24,26 +24,40 @@ Index3 = (Index2(end)+1):N;
 Inc = 85/length(Index2);
 Ramp = 0:Inc:(85-Inc);
 
-% NoFeedbackSigs
-% FeedbackSigs
-for i = 1:100
+% Baselines
+% Signals
+for i = 1:15
     Noise = 5*randn(1, N);
-    NoFeedbackSigs{i, 1} = Noise(Index1);
-    NoFeedbackSigs{i, 2} = Noise(Index2);
-    NoFeedbackSigs{i, 3} = Noise(Index3);
+    T1 = randi([0 120]);
+    T2 = randi([30 240]);
+    if mod(T2, 2)
+        T2 = T2 - 1;
+    end
 
-    FeedbackSigs{i, 1} = Noise(Index1);
-    FeedbackSigs{i, 2} = Noise(Index2) + Ramp + Sin1(Index2) + Sin2(Index2);
-    FeedbackSigs{i, 2}(FeedbackSigs{i, 2} > 100) = 99;
-    FeedbackSigs{i, 3} = Noise(Index3) + 85 + Sin1(Index3) + Sin2(Index3);
-    FeedbackSigs{i, 3}(FeedbackSigs{i, 3} > 100) = 99;
+    Index1 = 1:(4*Scale*1/FlipSecs + T1);
+    Index2 = (Index1(end)+1):(Index1(end)+1+T2-1);
+    Index3 = (Index2(end)+1):N;
+    Inc = 85/length(Index2);
+    Ramp = 0:Inc:(85-Inc);
+
+    if i < 9
+        Baselines{i, 1} = Noise(Index1);
+        Baselines{i, 2} = Noise(Index2);
+        Baselines{i, 3} = Noise(Index3);
+    end
+
+    Signals{i, 1} = Noise(Index1);
+    Signals{i, 2} = Noise(Index2) + Ramp + Sin1(Index2) + Sin2(Index2);
+    Signals{i, 2}(Signals{i, 2} > 100) = 99;
+    Signals{i, 3} = Noise(Index3) + 85 + Sin1(Index3) + Sin2(Index3);
+    Signals{i, 3}(Signals{i, 3} > 100) = 99;
 end
 
-for i = 1:size(FeedbackSigs, 1)
-    for k = 1:size(FeedbackSigs, 2)
-        fprintf(1, '%d:%0.3f ', k, max(FeedbackSigs{i, k}));
+for i = 1:size(Signals, 1)
+    for k = 1:size(Signals, 2)
+        fprintf(1, '%d:%0.3f ', k, max(Signals{i, k}));
     end
     fprintf(1, '\n');
 end
 
-save('Waveforms', 'NoFeedbackSigs', 'FeedbackSigs');
+save('Waveforms', 'Baselines', 'Signals');
