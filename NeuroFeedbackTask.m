@@ -292,7 +292,8 @@ function NeuroFeedbackTask()
     % dummy signals
     X = 0:(MaxX-1);
     % load Signal and Baselines
-    load('./DebugScripts/Development/Waveforms.mat');
+    FileName = fullfile(pwd, 'DebugScripts', 'Development', 'Waveforms.mat');
+    load(FileName);
     
     % modify signals to allow continuous plotting between them
     ModSignals = cell(size(Signals));
