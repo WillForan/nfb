@@ -208,17 +208,30 @@ function NeuroFeedbackTask()
     %%% FEEDBACK SETUP %%%
     % Feedback rect location; this is used as position reference for most
     % other drawn objects
+    BgRect = zeros(Rect(4), Rect(3));
+    FeedbackTexture = Screen('MakeTexture', Window, BgRect);
+
     FeedbackRect = [0 0 920 750];
     FeedbackXCenter = 52 + XCenter;
     CenteredFeedback = CenterRectOnPointd(FeedbackRect, FeedbackXCenter, YCenter);
     RefX = CenteredFeedback(1);
     RefY = CenteredFeedback(2);
+    Screen('FillRect', FeedbackTexture, [0.5 0.5 0.5; 0 0 0]', ...
+        [Rect' CenteredFeedback']);
     
     % set "Neurofeedback Signal" label location
     [NeuroTexture NeuroBox] = MakeTextTexture(Window, ...
         'Neurofeedback Signal', Grey, [], 55);
     NeuroXLoc = RefX - 69 - 5;
     NeuroLoc = CenterRectOnPointd(NeuroBox, NeuroXLoc, YCenter);
+    Screen('DrawTexture', FeedbackTexture, NeuroTexture, [], NeuroLoc, -90);
+    
+    % draw feedback number labels
+    Screen('DrawText', FeedbackTexture, '100', RefX - 57, RefY - 6, Black);
+    Screen('DrawText', FeedbackTexture, '50', RefX - 38, RefY + 167, Black);
+    Screen('DrawText', FeedbackTexture, '0', RefX - 19, RefY + 362, Black);
+    Screen('DrawText', FeedbackTexture, '-50', RefX - 50, RefY + 548, Black);
+    Screen('DrawText', FeedbackTexture, '-100', RefX - 69, RefY + 731, Black);
     
     % make a frame for my testing purposes
     Frame = [0 0 1025 769];
@@ -449,26 +462,7 @@ function NeuroFeedbackTask()
                 Begin = 1;
                 for iEnd = (2*(MaxX-1)):(2*Scale):length(Waveforms{iSig})
                     % Draw feedback background
-                    % Draw rectangles
-                    Screen('FillRect', Window, ...
-                        [0.5 0.5 0.5; 0 0 0]', ...
-                        [Rect' CenteredFeedback']);
-                    
-                    % Draw "Neurofeedback Signal"
-                    Screen('DrawTexture', Window, NeuroTexture, [], NeuroLoc, -90);
-                    
-                    % draw feedback number labels
-                    Screen('DrawText', Window, ...
-                        '100', RefX - 57, RefY - 6, Black);
-                    Screen('DrawText', Window, ...
-                        '50', RefX - 38, RefY + 167, Black);
-                    Screen('DrawText', Window, ...
-                        '0', RefX - 19, RefY + 362, Black);
-                    Screen('DrawText', Window, ...
-                        '-50', RefX - 50, RefY + 548, Black);
-                    Screen('DrawText', Window, ...
-                        '-100', RefX - 69, RefY + 731, Black);
-                    % end feedback background
+                    Screen('DrawTexture', Window, FeedbackTexture);
     
                     % draw feedback line
                     Screen('DrawLines', Window, ...
