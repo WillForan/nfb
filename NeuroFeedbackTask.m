@@ -37,12 +37,12 @@ function NeuroFeedbackTask()
         end
 
         while ~any(Version == [1 2 3 4])
-            Version = input('Colors? (1, 2, 3, 4): ');
+            Version = input('Version? (1, 2, 3, 4): ');
         end
     else
         Responses = inputdlg({'Scan (1:Yes, 0:No):', ...
             'Participant ID:', 'Start run: 1 - 2:', 'End run: 1 - 2:', ...
-            'Colors: 1 - 4:'});
+            'Version: 1 - 4:'});
         InScan = str2num(Responses{1});
         Participant = Responses{2};
         StartRun = str2num(Responses{3});
@@ -82,14 +82,6 @@ function NeuroFeedbackTask()
     end
     clear Tmp i k
 
-    % assign colors
-    InfColors =  {
-        {[1 0 0], [0 0 0]}, {[0 0 0], [0 1 0]}, {[0 0 1], [0 0 0]}, {[0 0 0], [1 1 0]}
-        {[1 0 0], [0 0 0]}, {[0 0 0], [0 1 0]}, {[1 1 0], [0 0 0]}, {[0 0 0], [0 0 1]}
-        {[0 1 0], [0 0 0]}, {[0 0 0], [1 0 0]}, {[0 0 1], [0 0 0]}, {[0 0 0], [1 1 0]}
-        {[0 1 0], [0 0 0]}, {[0 0 0], [1 0 0]}, {[1 1 0], [0 0 0]}, {[0 0 0], [0 0 1]}
-    };
-    
     % assign constants
     RUN = 1;
     TRIALNUM = 2;
@@ -117,9 +109,9 @@ function NeuroFeedbackTask()
         if Design{i, INFUSION} == 'A'
             Design{i, INFUSIONNUM} = 1;
         elseif Design{i, INFUSION} == 'B'
-            Design{i, INFUSIONNUM} = 3;
-        elseif Design{i, INFUSION} == 'C'
             Design{i, INFUSIONNUM} = 2;
+        elseif Design{i, INFUSION} == 'C'
+            Design{i, INFUSIONNUM} = 3;
         elseif Design{i, INFUSION} == 'D'
             Design{i, INFUSIONNUM} = 4;
         else
@@ -128,7 +120,7 @@ function NeuroFeedbackTask()
     end
     
     PsychDefaultSetup(2); % default settings
-    Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
+    % Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
     if Suppress
@@ -162,6 +154,19 @@ function NeuroFeedbackTask()
     end
     clear i
     KbQueueCreate(DeviceIndex, KeysOfInterest);
+
+    % assign version colors
+    if Version == 1
+        InfColors = {[1 0 0], [0 0 1], [0 1 0], [1 1 0]};
+    elseif Version == 2
+        InfColors = {[1 0 0], [1 1 0], [0 1 0], [0 0 1]};
+    elseif Version == 3
+        InfColors = {[0 1 0], [0 0 1], [1 0 0], [1 1 0]}; 
+    elseif Version == 4
+        InfColors = {[0 1 0], [1 1 0], [1 0 0], [0 0 1]};
+    else
+        error('Invalid Version: %d', Version);
+    end
     
     %%% INFUSION SETUP %%%
     InfGreyRect = [0 0 430 690];
@@ -177,23 +182,56 @@ function NeuroFeedbackTask()
     OrigInfFillRectCentered = InfFillRectCentered;
     InfFillRefreshes = 3 * round(1 / Refresh);
     InfFillInc = 560 / (InfFillRefreshes - 1);
+
+    Screen('TextSize', Window, 35);
+    Screen('TextStyle', Window, 0);
+    for i = 1:4
+        InfusionTextures(i) = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
+        if i > 2
+            Screen('FillRect', InfusionTextures(i), ...
+                [InfColors{i}; 0.5 0.5 0.5; 0 0 0]', ...
+                [Rect' InfGreyRectCenter' InfBlackRectCenter']);
+        else
+            Screen('FillRect', InfusionTextures(i), ...
+                [0.5 0.5 0.5; 0 0 0]', ...
+                [InfGreyRectCenter' InfBlackRectCenter']);
+        end
+        Screen('DrawText', InfusionTextures(i), ...
+            '100', InfRefX - 58, InfRefY - 10, Black);
+        Screen('DrawText', InfusionTextures(i), ...
+            '50', InfRefX - 40, YCenter, Black);
+        Screen('DrawText', InfusionTextures(i), ...
+            '0', InfRefX - 21, InfRefY + 547, Black); 
+    end
+    clear i
     
-    %%% TEXT (WillImp/Improved:Instrumental) SETUP %%%
-    % get "WillImp\nInfusion?" size
+    %%% WILLIMPROVE SETUP %%%
+    WillImproveTexture = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
+
+    % "WillImp\nInfusion?"
     OldSize = Screen('TextSize', Window, 100);
+    Screen('TextSize', WillImproveTexture, 100);
     WillImpText = 'Will\nImprove?';
     [~, ~, WillImpRect] = DrawFormattedText(Window, ...
         WillImpText, 'center', 'center', White);
     WillImpRect = CenterRectOnPointd(WillImpRect, XCenter, YCenter - 139);
+    DrawFormattedText(WillImproveTexture, WillImpText, 'center', 'center', ...
+        White, [], [], [], [], [], WillImpRect);
     
     % get "YES" and "NO" size
     Screen('TextStyle', Window, 1);
+    Screen('TextStyle', WillImproveTexture, 1);
     [~, ~, YesRect] = DrawFormattedText(Window, ...
         'YES', 'center', 'center', White);
     YesRect = CenterRectOnPointd(YesRect, XCenter - 200, YCenter);
+    DrawFormattedText(WillImproveTexture, 'YES', 'center', 'center', ...
+        White, [], [], [], [], [], YesRect);
+
     [~, ~, NoRect] = DrawFormattedText(Window, ...
         'NO', 'center', 'center', White);
     NoRect = CenterRectOnPointd(NoRect, XCenter + 200, YCenter);
+    DrawFormattedText(WillImproveTexture, 'NO', 'center', 'center', ...
+        White, [], [], [], [], [], NoRect);
     
     % get "Improved?" size
     Screen('TextStyle', Window, 0);
@@ -209,7 +247,7 @@ function NeuroFeedbackTask()
     % Feedback rect location; this is used as position reference for most
     % other drawn objects
     BgRect = zeros(Rect(4), Rect(3));
-    FeedbackTexture = Screen('MakeTexture', Window, BgRect);
+    FeedbackTexture = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
 
     FeedbackRect = [0 0 920 750];
     FeedbackXCenter = 52 + XCenter;
@@ -365,61 +403,31 @@ function NeuroFeedbackTask()
         for k = 1:size(RunDesign, 1)
         
             %%% INFUSION RUNNING CODE %%%
-            Screen('TextSize', Window, 35);
-            Screen('TextStyle', Window, 0);
-            Screen('FillRect', Window, ...
-                [InfColors{Version, RunDesign{k, INFUSIONNUM}}{2}; ...
-                    0.5 0.5 0.5; ...
-                    0 0 0; ...
-                    InfColors{Version, RunDesign{k, INFUSIONNUM}}{1}]', ...
-                [Rect' ...
-                    InfGreyRectCenter' ...
-                    InfBlackRectCenter' ...
-                    InfFillRectCentered']);
-            Screen('DrawText', Window, ...
-                '100', InfRefX - 58, InfRefY - 10, Black);
-            Screen('DrawText', Window, ...
-                '50', InfRefX - 40, YCenter, Black);
-            Screen('DrawText', Window, ...
-                '0', InfRefX - 21, InfRefY + 547, Black); 
-            InfVbl = Screen('Flip', Window, Until);
+            Screen('DrawTexture', Window, InfusionTextures(RunDesign{k, INFUSIONNUM}));
+            vbl = Screen('Flip', Window, Until, 1);
             if k == 1
-                BeginTime = InfVbl;
+                BeginTime = vbl;
             end
-            RunDesign{k, INFONSET} = InfVbl - BeginTime;
+            RunDesign{k, INFONSET} = vbl - BeginTime;
     
             if any(strcmp(RunDesign{k, INFUSION}, {'A', 'B'}))
                 for iInc = 2:InfFillRefreshes
                     InfFillRectCentered(2) = InfFillRectCentered(2) - InfFillInc;
                     Screen('FillRect', Window, ...
-                        [0.5 0.5 0.5; 0 0 0; ...
-                            InfColors{Version, RunDesign{k, INFUSIONNUM}}{1}]', ...
-                        [InfGreyRectCenter' InfBlackRectCenter' InfFillRectCentered']);
-                    Screen('DrawText', Window, ...
-                        '100', InfRefX - 58, InfRefY - 10, Black);
-                    Screen('DrawText', Window, ...
-                        '50', InfRefX - 40, YCenter, Black);
-                    Screen('DrawText', Window, ...
-                        '0', InfRefX - 21, InfRefY + 540, Black); 
-                    Screen('Flip', Window, (1 - 0.5) * Refresh);
+                        [InfColors{RunDesign{k, INFUSIONNUM}}]', ...
+                        [InfFillRectCentered]');
+                    vbl = Screen('Flip', Window, vbl + (1 - 0.5) * Refresh, 1);
                 end
                 InfFillRectCentered = OrigInfFillRectCentered;
             end
             clear iInc
     
             %%% WILLIMPROVE RUNNING CODE %%%
-            Screen('TextSize', Window, 100);
-            DrawFormattedText(Window, WillImpText, 'center', 'center', ...
-                White, [], [], [], [], [], WillImpRect);
-            Screen('TextStyle', Window, 1);
-            DrawFormattedText(Window, 'YES', 'center', 'center', ...
-                White, [], [], [], [], [], YesRect);
-            DrawFormattedText(Window, 'NO', 'center', 'center', ...
-                White, [], [], [], [], [], NoRect);
-            if strcmp(RunDesign{k, INFUSION}, 'Yes')
-                ContVbl = Screen('Flip', Window, (1 - 0.5) * Refresh);
+            Screen('DrawTexture', Window, WillImproveTexture);
+            if any(strcmp(RunDesign{k, INFUSION}, {'A', 'B'}))
+                ContVbl = Screen('Flip', Window, vbl + (1 - 0.5) * Refresh);
             else
-                ContVbl = Screen('Flip', Window, InfVbl + 3 - 0.5 * Refresh);
+                ContVbl = Screen('Flip', Window, vbl + 3 - 0.5 * Refresh);
             end
             KbQueueStart(DeviceIndex);
             RunDesign{k, WILLIMPROVEONSET} = ContVbl - BeginTime;
@@ -446,12 +454,6 @@ function NeuroFeedbackTask()
             RunDesign{k, J1ONSET} = vbl - BeginTime;
             
             %%% FEEDBACK RUNNING CODE %%%
-            
-            % set Window text values to be safe
-            Screen('TextSize', Window, 35);
-            Screen('TextFont', Window, 'Arial');
-            Screen('TextStyle', Window, 0);
-            
             if strcmp(RunDesign{k, FEEDBACK}, 'Signal')
                 Waveforms = LineSignals(RunDesign{k, WAVEFORM}, :);
             else
@@ -471,6 +473,7 @@ function NeuroFeedbackTask()
                         [repmat(4, length(Begin:iEnd)/2, 1); 1], ...
                         [repmat([1 0 0]', 1, iEnd-Begin+1) [1 1 1; 1 1 1]']);
                     Screen('DrawingFinished', Window);
+
                     if Begin == 1
                         if iSig == 1
                             Until = vbl + RunDesign{k, JITTER1DUR} - 0.5 * Refresh;
@@ -492,16 +495,15 @@ function NeuroFeedbackTask()
                         % but will need duration if I plan to show signal every nth frame
                         % with n > 1, so might as well keep it for now
                         vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5) * Refresh);
-                        % vbl = Screen('Flip', Window);
                     end
                     Begin = Begin + 2 * Scale;
                 end
             end
-
             clear iSig iEnd
     
             %%% IMPROVED %%%
             Screen('TextSize', Window, 100);
+            Screen('TextStyle', Window, 0);
             DrawFormattedText(Window, ImprovedText, 'center', 'center', ...
                 White, [], [], [], [], [], ImprovedRect);
             Screen('TextStyle', Window, 1);
@@ -515,7 +517,7 @@ function NeuroFeedbackTask()
         
             %%% JITTER2 %%%
             Screen('FillRect', Window, Black);
-            vbl = Screen('Flip', Window, ImpVbl + 2);
+            vbl = Screen('Flip', Window, ImpVbl + 2 - 0.5 * Refresh);
             KbQueueStop(DeviceIndex);
             [DidRespond, TimeKeysPressed] = KbQueueCheck(DeviceIndex);
             if DidRespond
@@ -619,39 +621,12 @@ function NeuroFeedbackTask()
     
     % close everything
     KbQueueRelease(DeviceIndex);
+    Screen('Close', WillImproveTexture);
+    Screen('Close', FeedbackTexture);
+    for i = 1:4
+        Screen('Close', InfusionTextures(i));
+    end
+    Screen('Close', Window);
     sca;
     Priority(0);
-    
-    
-    % we will be working in 1024 x 768 resolution
-    % orignal FeedbackBoxResolution:
-    %   LeftLocation = round(0.232 * 600) = 139
-    %   BottomLocation = round(0.135 * 600) = 81
-    %   RightLocation = round(0.752 * 600) + 139 = 590
-    %   TopLocation = round(0.752 * 600) + 81 = 532
-    %   LtoRPixels = 451
-    %   BtoTPixels = 451
-    %   LOffsetFromMid = 139 - 300 = -161
-    %   BOffsetFromMid = 81 - 300 = -219
-    %   OriginalSpeed = 451/4 = 112 pixels/second
-    %   56% of screen^2
-    
-    % *** NEW FEEDBACK RESOLUTION = 750 x 750
-    %   LeftLocation = 
-    
-    % original BarResolution
-    %   LeftLocation = round(0.1 * 600) = 60
-    %   BottomLocation = round(0.135 * 600) = 81
-    %   RightLocation = round(0.032 * 600) + 60 = 79
-    %   TopLocation = round(0.752 * 600) + 81 = 532
-    %   LtoRPixels = 19
-    %   BtoTPixels = 451
-    
-    % original resolution was set at 800 x 600
-    % original figure resolution was set at 600 x 600
-    % assume resolution is 1024 x 768; let's start off with this
-    % matlab position = [left bottom width height]
-    % PTB position = [leftbegin bottombegin rightend topend]
-    
-    % CenterRectOnPointd
 end
