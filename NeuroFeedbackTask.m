@@ -10,7 +10,6 @@ function NeuroFeedbackTask()
         EndRun = -1;
         Testing = -1;
         Suppress = -1;
-        Version = -1;
     
         % Turns on PTB debugging
         while ~any(InScan == [1 0])
@@ -36,18 +35,13 @@ function NeuroFeedbackTask()
             Suppress = input('Suppress? (1: Yes, 0:No): ');
         end
 
-        while ~any(Version == [1 2 3 4])
-            Version = input('Version? (1, 2, 3, 4): ');
-        end
     else
         Responses = inputdlg({'Scan (1:Yes, 0:No):', ...
-            'Participant ID:', 'Start run: 1 - 2:', 'End run: 1 - 2:', ...
-            'Version: 1 - 4:'});
+            'Participant ID:', 'Start run: 1 - 2:', 'End run: 1 - 2:'});
         InScan = str2num(Responses{1});
         Participant = Responses{2};
         StartRun = str2num(Responses{3});
         EndRun = str2num(Responses{4});
-        Version = str2num(Responses{5});
         Testing = 0;
         Suppress = 1;
     end
@@ -136,13 +130,19 @@ function NeuroFeedbackTask()
     White = WhiteIndex(ScreenNumber);
     Black = BlackIndex(ScreenNumber);
     Grey = White * 0.5;
+    BgColor = [44 58 55] * 1/255;
+    UnfilledColor = [38 41 26] * 1/255;
+    BoxColor = [21 32 17] * 1/255;
+    FilledColor = [41 249 64] * 1/255;
     
     % we want X = Left-Right, Y = top-bottom
-    [Window, Rect] = PsychImaging('OpenWindow', ScreenNumber, Grey);
+    [Window, Rect] = PsychImaging('OpenWindow', ScreenNumber, BgColor);
     PriorityLevel = MaxPriority(Window);
     Priority(PriorityLevel);
     [XCenter, YCenter] = RectCenter(Rect);
     Refresh = Screen('GetFlipInterval', Window);
+    ScanRect = [0 0 1024 768];
+    [ScanCenter(1), ScanCenter(2)] = RectCenter(ScanRect);
     
     % blend
     Screen('BlendFunction', Window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
@@ -157,58 +157,107 @@ function NeuroFeedbackTask()
     clear i
     KbQueueCreate(DeviceIndex, KeysOfInterest);
 
-    % assign version colors
-    if Version == 1
-        InfColors = {[1 0 0], [0 0 1], [0 1 0], [1 1 0]};
-    elseif Version == 2
-        InfColors = {[1 0 0], [1 1 0], [0 1 0], [0 0 1]};
-    elseif Version == 3
-        InfColors = {[0 1 0], [0 0 1], [1 0 0], [1 1 0]}; 
-    elseif Version == 4
-        InfColors = {[0 1 0], [1 1 0], [1 0 0], [0 0 1]};
-    else
-        error('Invalid Version: %d', Version);
-    end
-    
     %%% INFUSION SETUP %%%
-    InfGreyRect = [0 0 430 690];
-    InfGreyRectCenter = CenterRectOnPointd(InfGreyRect, XCenter, YCenter);
-    
-    InfBlackRect = [0 0 300 560];
-    InfBlackRectCenter = CenterRectOnPointd(InfBlackRect, XCenter, YCenter);
-    InfRefX = InfBlackRectCenter(1);
-    InfRefY = InfBlackRectCenter(2);
-    
-    InfFillRect = [0 0 300 0];
-    InfFillRectCentered = CenterRectOnPointd(InfFillRect, XCenter, InfBlackRectCenter(4));
-    OrigInfFillRectCentered = InfFillRectCentered;
-    InfFillRefreshes = 3 * round(1 / Refresh);
-    InfFillInc = 560 / (InfFillRefreshes - 1);
-
-    Screen('TextSize', Window, 35);
-    Screen('TextStyle', Window, 0);
-    for i = 1:4
-        InfusionTextures(i) = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
-        if i > 2
-            Screen('FillRect', InfusionTextures(i), ...
-                [InfColors{i}; 0.5 0.5 0.5; 0 0 0]', ...
-                [Rect' InfGreyRectCenter' InfBlackRectCenter']);
-        else
-            Screen('FillRect', InfusionTextures(i), ...
-                [0.5 0.5 0.5; 0 0 0]', ...
-                [InfGreyRectCenter' InfBlackRectCenter']);
-        end
-        Screen('DrawText', InfusionTextures(i), ...
-            '100', InfRefX - 58, InfRefY - 10, Black);
-        Screen('DrawText', InfusionTextures(i), ...
-            '50', InfRefX - 40, YCenter, Black);
-        Screen('DrawText', InfusionTextures(i), ...
-            '0', InfRefX - 21, InfRefY + 547, Black); 
+    Ovals = {
+        [535.09 67] % PROTOCOL 196KJ ellipse center
+        [535.09 180] % PROTOCOL 564D ellipse center
+        [535.09 293] % CALIBRATION C ellipse center
+        [535.09 406] % CALIBRATION D ellipse center
+    };
+    Ovals = ConvertCoordinates(ScanCenter, [XCenter YCenter], Ovals);
+    FilledOvals = Ovals;
+    for i = 1:size(Ovals, 1)
+        OvalRect{i, 1} = CenterRectOnPointd([0 0 70 70], Ovals{i}(1), Ovals{i}(2));
+        FilledOvalRect{i, 1} = CenterRectOnPointd([0 0 68 68], Ovals{i}(1), Ovals{i}(2));
     end
-    clear i
+    
+    Screen('TextSize', Window, 46);
+    Screen('TextStyle', Window, 1);
+    OvalText = {
+        'PROTOCOL 196KJ';
+        'PROTOCOL 564D';
+        'CALIBRATION C';
+        'CALIBRATION D';
+    };
+    TextLeftRef = ConvertCoordinates(ScanCenter, [XCenter YCenter], ...
+        {[45 38 407.54 56.78]});
+    for i = 1:size(OvalText, 1)
+        OvalTextRect{i, 1} = Screen('TextBounds', Window, OvalText{i});
+        OvalTextRect{i, 1} = AlignRect(OvalTextRect{i}, OvalRect{i}, 'center');
+        OvalTextRect{i, 1} = AlignRect(OvalTextRect{i}, TextLeftRef{1}, 'left');
+    end
+    
+    InterfaceLoc = {
+        [308.39 596.5] % number rectangle center [31 457 554.78 279]
+        % [707.18 714.20] % mL/h center [621 669 172.07 88.88]
+        % [309.05 586.91] % 888 background center [60 424 496.61 324.58]
+        % [362.93 586.91] % 888 filled center [167 424 388.38 324.58]
+        [913 384.5] % bar background [832.99 32 160 705]
+    };
+    InterfaceLoc = ConvertCoordinates(ScanCenter, [XCenter YCenter], ...
+        InterfaceLoc);
+    NumberRect = CenterRectOnPointd([31 457 31+554.78 457+279], InterfaceLoc{1}(1), ...
+        InterfaceLoc{1}(2));
+    ProgressBgRect = CenterRectOnPointd([832.99 32 832.99+160 32+705], InterfaceLoc{2}(1), ...
+        InterfaceLoc{2}(2));
+    
+    Screen('TextFont', Window, 'digital-7');
+    Screen('TextSize', Window, 350);
+    Screen('TextStyle', Window, 0);
+    BgNumRect = Screen('TextBounds', Window, '888');
+    BgNumRect = AlignRect(BgNumRect, NumberRect, 'center');
+    
+    Screen('TextSize', Window, 72);
+    Screen('TextFont', Window, 'Arial');
+    Screen('TextStyle', Window, 0);
+    UnitRect = Screen('TextBounds', Window, 'mL/h');
+    UnitRect = AlignRect(UnitRect, NumberRect, 'center');
+    UnitRect = AlignRect(UnitRect, ...
+        [(XCenter-(ScanCenter(1)-621)) 0 (XCenter-(ScanCenter(1)-621)) 0], ...
+        'left');
+    
+    ProgressLoc = {
+        [913 699.5] % box1 [838 667 150 65]
+        [913 629.5] % box2 [838 596.99 150 65]
+        [913 559.5] % box3 [838 527 150 64]
+        [913 489.5] % box4 [838 456.99 150 65]
+        [913 419.5] % box5 [838 387 150 65]
+        [913 349.5] % box6 [838 317 150 65]
+        [913 279.5] % box7 [838 246.99 150 65]
+        [913 209.5] % box8 [838 177 150 65]
+        [913 139.5] % box9 [838 106.99 150 65]
+        [913 69.5] % box10 [838 37 150 65]
+    };
+    ProgressLoc = ConvertCoordinates(ScanCenter, [XCenter YCenter], ...
+        ProgressLoc);
+    ProgressBox = [0 0 150 65];
+    for i = 1:size(ProgressLoc, 1)
+        ProgressRect{i, 1} = CenterRectOnPointd(ProgressBox, ProgressLoc{i}(1), ...
+            ProgressLoc{i}(2));
+    end
+    
+    % open texture
+    InfTexture = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
+    Screen('FillRect', InfTexture, BgColor);
+    
+    % draw onto texture first
+    for i = 1:size(OvalRect, 1)
+        Screen('FillOval', InfTexture, Black, OvalRect{i});
+        Screen('FrameOval', InfTexture, White, OvalRect{i}, 2);
+    end
+    
+    Screen('FillRect', InfTexture, BoxColor, NumberRect);
+    Screen('FillRect', InfTexture, BoxColor, ProgressBgRect);
+    
+    for i = 1:size(ProgressRect, 1)
+        Screen('FillRect', InfTexture, UnfilledColor, ProgressRect{i});
+    end
+
+    InfInc = 3/11;
     
     %%% WILLIMPROVE SETUP %%%
     WillImproveTexture = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
+    Screen('FillRect', WillImproveTexture, BgColor);
 
     % "WillImp\nInfusion?"
     Screen('TextSize', WillImproveTexture, 100);
@@ -242,7 +291,6 @@ function NeuroFeedbackTask()
     %%% FEEDBACK SETUP %%%
     % Feedback rect location; this is used as position reference for most
     % other drawn objects
-    BgRect = zeros(Rect(4), Rect(3));
     FeedbackTexture = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
 
     FeedbackRect = [0 0 920 750];
@@ -250,22 +298,22 @@ function NeuroFeedbackTask()
     CenteredFeedback = CenterRectOnPoint(FeedbackRect, FeedbackXCenter, YCenter);
     RefX = CenteredFeedback(1);
     RefY = CenteredFeedback(2);
-    Screen('FillRect', FeedbackTexture, [0.5 0.5 0.5; 0 0 0]', ...
+    Screen('FillRect', FeedbackTexture, [BgColor; 0 0 0]', ...
         [Rect' CenteredFeedback']);
     
     % set "Neurofeedback Signal" label location
     [NeuroTexture NeuroBox] = MakeTextTexture(Window, ...
-        'Neurofeedback Signal', Grey, [], 55);
+        'Neurofeedback Signal', BgColor, [], 55, White);
     NeuroXLoc = RefX - 69 - 5;
     NeuroLoc = CenterRectOnPoint(NeuroBox, NeuroXLoc, YCenter);
     Screen('DrawTexture', FeedbackTexture, NeuroTexture, [], NeuroLoc, -90);
     
     % draw feedback number labels
-    Screen('DrawText', FeedbackTexture, '100', RefX - 57, RefY - 6, Black);
-    Screen('DrawText', FeedbackTexture, '50', RefX - 38, RefY + 167, Black);
-    Screen('DrawText', FeedbackTexture, '0', RefX - 19, RefY + 362, Black);
-    Screen('DrawText', FeedbackTexture, '-50', RefX - 50, RefY + 548, Black);
-    Screen('DrawText', FeedbackTexture, '-100', RefX - 69, RefY + 731, Black);
+    Screen('DrawText', FeedbackTexture, '100', RefX - 57, RefY - 6, White);
+    Screen('DrawText', FeedbackTexture, '50', RefX - 38, RefY + 167, White);
+    Screen('DrawText', FeedbackTexture, '0', RefX - 19, RefY + 362, White);
+    Screen('DrawText', FeedbackTexture, '-50', RefX - 50, RefY + 548, White);
+    Screen('DrawText', FeedbackTexture, '-100', RefX - 69, RefY + 731, White);
     
     % make a frame for my testing purposes
     Frame = [0 0 1025 769];
@@ -378,7 +426,7 @@ function NeuroFeedbackTask()
         KbEventFlush;
         
         % handle file naming
-        OutName = sprintf('%s_V%d_Run_%02d_%s', Participant, Version, i, ...
+        OutName = sprintf('%s_Run_%02d_%s', Participant, i, ...
             datestr(now, 'yyyymmdd_HHMMSS'));
         OutCsv = fullfile(OutDir, [OutName '.csv']);
         OutMat = fullfile(OutDir, [OutName '.mat']);
@@ -400,29 +448,51 @@ function NeuroFeedbackTask()
         for k = 1:size(RunDesign, 1)
         
             %%% INFUSION RUNNING CODE %%%
-            Screen('DrawTexture', Window, InfusionTextures(RunDesign{k, INFUSIONNUM}));
+            Screen('DrawTexture', Window, InfTexture);
+            
+            % draw infusion text
+            Screen('TextFont', Window, 'Arial');
+            Screen('TextSize', Window, 46);
+            Screen('TextStyle', Window, 1);
+            for iText = 1:size(OvalText, 1)
+                Screen('DrawText', Window, OvalText{iText}, OvalTextRect{iText}(1), ...
+                    OvalTextRect{iText}(2), White);
+            end
+            
+            Screen('TextFont', Window, 'digital-7');
+            Screen('TextSize', Window, 350);
+            Screen('TextStyle', Window, 0);
+            Screen('DrawText', Window, '888', BgNumRect(1), BgNumRect(2), ...
+                UnfilledColor);
+            Screen('DrawText', Window, '278', BgNumRect(1), BgNumRect(2), ...  
+                FilledColor);
+            
+            Screen('TextFont', Window, 'Arial');
+            Screen('TextSize', Window, 72);
+            Screen('TextStyle', Window, 0);
+            Screen('DrawText', Window, 'mL/h', UnitRect(1), UnitRect(2), ...
+                White);
+            
+            Screen('FillOval', Window, FilledColor, ...
+                FilledOvalRect{Design{k, INFUSIONNUM}}); 
+            Screen('FrameRect', Window, White, CenteredFrame);
             vbl = Screen('Flip', Window, Until, 1);
             if k == 1
                 BeginTime = vbl;
             end
             RunDesign{k, INFONSET} = vbl - BeginTime;
-    
+
             if any(strcmp(RunDesign{k, INFUSION}, {'A', 'B'}))
-                for iInc = 2:InfFillRefreshes
-                    InfFillRectCentered(2) = InfFillRectCentered(2) - InfFillInc;
-                    Screen('FillRect', Window, ...
-                        [InfColors{RunDesign{k, INFUSIONNUM}}]', ...
-                        [InfFillRectCentered]');
-                    vbl = Screen('Flip', Window, vbl + (1 - 0.5) * Refresh, 1);
+                for iInc = 1:10
+                    Screen('FillRect', Window, FilledColor, ProgressRect{iInc});
+                    vbl = Screen('Flip', Window, vbl + (16 - 0.5) * Refresh, 1);
                 end
-                InfFillRectCentered = OrigInfFillRectCentered;
             end
-            clear iInc
     
             %%% WILLIMPROVE RUNNING CODE %%%
             Screen('DrawTexture', Window, WillImproveTexture);
             if any(strcmp(RunDesign{k, INFUSION}, {'A', 'B'}))
-                ContVbl = Screen('Flip', Window, vbl + (1 - 0.5) * Refresh);
+                ContVbl = Screen('Flip', Window, vbl + (20 - 0.5) * Refresh);
             else
                 ContVbl = Screen('Flip', Window, vbl + 3 - 0.5 * Refresh);
             end
@@ -430,7 +500,7 @@ function NeuroFeedbackTask()
             RunDesign{k, WILLIMPROVEONSET} = ContVbl - BeginTime;
         
             %%% JITTER1 %%%
-            Screen('FillRect', Window, Black);
+            % Screen('FillRect', Window, BgColor);
             vbl = Screen('Flip', Window, ContVbl + 2 - 0.5 * Refresh);
     
             KbQueueStop(DeviceIndex);
@@ -499,6 +569,7 @@ function NeuroFeedbackTask()
             clear iSig iEnd
     
             %%% IMPROVED %%%
+            Screen('FillRect', Window, BgColor);
             Screen('TextSize', Window, 100);
             Screen('TextStyle', Window, 0);
             DrawFormattedText(Window, ImprovedText, 'center', 'center', ...
@@ -513,7 +584,7 @@ function NeuroFeedbackTask()
             RunDesign{k, IMPROVEDONSET} = ImpVbl - BeginTime;
         
             %%% JITTER2 %%%
-            Screen('FillRect', Window, Black);
+            % Screen('FillRect', Window, BgColor);
             vbl = Screen('Flip', Window, ImpVbl + 2 - 0.5 * Refresh);
             KbQueueStop(DeviceIndex);
             [DidRespond, TimeKeysPressed] = KbQueueCheck(DeviceIndex);
@@ -537,7 +608,6 @@ function NeuroFeedbackTask()
         OutFid = fopen(OutCsv, 'w');
         fprintf(OutFid, ...
             ['Participant,', ...
-            'Version,', ...
             'Run,', ...
             'TrialNum,', ...
             'Infusion,', ...
@@ -560,7 +630,6 @@ function NeuroFeedbackTask()
             'ImprovedRt\n']);
         for DesignIdx = 1:size(RunDesign, 1)
             fprintf(OutFid, '%s,', Participant);
-            fprintf(OutFid, '%d,', Version);
             fprintf(OutFid, '%d,', i);
             fprintf(OutFid, '%d,', RunDesign{DesignIdx, TRIALNUM});
             fprintf(OutFid, '%s,', RunDesign{DesignIdx, INFUSION});
@@ -620,9 +689,7 @@ function NeuroFeedbackTask()
     KbQueueRelease(DeviceIndex);
     Screen('Close', WillImproveTexture);
     Screen('Close', FeedbackTexture);
-    for i = 1:4
-        Screen('Close', InfusionTextures(i));
-    end
+    Screen('Close', InfTexture);
     Screen('Close', Window);
     sca;
     Priority(0);
