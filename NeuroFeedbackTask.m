@@ -123,6 +123,8 @@ function NeuroFeedbackTask()
     % Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
+    % Screen('Preference', 'TextAntiAliasing', 2);
+    % Screen('Preference', 'TextAlphaBlending', 1);
     if Suppress
         Screen('Preference', 'SuppressAllWarnings', 1);
         Screen('Preference', 'Verbosity', 0);
@@ -209,36 +211,30 @@ function NeuroFeedbackTask()
     WillImproveTexture = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
 
     % "WillImp\nInfusion?"
-    OldSize = Screen('TextSize', Window, 100);
     Screen('TextSize', WillImproveTexture, 100);
-    WillImpText = 'Will\nImprove?';
-    [~, ~, WillImpRect] = DrawFormattedText(Window, ...
-        WillImpText, 'center', 'center', White);
-    WillImpRect = CenterRectOnPointd(WillImpRect, XCenter, YCenter - 139);
+    WillImpText = 'Will improve?';
+    WillImpRect = Screen('TextBounds', WillImproveTexture, WillImpText);
+    WillImpRect = CenterRectOnPoint(WillImpRect, XCenter, YCenter - (384 - 768/4));
     DrawFormattedText(WillImproveTexture, WillImpText, 'center', 'center', ...
         White, [], [], [], [], [], WillImpRect);
-    
+
     % get "YES" and "NO" size
-    Screen('TextStyle', Window, 1);
     Screen('TextStyle', WillImproveTexture, 1);
-    [~, ~, YesRect] = DrawFormattedText(Window, ...
-        'YES', 'center', 'center', White);
-    YesRect = CenterRectOnPointd(YesRect, XCenter - 200, YCenter);
+    YesRect = Screen('TextBounds', Window, 'YES');
+    YesRect = CenterRectOnPoint(YesRect, XCenter - (512 - 1024/4), YCenter);
     DrawFormattedText(WillImproveTexture, 'YES', 'center', 'center', ...
         White, [], [], [], [], [], YesRect);
 
-    [~, ~, NoRect] = DrawFormattedText(Window, ...
-        'NO', 'center', 'center', White);
-    NoRect = CenterRectOnPointd(NoRect, XCenter + 200, YCenter);
+    NoRect = Screen('TextBounds', Window, 'NO');
+    NoRect = CenterRectOnPoint(NoRect, XCenter - (512 - 1024*3/4), YCenter);
     DrawFormattedText(WillImproveTexture, 'NO', 'center', 'center', ...
         White, [], [], [], [], [], NoRect);
     
     % get "Improved?" size
-    Screen('TextStyle', Window, 0);
+    OldSize = Screen('TextSize', Window, 100);
     ImprovedText = 'Improved?';
-    [~, ~, ImprovedRect] = DrawFormattedText(Window, ...
-        ImprovedText, 'center', 'center', White);
-    ImprovedRect = CenterRectOnPointd(ImprovedRect, XCenter, YCenter - 95);
+    ImprovedRect = Screen('TextBounds', Window, ImprovedText);
+    ImprovedRect = CenterRectOnPoint(ImprovedRect, XCenter, YCenter - (384 - 768/4));
     
     Screen('FillRect', Window, Black);
     Screen('TextSize', Window, OldSize);
@@ -251,7 +247,7 @@ function NeuroFeedbackTask()
 
     FeedbackRect = [0 0 920 750];
     FeedbackXCenter = 52 + XCenter;
-    CenteredFeedback = CenterRectOnPointd(FeedbackRect, FeedbackXCenter, YCenter);
+    CenteredFeedback = CenterRectOnPoint(FeedbackRect, FeedbackXCenter, YCenter);
     RefX = CenteredFeedback(1);
     RefY = CenteredFeedback(2);
     Screen('FillRect', FeedbackTexture, [0.5 0.5 0.5; 0 0 0]', ...
@@ -261,7 +257,7 @@ function NeuroFeedbackTask()
     [NeuroTexture NeuroBox] = MakeTextTexture(Window, ...
         'Neurofeedback Signal', Grey, [], 55);
     NeuroXLoc = RefX - 69 - 5;
-    NeuroLoc = CenterRectOnPointd(NeuroBox, NeuroXLoc, YCenter);
+    NeuroLoc = CenterRectOnPoint(NeuroBox, NeuroXLoc, YCenter);
     Screen('DrawTexture', FeedbackTexture, NeuroTexture, [], NeuroLoc, -90);
     
     % draw feedback number labels
@@ -273,7 +269,7 @@ function NeuroFeedbackTask()
     
     % make a frame for my testing purposes
     Frame = [0 0 1025 769];
-    CenteredFrame = CenterRectOnPointd(Frame, XCenter, YCenter);
+    CenteredFrame = CenterRectOnPoint(Frame, XCenter, YCenter);
     
     % now experiment with drawing signal
     Scale = 2; % move by this many points across signals
@@ -390,7 +386,7 @@ function NeuroFeedbackTask()
         % show directions while waiting for trigger '^'
         DrawFormattedText(Window, ... 
             'These are the task directions.\n\n Waiting for ''^'' to continue.', ...
-            'center', 'center');
+            'center', 'center', White);
         Screen('Flip', Window);
         FlushEvents;
         ListenChar;
