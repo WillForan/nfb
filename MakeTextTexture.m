@@ -23,9 +23,10 @@ function [texture, bbox] = MakeTextTexture(window, text, bgColor, textFont, text
         ny = ny + 1;
     end
 
-    textureRect = ones(ny, nx) .* bgColor;
+    textureRect = ones(ny, nx);
     bbox = [0 0 nx ny];
     texture = Screen('MakeTexture', window, textureRect);
+    Screen('FillRect', texture, bgColor);
 
     if exist('textFont', 'var') && ~isempty(textFont)
         Screen('TextFont', texture, textFont);
