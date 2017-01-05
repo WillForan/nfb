@@ -39,6 +39,9 @@ try
         'digital-7';
         'Digital-7';
         'Digital-7 Mono';
+        'digital 7'
+        'Digital 7';
+        'Digtial 7 Mono';
     };
 
     for i = 1:size(fonts)
