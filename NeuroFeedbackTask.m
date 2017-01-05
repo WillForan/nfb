@@ -298,7 +298,7 @@ function NeuroFeedbackTask()
     CenteredFeedback = CenterRectOnPoint(FeedbackRect, FeedbackXCenter, YCenter);
     RefX = CenteredFeedback(1);
     RefY = CenteredFeedback(2);
-    Screen('FillRect', FeedbackTexture, [BgColor; 0 0 0]', ...
+    Screen('FillRect', FeedbackTexture, [BgColor; UnfilledColor]', ...
         [Rect' CenteredFeedback']);
     
     % set "Neurofeedback Signal" label location
@@ -500,7 +500,7 @@ function NeuroFeedbackTask()
             RunDesign{k, WILLIMPROVEONSET} = ContVbl - BeginTime;
         
             %%% JITTER1 %%%
-            % Screen('FillRect', Window, BgColor);
+            Screen('FillRect', Window, BgColor);
             vbl = Screen('Flip', Window, ContVbl + 2 - 0.5 * Refresh);
     
             KbQueueStop(DeviceIndex);
