@@ -6,6 +6,7 @@ try
     PsychDebugWindowConfiguration
     
     PsychDefaultSetup(2); % default settings
+    % Screen('Preference', 'SkipSyncTests', 1);
     Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
@@ -36,12 +37,15 @@ try
     Screen('TextSize', Window, 100);
     fonts = {
         'Arial';
-        'digital-7';
-        'Digital-7';
-        'Digital-7 Mono';
-        'digital 7'
-        'Digital 7';
-        'Digtial 7 Mono';
+        'digital-7'; % monospaced
+        'Digital-7'; % monospaced
+        'Digital-7 Mono'; % monospaced
+        'digital 7' % monospaced
+        'Digital 7'; % monospaced
+        'Digtial 7 Mono'; % monospaced
+        'LCD'; % monospaced
+        'segment14'; % monospaced
+        'digital dismay';
     };
 
     for i = 1:size(fonts)
