@@ -18,16 +18,14 @@ N = Scale*4*1/FlipSecs + Scale*10*1/FlipSecs-1;
 Index1 = 1:(5*Scale*1/FlipSecs-1);
 Index2 = (Index1(end)+1):(Index1(end)+1+5*Scale*1/FlipSecs-1);
 Index3 = (Index2(end)+1):N;
+FinalVal = 80;
 
-Inc = 85/length(Index2);
-Ramp = 0:Inc:(85-Inc);
-
-NumRuns = 2
+NumRuns = 2;
 % Baselines
 % Signals
 for iRun = 1:NumRuns
     for i = 1:15
-        Noise = 5*randn(1, N);
+        Noise = 8.5*randn(1, N);
         T1 = randi([60 180]);
         T2 = randi([120 240]);
         if mod(T2, 2)
@@ -37,18 +35,18 @@ for iRun = 1:NumRuns
         Index1 = 1:(4*Scale*1/FlipSecs + T1);
         Index2 = (Index1(end)+1):(Index1(end)+1+T2-1);
         Index3 = (Index2(end)+1):N;
-        Inc = 85/length(Index2);
-        Ramp = 0:Inc:(85-Inc);
+        Inc = FinalVal/length(Index2);
+        Ramp = 0:Inc:(FinalVal-Inc);
     
         Phase1 = 2*rand(1, 1);
         Phase2 = 2*rand(1, 1);
     
-        Mag1 = 3 + (6-3)*rand(1, 1);
+        Mag1 = 5 + (8-5)*rand(1, 1);
         Mag2 = 0.5 + (2-0.5)*rand(1, 1);
         fprintf(1, 'Mag1:%0.2f, Mag1:%0.2f\n', Mag1, Mag2);
         
         Sin1 = Mag1*sin(2*pi*(1:N)*(1/60) + Phase1*pi);
-        Sin2 = Mag2*sin(2*pi*(1:N)*(1/2) + Phase2*pi);
+        Sin2 = Mag2*sin(2*pi*(1:N)*(1/2) + Phase1*pi);
     
         if i < 9
             Baselines{iRun}{i, 1} = Noise(Index1);
@@ -59,7 +57,7 @@ for iRun = 1:NumRuns
         Signals{iRun}{i, 1} = Noise(Index1);
         Signals{iRun}{i, 2} = Noise(Index2) + Ramp + Sin1(Index2) + Sin2(Index2);
         Signals{iRun}{i, 2}(Signals{iRun}{i, 2} > 100) = 99;
-        Signals{iRun}{i, 3} = Noise(Index3) + 85 + Sin1(Index3) + Sin2(Index3);
+        Signals{iRun}{i, 3} = Noise(Index3) + FinalVal + Sin1(Index3) + Sin2(Index3);
         Signals{iRun}{i, 3}(Signals{iRun}{i, 3} > 100) = 99;
     end
 end
