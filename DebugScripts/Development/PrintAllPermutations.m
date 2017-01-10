@@ -15,7 +15,6 @@ function Perms = DoSolve(Available, InList, Perms)
         end
     else
         Perms = [Perms; InList];
-        disp(Perms);
     end
 
 end
