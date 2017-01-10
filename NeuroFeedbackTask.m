@@ -469,7 +469,7 @@ function NeuroFeedbackTask()
             % draw infusion text
             Screen('TextFont', Window, 'Arial');
             Screen('TextSize', Window, 46);
-            Screen('TextStyle', Window, 0);
+            Screen('TextStyle', Window, 1);
             for iText = 1:size(OvalText, 1)
                 Screen('DrawText', Window, OvalText{iText}, OvalTextRect{iText}(1), ...
                     OvalTextRect{iText}(2), White);
