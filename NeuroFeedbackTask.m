@@ -188,7 +188,7 @@ function NeuroFeedbackTask()
     end
     
     InterfaceLoc = {
-        [308.39 596.5] % number rectangle center [31 457 554.78 279]
+        [253.5 629] % number rectangle center [47 522 413 214]
         % [707.18 714.20] % mL/h center [621 669 172.07 88.88] font=72 pt
         % [672.11 720.46] % mL/h center [617 691 109.93 56.78] font=46 pt
         % [309.05 586.91] % 888 background center [60 424 496.61 324.58]
@@ -198,13 +198,13 @@ function NeuroFeedbackTask()
     };
     InterfaceLoc = ConvertCoordinates(ScanCenter, [XCenter YCenter], ...
         InterfaceLoc);
-    NumberRect = CenterRectOnPointd([31 457 31+554.78 457+279], InterfaceLoc{1}(1), ...
+    NumberRect = CenterRectOnPointd([47 522 47+413 522+214], InterfaceLoc{1}(1), ...
         InterfaceLoc{1}(2));
     ProgressBgRect = CenterRectOnPointd([759 31 759+234 31+705], InterfaceLoc{2}(1), ...
         InterfaceLoc{2}(2));
     
     Screen('TextFont', Window, 'digital-7');
-    Screen('TextSize', Window, 350);
+    Screen('TextSize', Window, 250);
     Screen('TextStyle', Window, 0);
     BgNumRect = Screen('TextBounds', Window, '888');
     BgNumRect = AlignRect(BgNumRect, NumberRect, 'center');
@@ -213,9 +213,9 @@ function NeuroFeedbackTask()
     Screen('TextFont', Window, 'Arial');
     Screen('TextStyle', Window, 0);
     UnitRect = Screen('TextBounds', Window, 'mL/h');
-    UnitRect = AlignRect(UnitRect, NumberRect, 'center');
+    UnitRect = AlignRect(UnitRect, NumberRect, 'bottom');
     UnitRect = AlignRect(UnitRect, ...
-        [(XCenter-(ScanCenter(1)-617)) 0 (XCenter-(ScanCenter(1)-617)) 0], ...
+        [(XCenter-(ScanCenter(1)-480)) 0 (XCenter-(ScanCenter(1)-480)) 0], ...
         'left');
     
     ProgressLoc = {
@@ -315,11 +315,13 @@ function NeuroFeedbackTask()
     Screen('DrawTexture', FeedbackTexture, NeuroTexture, [], NeuroLoc, -90);
     
     % draw feedback number labels
+    OldFont = Screen('TextFont', FeedbackTexture, 'digital-7');
     Screen('DrawText', FeedbackTexture, '100', RefX - 57, RefY - 6, White);
     Screen('DrawText', FeedbackTexture, '50', RefX - 38, RefY + 167, White);
     Screen('DrawText', FeedbackTexture, '0', RefX - 19, RefY + 362, White);
     Screen('DrawText', FeedbackTexture, '-50', RefX - 50, RefY + 548, White);
     Screen('DrawText', FeedbackTexture, '-100', RefX - 69, RefY + 731, White);
+    Screen('TextFont', FeedbackTexture, OldFont);
     
     % make a frame for my testing purposes
     Frame = [0 0 1025 769];
@@ -384,7 +386,8 @@ function NeuroFeedbackTask()
             for k = 1:size(ModSignals{iRun}, 2)
                 ModSignals{iRun}{i, k} = (ModSignals{iRun}{i, k} - YRange(1)) / ...
                     diff(YRange)*diff(NewYRange)+NewYRange(1);
-                ModSignals{iRun}{i, k} = NewYRange(2) - ModSignals{iRun}{i, k} + NewYRange(1);
+                ModSignals{iRun}{i, k} = NewYRange(2) - ...
+                    ModSignals{iRun}{i, k} + NewYRange(1);
             end
         end
         clear i k
@@ -393,7 +396,8 @@ function NeuroFeedbackTask()
             for k = 1:size(ModBaselines{iRun}, 2)
                 ModBaselines{iRun}{i, k} = (ModBaselines{iRun}{i, k} - YRange(1)) / ...
                     diff(YRange)*diff(NewYRange)+NewYRange(1);
-                ModBaselines{iRun}{i, k} = NewYRange(2) - ModBaselines{iRun}{i, k} + NewYRange(1);
+                ModBaselines{iRun}{i, k} = NewYRange(2) - ...
+                    ModBaselines{iRun}{i, k} + NewYRange(1);
             end
         end
         clear i k
@@ -470,7 +474,7 @@ function NeuroFeedbackTask()
             end
             
             Screen('TextFont', Window, 'digital-7');
-            Screen('TextSize', Window, 350);
+            Screen('TextSize', Window, 250);
             Screen('TextStyle', Window, 0);
             Screen('DrawText', Window, '888', BgNumRect(1), BgNumRect(2), ...
                 UnfilledColor);
