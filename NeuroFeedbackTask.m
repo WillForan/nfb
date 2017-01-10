@@ -309,7 +309,7 @@ function NeuroFeedbackTask()
     
     % set "Neurofeedback Signal" label location
     [NeuroTexture NeuroBox] = MakeTextTexture(Window, ...
-        'Neurofeedback Signal', BgColor, [], 55, White);
+        'Amplitude', BgColor, [], 55, White);
     NeuroXLoc = RefX - 69 - 5;
     NeuroLoc = CenterRectOnPoint(NeuroBox, NeuroXLoc, YCenter);
     Screen('DrawTexture', FeedbackTexture, NeuroTexture, [], NeuroLoc, -90);
@@ -344,77 +344,81 @@ function NeuroFeedbackTask()
     % load Signal and Baselines
     FileName = fullfile(pwd, 'DebugScripts', 'Development', 'Waveforms.mat');
     load(FileName);
-    
-    % modify signals to allow continuous plotting between them
-    ModSignals = cell(size(Signals));
-    ModBaselines = cell(size(Baselines));
-    for i = 1:size(ModSignals, 1)
-        ModSignals{i, 1} = Signals{i, 1};
-    
-        for k = 2:size(ModSignals, 2)
-            BeginSig1 = length(ModSignals{i, k - 1}) - MaxX + 1 + Scale;
-            ModSignals{i, k} = [ModSignals{i, k - 1}(BeginSig1:end) ...
-                Signals{i, k}];
-        end
-    end 
-    clear i k
-    
-    for i = 1:size(ModBaselines, 1)
-        ModBaselines{i, 1} = Baselines{i, 1};
-    
-        for k = 2:size(ModBaselines, 2)
-            BeginSig1 = length(ModBaselines{i, k - 1}) - MaxX + 1 + Scale;
-            ModBaselines{i, k} = [ModBaselines{i, k - 1}(BeginSig1:end) ...
-                Baselines{i, k}];
-        end
-    end
-    clear i k
-    
+
     % convert from old range values to new range values
     NewX = (X-XRange(1))/diff(XRange)*diff(NewXRange)+NewXRange(1);
-    
-    for i = 1:size(ModSignals, 1)
-        for k = 1:size(ModSignals, 2)
-            ModSignals{i, k} = (ModSignals{i, k} - YRange(1)) / ...
-                diff(YRange)*diff(NewYRange)+NewYRange(1);
-            ModSignals{i, k} = NewYRange(2) - ModSignals{i, k} + NewYRange(1);
-        end
-    end
-    clear i k
-    
-    for i = 1:size(ModBaselines, 1)
-        for k = 1:size(ModBaselines, 2)
-            ModBaselines{i, k} = (ModBaselines{i, k} - YRange(1)) / ...
-                diff(YRange)*diff(NewYRange)+NewYRange(1);
-            ModBaselines{i, k} = NewYRange(2) - ModBaselines{i, k} + NewYRange(1);
-        end
-    end
-    clear i k
-    
+
     % create values that appear as continuous lines when plotted
     NewX_Line = zeros(1, 2*(length(NewX)-1));
     NewX_Line(1:2:end) = NewX(1:end-1);
     NewX_Line(2:2:end) = NewX(2:end);
     
-    LineSignals = cell(size(ModSignals));
-    for i = 1:size(LineSignals, 1)
-        for k = 1:size(LineSignals, 2)
-            LineSignals{i, k} = zeros(1, 2*(length(ModSignals{i, k})-1));
-            LineSignals{i, k}(1:2:end) = ModSignals{i, k}(1:end-1);
-            LineSignals{i, k}(2:2:end) = ModSignals{i, k}(2:end);
+    % modify signals to allow continuous plotting between them
+    for iRun = 1:numel(Signals)
+        ModSignals{iRun} = cell(size(Signals{iRun}));
+        ModBaselines{iRun} = cell(size(Baselines{iRun}));
+        for i = 1:size(ModSignals{iRun}, 1)
+            ModSignals{iRun}{i, 1} = Signals{iRun}{i, 1};
+        
+            for k = 2:size(ModSignals{iRun}, 2)
+                BeginSig1 = length(ModSignals{iRun}{i, k - 1}) - MaxX + 1 + Scale;
+                ModSignals{iRun}{i, k} = [ModSignals{iRun}{i, k - 1}(BeginSig1:end) ...
+                    Signals{iRun}{i, k}];
+            end
+        end 
+        clear i k
+        
+        for i = 1:size(ModBaselines{iRun}, 1)
+            ModBaselines{iRun}{i, 1} = Baselines{iRun}{i, 1};
+        
+            for k = 2:size(ModBaselines{iRun}, 2)
+                BeginSig1 = length(ModBaselines{iRun}{i, k - 1}) - MaxX + 1 + Scale;
+                ModBaselines{iRun}{i, k} = [ModBaselines{iRun}{i, k - 1}(BeginSig1:end) ...
+                    Baselines{iRun}{i, k}];
+            end
         end
-    end
-    clear i k
-    
-    LineBaselines = cell(size(ModBaselines));
-    for i = 1:size(LineBaselines, 1)
-        for k = 1:size(LineBaselines, 2)
-            LineBaselines{i, k} = zeros(1, 2*(length(ModBaselines{i, k})-1));
-            LineBaselines{i, k}(1:2:end) = ModBaselines{i, k}(1:end-1);
-            LineBaselines{i, k}(2:2:end) = ModBaselines{i, k}(2:end);
+        clear i k
+        
+        
+        for i = 1:size(ModSignals{iRun}, 1)
+            for k = 1:size(ModSignals{iRun}, 2)
+                ModSignals{iRun}{i, k} = (ModSignals{iRun}{i, k} - YRange(1)) / ...
+                    diff(YRange)*diff(NewYRange)+NewYRange(1);
+                ModSignals{iRun}{i, k} = NewYRange(2) - ModSignals{iRun}{i, k} + NewYRange(1);
+            end
         end
+        clear i k
+        
+        for i = 1:size(ModBaselines{iRun}, 1)
+            for k = 1:size(ModBaselines{iRun}, 2)
+                ModBaselines{iRun}{i, k} = (ModBaselines{iRun}{i, k} - YRange(1)) / ...
+                    diff(YRange)*diff(NewYRange)+NewYRange(1);
+                ModBaselines{iRun}{i, k} = NewYRange(2) - ModBaselines{iRun}{i, k} + NewYRange(1);
+            end
+        end
+        clear i k
+        
+        
+        LineSignals{iRun} = cell(size(ModSignals{iRun}));
+        for i = 1:size(LineSignals{iRun}, 1)
+            for k = 1:size(LineSignals{iRun}, 2)
+                LineSignals{iRun}{i, k} = zeros(1, 2*(length(ModSignals{iRun}{i, k})-1));
+                LineSignals{iRun}{i, k}(1:2:end) = ModSignals{iRun}{i, k}(1:end-1);
+                LineSignals{iRun}{i, k}(2:2:end) = ModSignals{iRun}{i, k}(2:end);
+            end
+        end
+        clear i k
+        
+        LineBaselines{iRun} = cell(size(ModBaselines{iRun}));
+        for i = 1:size(LineBaselines{iRun}, 1)
+            for k = 1:size(LineBaselines{iRun}, 2)
+                LineBaselines{iRun}{i, k} = zeros(1, 2*(length(ModBaselines{iRun}{i, k})-1));
+                LineBaselines{iRun}{i, k}(1:2:end) = ModBaselines{iRun}{i, k}(1:end-1);
+                LineBaselines{iRun}{i, k}(2:2:end) = ModBaselines{iRun}{i, k}(2:end);
+            end
+        end
+        clear i k
     end
-    clear i k
    
     for i = StartRun:EndRun
         RunIdx = [Design{:, RUN}]' == i;
@@ -533,9 +537,9 @@ function NeuroFeedbackTask()
             
             %%% FEEDBACK RUNNING CODE %%%
             if strcmp(RunDesign{k, FEEDBACK}, 'Signal')
-                Waveforms = LineSignals(RunDesign{k, WAVEFORM}, :);
+                Waveforms = LineSignals{i}(RunDesign{k, WAVEFORM}, :);
             else
-                Waveforms = LineBaselines(RunDesign{k, WAVEFORM}, :);
+                Waveforms = LineBaselines{i}(RunDesign{k, WAVEFORM}, :);
             end
     
             for iSig = 1:numel(Waveforms)
