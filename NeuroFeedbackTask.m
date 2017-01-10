@@ -203,9 +203,9 @@ function NeuroFeedbackTask()
     ProgressBgRect = CenterRectOnPointd([759 31 759+234 31+705], InterfaceLoc{2}(1), ...
         InterfaceLoc{2}(2));
     
-    Screen('TextFont', Window, 'digital-7');
+    Screen('TextFont', Window, 'Digital-7 Mono');
     Screen('TextSize', Window, 250);
-    Screen('TextStyle', Window, 0);
+    Screen('TextStyle', Window, 1);
     BgNumRect = Screen('TextBounds', Window, '888');
     BgNumRect = AlignRect(BgNumRect, NumberRect, 'center');
     
@@ -315,13 +315,15 @@ function NeuroFeedbackTask()
     Screen('DrawTexture', FeedbackTexture, NeuroTexture, [], NeuroLoc, -90);
     
     % draw feedback number labels
-    OldFont = Screen('TextFont', FeedbackTexture, 'digital-7');
+    OldFont = Screen('TextFont', FeedbackTexture, 'Digital-7 Mono');
+    OldStyle = Screen('TextStyle', FeedbackTexture, 2);
     Screen('DrawText', FeedbackTexture, '100', RefX - 57, RefY - 6, White);
     Screen('DrawText', FeedbackTexture, '50', RefX - 38, RefY + 167, White);
     Screen('DrawText', FeedbackTexture, '0', RefX - 19, RefY + 362, White);
     Screen('DrawText', FeedbackTexture, '-50', RefX - 50, RefY + 548, White);
     Screen('DrawText', FeedbackTexture, '-100', RefX - 69, RefY + 731, White);
     Screen('TextFont', FeedbackTexture, OldFont);
+    Screen('TextStyle', FeedbackTexture, OldStyle);
     
     % make a frame for my testing purposes
     Frame = [0 0 1025 769];
@@ -467,15 +469,15 @@ function NeuroFeedbackTask()
             % draw infusion text
             Screen('TextFont', Window, 'Arial');
             Screen('TextSize', Window, 46);
-            Screen('TextStyle', Window, 1);
+            Screen('TextStyle', Window, 0);
             for iText = 1:size(OvalText, 1)
                 Screen('DrawText', Window, OvalText{iText}, OvalTextRect{iText}(1), ...
                     OvalTextRect{iText}(2), White);
             end
             
-            Screen('TextFont', Window, 'digital-7');
+            Screen('TextFont', Window, 'Digital-7 Mono');
             Screen('TextSize', Window, 250);
-            Screen('TextStyle', Window, 0);
+            Screen('TextStyle', Window, 2);
             Screen('DrawText', Window, '888', BgNumRect(1), BgNumRect(2), ...
                 UnfilledColor);
             if any(strcmp(RunDesign{k, INFUSION}, {'A', 'B'}))
