@@ -5,7 +5,7 @@ DeviceIndex = [];
 PsychDebugWindowConfiguration
 
 PsychDefaultSetup(2); % default settings
-Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
+% Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
 Screen('Preference', 'DefaultFontSize', 35);
 Screen('Preference', 'DefaultFontName', 'Arial');
 Screens = Screen('Screens'); % get scren number
@@ -64,20 +64,22 @@ ImprovedRect = CenterRectOnPointd(ImprovedRect, XCenter, YCenter - 95);
 Screen('FillRect', Window, Black);
 Text = {
 % 'SampleText', FontSize, FontType, FontStyle, 
-'Will\nImprove?', 100, 'Arial', 0, WillImpRect;
-'YES', 100, 'Arial', 1, YesRect;
-'NO', 100, 'Arial', 1, NoRect;
-'Improved?', 100, 'Arial', 0, ImprovedRect;
-% '100', 35, 'Arial', 0, [1512 430 1569 454];
-% '50', 35, 'Arial', 0, [1530 707 1568 731];
-% '0', 35, 'Arial', 0, [1549 986 1568 1010];
+% 'Will\nImprove?', 100, 'Arial', 0, WillImpRect;
+% 'YES', 100, 'Arial', 1, YesRect;
+% 'NO', 100, 'Arial', 1, NoRect;
+% 'Improved?', 100, 'Arial', 0, ImprovedRect;
+'100', 35, 'Arial', 0, [1512 430 1569 454];
+'50', 35, 'Arial', 0, [1530 707 1568 731];
+'0', 35, 'Arial', 0, [1549 986 1568 1010];
+'Protocol IZTP10081', 50, 'Arial', 1, [];
+'Protocol AA481DG', 50, 'Arial', 1, [];
 };
 
 % Initialize all text positions to center
 Selected = 1;
-% Screen('FillRect', Window, ...
-%     [0.5 0.5 0.5; 0 0 0]', ...
-%     [InfGreyRectCenter' InfBlackRectCenter']);
+Screen('FillRect', Window, ...
+    [0.5 0.5 0.5; 0 0 0]', ...
+    [InfGreyRectCenter' InfBlackRectCenter']);
 for i = 1:size(Text, 1)
     Screen('TextSize', Window, Text{i, 2});
     Screen('TextFont', Window, Text{i, 3});
@@ -152,9 +154,9 @@ while 1
         
         % redraw everything
         Screen('FillRect', Window, Black);
-        % Screen('FillRect', Window, ...
-        %     [0.5 0.5 0.5; 0 0 0]', ...
-        %     [InfGreyRectCenter' InfBlackRectCenter']);
+        Screen('FillRect', Window, ...
+            [0.5 0.5 0.5; 0 0 0]', ...
+            [InfGreyRectCenter' InfBlackRectCenter']);
         for iNum = 1:size(Text, 1)
             Screen('TextSize', Window, Text{iNum, 2});
             Screen('TextFont', Window, Text{iNum, 3});
