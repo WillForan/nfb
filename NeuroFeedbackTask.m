@@ -454,6 +454,7 @@ function NeuroFeedbackTask()
     
         Until = 0;
         for k = 1:size(RunDesign, 1)
+            TrialColor = Colors{RunDesign{k, INFUSIONNUM}};
         
             %%% INFUSION RUNNING CODE %%%
             Screen('DrawTexture', Window, InfTexture);
@@ -473,7 +474,7 @@ function NeuroFeedbackTask()
             Screen('DrawText', Window, '888', BgNumRect(1), BgNumRect(2), ...
                 UnfilledColor);
             Screen('DrawText', Window, '000', BgNumRect(1), BgNumRect(2), ...  
-                Colors{Design{k, INFUSIONNUM}});
+                TrialColor);
             
             Screen('TextFont', Window, 'Arial');
             Screen('TextSize', Window, 60);
@@ -481,7 +482,7 @@ function NeuroFeedbackTask()
             Screen('DrawText', Window, 'mL', UnitRect(1), UnitRect(2), ...
                 White);
             
-            Screen('FillOval', Window, Colors{Design{k, INFUSIONNUM}}, ...
+            Screen('FillOval', Window, TrialColor, ...
                 FilledOvalRect{Design{k, INFUSIONNUM}}); 
             vbl = Screen('Flip', Window, Until, 1);
             if k == 1
@@ -511,7 +512,7 @@ function NeuroFeedbackTask()
                     Screen('DrawText', Window, '888', BgNumRect(1), BgNumRect(2), ...
                         UnfilledColor);
                     Screen('DrawText', Window, Volume{iInc}, BgNumRect(1), BgNumRect(2), ...  
-                        Colors{Design{k, INFUSIONNUM}});
+                        TrialColor);
                    
                     % draw volume units 
                     Screen('TextFont', Window, 'Arial');
@@ -521,13 +522,12 @@ function NeuroFeedbackTask()
                         White);
                    
                     % fill condition oval 
-                    Screen('FillOval', Window, Colors{Design{k, INFUSIONNUM}}, ...
+                    Screen('FillOval', Window, TrialColor, ...
                         FilledOvalRect{Design{k, INFUSIONNUM}}); 
 
                     % fill rectangle
                     for BoxFill = 1:iInc
-                        Screen('FillRect', Window, Colors{Design{k, INFUSIONNUM}}, ...
-                            ProgressRect{BoxFill});
+                        Screen('FillRect', Window, TrialColor, ProgressRect{BoxFill});
                     end
                     vbl = Screen('Flip', Window, vbl + (45 - 0.5) * Refresh, 1);
                 end
@@ -582,7 +582,7 @@ function NeuroFeedbackTask()
                         [NewX_Line NewXRange(1) NewXRange(2); ...
                         Waveforms{iSig}(Begin:iEnd) sum(NewYRange)/2 sum(NewYRange)/2], ...
                         [repmat(4, length(Begin:iEnd)/2, 1); 1], ...
-                        [repmat([1 0 0]', 1, iEnd-Begin+1) [1 1 1; 1 1 1]']);
+                        [repmat(TrialColor', 1, iEnd-Begin+1) [1 1 1; 1 1 1]']);
                     Screen('DrawingFinished', Window);
 
                     if Begin == 1
