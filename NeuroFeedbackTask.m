@@ -586,11 +586,10 @@ function NeuroFeedbackTask()
 
                     if Begin == 1
                         if iSig == 1
-                            Until = vbl + RunDesign{k, JITTER1DUR} - 0.5 * Refresh;
+                            Until = vbl + (RunDesign{k, JITTER1DUR} - 0.5) * Refresh;
                         else
                             Until = vbl + (WaitFrames - 0.5) * Refresh;
                         end
-    
                         vbl = Screen('Flip', Window, Until);
     
                         if iSig == 1
@@ -643,7 +642,7 @@ function NeuroFeedbackTask()
             fprintf(1, 'ImprovedResponse: %s\n\n', RunDesign{k, IMPROVEDRESP});
 
             RunDesign{k, J2ONSET} = vbl - BeginTime;
-            Until = vbl + RunDesign{k, JITTER2DUR} - 0.5 * Refresh;
+            Until = vbl + (RunDesign{k, JITTER2DUR} - 0.5) * Refresh;
         end
         WaitSecs('UntilTime', Until);
         % now write out run design
@@ -679,8 +678,8 @@ function NeuroFeedbackTask()
             fprintf(OutFid, '%d,', RunDesign{DesignIdx, INFUSIONNUM});
             fprintf(OutFid, '%s,', RunDesign{DesignIdx, FEEDBACK});
             fprintf(OutFid, '%d,', RunDesign{DesignIdx, WAVEFORM});
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, JITTER1DUR});
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, JITTER2DUR});
+            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, JITTER1DUR} * Refresh);
+            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, JITTER2DUR} * Refresh);
             fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, INFONSET});
             fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, WILLIMPROVEONSET});
             fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, J1ONSET}); 
