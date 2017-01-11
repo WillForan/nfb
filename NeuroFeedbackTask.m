@@ -216,7 +216,7 @@ function NeuroFeedbackTask()
     Screen('TextSize', Window, 60);
     Screen('TextFont', Window, 'Arial');
     Screen('TextStyle', Window, 0);
-    UnitRect = Screen('TextBounds', Window, 'mL');
+    UnitRect = Screen('TextBounds', Window, 'µL');
     UnitRect = AlignRect(UnitRect, NumberRect, 'bottom');
     UnitRect = AlignRect(UnitRect, ...
         [(XCenter-(ScanCenter(1)-517)) 0 (XCenter-(ScanCenter(1)-517)) 0], ...
@@ -479,7 +479,7 @@ function NeuroFeedbackTask()
             Screen('TextFont', Window, 'Arial');
             Screen('TextSize', Window, 60);
             Screen('TextStyle', Window, 0);
-            Screen('DrawText', Window, 'mL', UnitRect(1), UnitRect(2), ...
+            Screen('DrawText', Window, 'µL', UnitRect(1), UnitRect(2), ...
                 White);
             
             Screen('FillOval', Window, TrialColor, ...
@@ -518,7 +518,7 @@ function NeuroFeedbackTask()
                     Screen('TextFont', Window, 'Arial');
                     Screen('TextSize', Window, 60);
                     Screen('TextStyle', Window, 0);
-                    Screen('DrawText', Window, 'mL', UnitRect(1), UnitRect(2), ...
+                    Screen('DrawText', Window, 'µL', UnitRect(1), UnitRect(2), ...
                         White);
                    
                     % fill condition oval 
