@@ -308,17 +308,18 @@ function NeuroFeedbackTask()
     % draw feedback number labels
     OldFont = Screen('TextFont', FeedbackTexture, 'Digital-7 Mono');
     OldStyle = Screen('TextStyle', FeedbackTexture, 2);
-    Screen('DrawText', FeedbackTexture, '100', RefX - 57, RefY - 6, White);
-    Screen('DrawText', FeedbackTexture, '50', RefX - 38, RefY + 167, White);
-    Screen('DrawText', FeedbackTexture, '0', RefX - 19, RefY + 362, White);
-    Screen('DrawText', FeedbackTexture, '-50', RefX - 50, RefY + 548, White);
-    Screen('DrawText', FeedbackTexture, '-100', RefX - 69, RefY + 731, White);
+    Screen('DrawText', FeedbackTexture, '100', RefX - 52, RefY - 1, White);
+    Screen('DrawText', FeedbackTexture, '50', RefX - 35, RefY + 176, White);
+    Screen('DrawText', FeedbackTexture, '0', RefX - 18, RefY + 364, White);
+    Screen('DrawText', FeedbackTexture, '-50', RefX - 52, RefY + 550, White);
+    Screen('DrawText', FeedbackTexture, '-100', RefX - 69, RefY + 727, White);
     Screen('TextFont', FeedbackTexture, OldFont);
     Screen('TextStyle', FeedbackTexture, OldStyle);
     
     % make a frame for my testing purposes
     Frame = [0 0 1025 769];
     CenteredFrame = CenterRectOnPoint(Frame, XCenter, YCenter);
+    Screen('FrameRect', FeedbackTexture, White, CenteredFrame);
     
     % now experiment with drawing signal
     Scale = 2; % move by this many points across signals
