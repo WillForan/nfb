@@ -195,7 +195,7 @@ function NeuroFeedbackTask()
     
     InterfaceLoc = {
         [289.5 629] % number rectangle center [83 522 413 214]
-        % [571.11 719.46] % mL/h center [516 690 109.93 56.78]
+        % [561.62 721.09] % mL center [517 683 88.96 74.07] 60 font
         % [289 622.37] % 888 background center [111 506 354.72 231.84]
         % [328.42 622.37] % 888 filled center [189 506 277.41 231.84]
         [823 383.5] % bar background [705 31 236 705]
@@ -213,13 +213,13 @@ function NeuroFeedbackTask()
     BgNumRect = Screen('TextBounds', Window, '888');
     BgNumRect = AlignRect(BgNumRect, NumberRect, 'center');
     
-    Screen('TextSize', Window, 46);
+    Screen('TextSize', Window, 60);
     Screen('TextFont', Window, 'Arial');
     Screen('TextStyle', Window, 0);
-    UnitRect = Screen('TextBounds', Window, 'mL/h');
+    UnitRect = Screen('TextBounds', Window, 'mL');
     UnitRect = AlignRect(UnitRect, NumberRect, 'bottom');
     UnitRect = AlignRect(UnitRect, ...
-        [(XCenter-(ScanCenter(1)-516)) 0 (XCenter-(ScanCenter(1)-516)) 0], ...
+        [(XCenter-(ScanCenter(1)-517)) 0 (XCenter-(ScanCenter(1)-517)) 0], ...
         'left');
     
     ProgressLoc = {
@@ -471,23 +471,17 @@ function NeuroFeedbackTask()
             Screen('TextStyle', Window, 2);
             Screen('DrawText', Window, '888', BgNumRect(1), BgNumRect(2), ...
                 UnfilledColor);
-            if any(strcmp(RunDesign{k, INFUSION}, {'A', 'B'}))
-                Screen('DrawText', Window, '150', BgNumRect(1), BgNumRect(2), ...  
-                    FilledColor);
-            else
-                Screen('DrawText', Window, '  0', BgNumRect(1), BgNumRect(2), ...  
-                    FilledColor);
-            end
+            Screen('DrawText', Window, '  0', BgNumRect(1), BgNumRect(2), ...  
+                FilledColor);
             
             Screen('TextFont', Window, 'Arial');
-            Screen('TextSize', Window, 46);
+            Screen('TextSize', Window, 60);
             Screen('TextStyle', Window, 0);
-            Screen('DrawText', Window, 'mL/h', UnitRect(1), UnitRect(2), ...
+            Screen('DrawText', Window, 'mL', UnitRect(1), UnitRect(2), ...
                 White);
             
             Screen('FillOval', Window, ButtonColors{Design{k, INFUSIONNUM}}, ...
                 FilledOvalRect{Design{k, INFUSIONNUM}}); 
-            Screen('FrameRect', Window, White, CenteredFrame);
             vbl = Screen('Flip', Window, Until, 1);
             if k == 1
                 BeginTime = vbl;
@@ -495,8 +489,44 @@ function NeuroFeedbackTask()
             RunDesign{k, INFONSET} = vbl - BeginTime;
 
             if any(strcmp(RunDesign{k, INFUSION}, {'A', 'B'}))
+                Volume = {' 33', ' 66', '100'};
                 for iInc = 1:size(ProgressRect, 1)
-                    Screen('FillRect', Window, FilledColor, ProgressRect{iInc});
+                    %%% INFUSION RUNNING CODE %%%
+                    Screen('DrawTexture', Window, InfTexture);
+                    
+                    % draw infusion text
+                    Screen('TextFont', Window, 'Arial');
+                    Screen('TextSize', Window, 46);
+                    Screen('TextStyle', Window, 1);
+                    for iText = 1:size(OvalText, 1)
+                        Screen('DrawText', Window, OvalText{iText}, ...
+                            OvalTextRect{iText}(1), OvalTextRect{iText}(2), White);
+                    end
+                   
+                    % draw numbers 
+                    Screen('TextFont', Window, 'Digital-7 Mono');
+                    Screen('TextSize', Window, 250);
+                    Screen('TextStyle', Window, 2);
+                    Screen('DrawText', Window, '888', BgNumRect(1), BgNumRect(2), ...
+                        UnfilledColor);
+                    Screen('DrawText', Window, Volume{iInc}, BgNumRect(1), BgNumRect(2), ...  
+                        FilledColor);
+                   
+                    % draw volume units 
+                    Screen('TextFont', Window, 'Arial');
+                    Screen('TextSize', Window, 60);
+                    Screen('TextStyle', Window, 0);
+                    Screen('DrawText', Window, 'mL', UnitRect(1), UnitRect(2), ...
+                        White);
+                   
+                    % fill condition oval 
+                    Screen('FillOval', Window, ButtonColors{Design{k, INFUSIONNUM}}, ...
+                        FilledOvalRect{Design{k, INFUSIONNUM}}); 
+
+                    % fill rectangle
+                    for BoxFill = 1:iInc
+                        Screen('FillRect', Window, FilledColor, ProgressRect{BoxFill});
+                    end
                     vbl = Screen('Flip', Window, vbl + (45 - 0.5) * Refresh, 1);
                 end
             end
@@ -648,8 +678,8 @@ function NeuroFeedbackTask()
             fprintf(OutFid, '%d,', RunDesign{DesignIdx, INFUSIONNUM});
             fprintf(OutFid, '%s,', RunDesign{DesignIdx, FEEDBACK});
             fprintf(OutFid, '%d,', RunDesign{DesignIdx, WAVEFORM});
-            fprintf(OutFid, '%0.1f,', RunDesign{DesignIdx, JITTER1DUR});
-            fprintf(OutFid, '%0.1f,', RunDesign{DesignIdx, JITTER2DUR});
+            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, JITTER1DUR});
+            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, JITTER2DUR});
             fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, INFONSET});
             fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, WILLIMPROVEONSET});
             fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, J1ONSET}); 
