@@ -112,6 +112,12 @@ function NeuroFeedbackTask()
             error('Unknown infusion: %s, row: %d', Design{i, INFUSION}, i);
         end
     end
+    ButtonColors = {
+        [1 0 0];
+        [0 0 1];
+        [0 1 0];
+        [1 1 0];
+    };
     
     PsychDefaultSetup(2); % default settings
     % Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
@@ -159,10 +165,10 @@ function NeuroFeedbackTask()
 
     %%% INFUSION SETUP %%%
     Ovals = {
-        [535.09 67] % PROTOCOL 196KJ ellipse center
-        [535.09 180] % PROTOCOL 564D ellipse center
-        [535.09 293] % CALIBRATION C ellipse center
-        [535.09 406] % CALIBRATION D ellipse center
+        [571.09 67] % PROTOCOL 196KJ ellipse center
+        [571.09 180] % PROTOCOL 564D ellipse center
+        [571.09 293] % CALIBRATION C ellipse center
+        [571.09 406] % CALIBRATION D ellipse center
     };
     Ovals = ConvertCoordinates(ScanCenter, [XCenter YCenter], Ovals);
     FilledOvals = Ovals;
@@ -180,7 +186,7 @@ function NeuroFeedbackTask()
         'CALIBRATION D';
     };
     TextLeftRef = ConvertCoordinates(ScanCenter, [XCenter YCenter], ...
-        {[45 38 407.54 56.78]});
+        {[81 43 407.54 56.78]});
     for i = 1:size(OvalText, 1)
         OvalTextRect{i, 1} = Screen('TextBounds', Window, OvalText{i});
         OvalTextRect{i, 1} = AlignRect(OvalTextRect{i}, OvalRect{i}, 'center');
@@ -188,19 +194,17 @@ function NeuroFeedbackTask()
     end
     
     InterfaceLoc = {
-        [253.5 629] % number rectangle center [47 522 413 214]
-        % [707.18 714.20] % mL/h center [621 669 172.07 88.88] font=72 pt
-        % [672.11 720.46] % mL/h center [617 691 109.93 56.78] font=46 pt
-        % [309.05 586.91] % 888 background center [60 424 496.61 324.58]
-        % [362.93 586.91] % 888 filled center [167 424 388.38 324.58]
-        % [913 384.5] % bar background [832.99 32 160 705]
-        [876 383.5] % bar background [759 31 234 705]
+        [289.5 629] % number rectangle center [83 522 413 214]
+        % [571.11 719.46] % mL/h center [516 690 109.93 56.78]
+        % [289 622.37] % 888 background center [111 506 354.72 231.84]
+        % [328.42 622.37] % 888 filled center [189 506 277.41 231.84]
+        [823 383.5] % bar background [705 31 236 705]
     };
     InterfaceLoc = ConvertCoordinates(ScanCenter, [XCenter YCenter], ...
         InterfaceLoc);
-    NumberRect = CenterRectOnPointd([47 522 47+413 522+214], InterfaceLoc{1}(1), ...
+    NumberRect = CenterRectOnPointd([83 522 83+413 522+214], InterfaceLoc{1}(1), ...
         InterfaceLoc{1}(2));
-    ProgressBgRect = CenterRectOnPointd([759 31 759+234 31+705], InterfaceLoc{2}(1), ...
+    ProgressBgRect = CenterRectOnPointd([705 31 705+236 31+705], InterfaceLoc{2}(1), ...
         InterfaceLoc{2}(2));
     
     Screen('TextFont', Window, 'Digital-7 Mono');
@@ -215,28 +219,17 @@ function NeuroFeedbackTask()
     UnitRect = Screen('TextBounds', Window, 'mL/h');
     UnitRect = AlignRect(UnitRect, NumberRect, 'bottom');
     UnitRect = AlignRect(UnitRect, ...
-        [(XCenter-(ScanCenter(1)-480)) 0 (XCenter-(ScanCenter(1)-480)) 0], ...
+        [(XCenter-(ScanCenter(1)-516)) 0 (XCenter-(ScanCenter(1)-516)) 0], ...
         'left');
     
     ProgressLoc = {
-        [876 646] % box1 [763.99 561 224 170] 
-        [876 471] % box2 [763.99 386 224 170]
-        [876 296] % box3 [763.99 211 224 170]
-        [876 121] % box4 [763.99 36 224 170]
-        % [913 699.5] % box1 [838 667 150 65]
-        % [913 629.5] % box2 [838 596.99 150 65]
-        % [913 559.5] % box3 [838 527 150 64]
-        % [913 489.5] % box4 [838 456.99 150 65]
-        % [913 419.5] % box5 [838 387 150 65]
-        % [913 349.5] % box6 [838 317 150 65]
-        % [913 279.5] % box7 [838 246.99 150 65]
-        % [913 209.5] % box8 [838 177 150 65]
-        % [913 139.5] % box9 [838 106.99 150 65]
-        % [913 69.5] % box10 [838 37 150 65]
+        [823 616.5] % box1 [763.99 386 224 170]
+        [823 383.5] % box2 [763.99 561 224 170] 
+        [823 150.5] % box3 [763.99 211 224 170]
     };
     ProgressLoc = ConvertCoordinates(ScanCenter, [XCenter YCenter], ...
         ProgressLoc);
-    ProgressBox = [0 0 224 170];
+    ProgressBox = [0 0 224 227];
     for i = 1:size(ProgressLoc, 1)
         ProgressRect{i, 1} = CenterRectOnPointd(ProgressBox, ProgressLoc{i}(1), ...
             ProgressLoc{i}(2));
@@ -259,8 +252,6 @@ function NeuroFeedbackTask()
         Screen('FillRect', InfTexture, UnfilledColor, ProgressRect{i});
     end
 
-    InfInc = 3/11;
-    
     %%% WILLIMPROVE SETUP %%%
     WillImproveTexture = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
     Screen('FillRect', WillImproveTexture, BgColor);
@@ -494,7 +485,7 @@ function NeuroFeedbackTask()
             Screen('DrawText', Window, 'mL/h', UnitRect(1), UnitRect(2), ...
                 White);
             
-            Screen('FillOval', Window, FilledColor, ...
+            Screen('FillOval', Window, ButtonColors{Design{k, INFUSIONNUM}}, ...
                 FilledOvalRect{Design{k, INFUSIONNUM}}); 
             Screen('FrameRect', Window, White, CenteredFrame);
             vbl = Screen('Flip', Window, Until, 1);
@@ -506,14 +497,14 @@ function NeuroFeedbackTask()
             if any(strcmp(RunDesign{k, INFUSION}, {'A', 'B'}))
                 for iInc = 1:size(ProgressRect, 1)
                     Screen('FillRect', Window, FilledColor, ProgressRect{iInc});
-                    vbl = Screen('Flip', Window, vbl + (36 - 0.5) * Refresh, 1);
+                    vbl = Screen('Flip', Window, vbl + (45 - 0.5) * Refresh, 1);
                 end
             end
     
             %%% WILLIMPROVE RUNNING CODE %%%
             Screen('DrawTexture', Window, WillImproveTexture);
             if any(strcmp(RunDesign{k, INFUSION}, {'A', 'B'}))
-                ContVbl = Screen('Flip', Window, vbl + (36 - 0.5) * Refresh);
+                ContVbl = Screen('Flip', Window, vbl + (45 - 0.5) * Refresh);
             else
                 ContVbl = Screen('Flip', Window, vbl + 3 - 0.5 * Refresh);
             end
@@ -559,7 +550,7 @@ function NeuroFeedbackTask()
                         [NewX_Line NewXRange(1) NewXRange(2); ...
                         Waveforms{iSig}(Begin:iEnd) sum(NewYRange)/2 sum(NewYRange)/2], ...
                         [repmat(4, length(Begin:iEnd)/2, 1); 1], ...
-                        [repmat(FilledColor', 1, iEnd-Begin+1) [1 1 1; 1 1 1]']);
+                        [repmat([1 0 0]', 1, iEnd-Begin+1) [1 1 1; 1 1 1]']);
                     Screen('DrawingFinished', Window);
 
                     if Begin == 1
