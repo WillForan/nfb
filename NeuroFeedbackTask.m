@@ -112,7 +112,7 @@ function NeuroFeedbackTask()
             error('Unknown infusion: %s, row: %d', Design{i, INFUSION}, i);
         end
     end
-    ButtonColors = {
+    Colors = {
         [1 0 0];
         [0 0 1];
         [0 1 0];
@@ -300,7 +300,7 @@ function NeuroFeedbackTask()
     
     % set "Neurofeedback Signal" label location
     [NeuroTexture NeuroBox] = MakeTextTexture(Window, ...
-        'Amplitude', BgColor, [], 55, White);
+        'Amplitude', BgColor, 'Digital-7 Mono', 55, White);
     NeuroXLoc = RefX - 69 - 5;
     NeuroLoc = CenterRectOnPoint(NeuroBox, NeuroXLoc, YCenter);
     Screen('DrawTexture', FeedbackTexture, NeuroTexture, [], NeuroLoc, -90);
@@ -472,8 +472,8 @@ function NeuroFeedbackTask()
             Screen('TextStyle', Window, 2);
             Screen('DrawText', Window, '888', BgNumRect(1), BgNumRect(2), ...
                 UnfilledColor);
-            Screen('DrawText', Window, '  0', BgNumRect(1), BgNumRect(2), ...  
-                FilledColor);
+            Screen('DrawText', Window, '000', BgNumRect(1), BgNumRect(2), ...  
+                Colors{Design{k, INFUSIONNUM}});
             
             Screen('TextFont', Window, 'Arial');
             Screen('TextSize', Window, 60);
@@ -481,7 +481,7 @@ function NeuroFeedbackTask()
             Screen('DrawText', Window, 'mL', UnitRect(1), UnitRect(2), ...
                 White);
             
-            Screen('FillOval', Window, ButtonColors{Design{k, INFUSIONNUM}}, ...
+            Screen('FillOval', Window, Colors{Design{k, INFUSIONNUM}}, ...
                 FilledOvalRect{Design{k, INFUSIONNUM}}); 
             vbl = Screen('Flip', Window, Until, 1);
             if k == 1
@@ -490,7 +490,7 @@ function NeuroFeedbackTask()
             RunDesign{k, INFONSET} = vbl - BeginTime;
 
             if any(strcmp(RunDesign{k, INFUSION}, {'A', 'B'}))
-                Volume = {' 33', ' 66', '100'};
+                Volume = {'033', '066', '100'};
                 for iInc = 1:size(ProgressRect, 1)
                     %%% INFUSION RUNNING CODE %%%
                     Screen('DrawTexture', Window, InfTexture);
@@ -511,7 +511,7 @@ function NeuroFeedbackTask()
                     Screen('DrawText', Window, '888', BgNumRect(1), BgNumRect(2), ...
                         UnfilledColor);
                     Screen('DrawText', Window, Volume{iInc}, BgNumRect(1), BgNumRect(2), ...  
-                        FilledColor);
+                        Colors{Design{k, INFUSIONNUM}});
                    
                     % draw volume units 
                     Screen('TextFont', Window, 'Arial');
@@ -521,12 +521,13 @@ function NeuroFeedbackTask()
                         White);
                    
                     % fill condition oval 
-                    Screen('FillOval', Window, ButtonColors{Design{k, INFUSIONNUM}}, ...
+                    Screen('FillOval', Window, Colors{Design{k, INFUSIONNUM}}, ...
                         FilledOvalRect{Design{k, INFUSIONNUM}}); 
 
                     % fill rectangle
                     for BoxFill = 1:iInc
-                        Screen('FillRect', Window, FilledColor, ProgressRect{BoxFill});
+                        Screen('FillRect', Window, Colors{Design{k, INFUSIONNUM}}, ...
+                            ProgressRect{BoxFill});
                     end
                     vbl = Screen('Flip', Window, vbl + (45 - 0.5) * Refresh, 1);
                 end
