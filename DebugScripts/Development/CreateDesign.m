@@ -30,7 +30,7 @@ for i = 1:NumRuns
     RunTrials = RunTrials(:);
 
     % make random jitter1 and 2
-    Jitter = randi([60 240], NumTrials, 2) * 1/60;
+    Jitter = randi([60 239], NumTrials, 2);
 
     % assign waveforms
     Waveforms = zeros(NumTrials, 1);
