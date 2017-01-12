@@ -228,10 +228,10 @@ function NeuroFeedbackTask()
     Screen('FillRect', InfTexture, BoxColor, ProgressBgRect);
 
     % draw unfilled text, set up for filled text    
-    Screen('TextFont', InfTexture, 'Digital-7 Mono');
-    Screen('TextSize', InfTexture, 250);
-    Screen('TextStyle', InfTexture, 2);
-    BgNumRect = Screen('TextBounds', InfTexture, '888');
+    Screen('TextFont', Window, 'Digital-7 Mono');
+    Screen('TextSize', Window, 250);
+    Screen('TextStyle', Window, 2);
+    BgNumRect = Screen('TextBounds', Window, '888');
     BgNumRect = AlignRect(BgNumRect, NumberRect, 'center');
    
     % draw volume text 
@@ -460,6 +460,9 @@ function NeuroFeedbackTask()
         OutMat = fullfile(OutDir, [OutName '.mat']);
     
         % show directions while waiting for trigger '^'
+        Screen('TextFont', Window, 'Arial');
+        Screen('TextSize', Window, 35);
+        Screen('TextStyle', Window, 0);
         DrawFormattedText(Window, ... 
             'These are the task directions.\n\n Waiting for ''^'' to continue.', ...
             'center', 'center', White);
