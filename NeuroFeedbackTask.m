@@ -527,9 +527,8 @@ function NeuroFeedbackTask()
                         FilledOvalRect{Design{k, INFUSIONNUM}}); 
 
                     % fill rectangle
-                    for BoxFill = 1:iInc
-                        Screen('FillRect', Window, TrialColor, ProgressRect{BoxFill});
-                    end
+                    Screen('FillRect', Window, TrialColor, ...
+                        cell2mat(ProgressRect(1:iInc, 1))');
                     vbl = Screen('Flip', Window, vbl + (45 - 0.5) * Refresh, 1);
                 end
             end
