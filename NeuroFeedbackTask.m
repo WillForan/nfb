@@ -10,6 +10,7 @@ function NeuroFeedbackTask()
         EndRun = -1;
         Testing = -1;
         Suppress = -1;
+        Version = -1;
     
         % Turns on PTB debugging
         while ~any(InScan == [1 0])
@@ -35,9 +36,14 @@ function NeuroFeedbackTask()
             Suppress = input('Suppress? (1: Yes, 0:No): ');
         end
 
+        while ~any(Version == [1 2 3 4])
+            Version = input('Version? (1, 2, 3, 4): ');
+        end
+
     else
         Responses = inputdlg({'Scan (1:Yes, 0:No):', ...
-            'Participant ID:', 'Start run: 1 - 2:', 'End run: 1 - 2:'});
+            'Participant ID:', 'Start run: 1 - 2:', 'End run: 1 - 2:', ...
+            'Version: (1, 2, 3, 4)'});
         InScan = str2num(Responses{1});
         Participant = Responses{2};
         StartRun = str2num(Responses{3});
@@ -112,12 +118,39 @@ function NeuroFeedbackTask()
             error('Unknown infusion: %s, row: %d', Design{i, INFUSION}, i);
         end
     end
-    Colors = {
-        [1 0 0];
-        [7/255 255 255];
-        [0 1 0];
-        [1 1 0];
-    };
+
+    if Version == 1
+        Colors = {
+            [1 0 0];
+            [7/255 255 255];
+            [0 1 0];
+            [1 1 0];
+        };
+    elseif Version == 2
+        Colors = {
+            [7/255 255 255];
+            [1 0 0];
+            [1 1 0];
+            [0 1 0];
+        };
+    elseif Version == 3
+        Colors = {
+            [0 1 0];
+            [1 1 0];
+            [1 0 0];
+            [7/255 255 255];
+        };
+    elseif Version == 4
+        Colors = {
+            [1 1 0];
+            [0 1 0];
+            [7/255 255 255];
+            [1 0 0];
+        };
+    else
+        sca;
+        error('Unknown error version: %d\n', Version);
+    end
     VolText = sprintf('%sL', char(181));
     
     PsychDefaultSetup(2); % default settings
