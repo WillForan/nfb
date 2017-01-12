@@ -1,5 +1,5 @@
 Run,TrialNum,Infusion,Feedback,Waveform,Jitter1Dur,Jitter2Dur
-1,1,A,Signal,1,1.5,1.5
-1,2,B,Signal,2,1.5,1.5
-1,3,C,Signal,3,1.5,1.5
-1,4,D,Signal,4,1.5,1.5
+1,1,A,Signal,1,90,90
+1,2,B,Signal,2,90,90
+1,3,C,Signal,3,90,90
+1,4,D,Signal,4,90,90
