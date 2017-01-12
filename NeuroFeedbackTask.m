@@ -165,6 +165,10 @@ function NeuroFeedbackTask()
     KbQueueCreate(DeviceIndex, KeysOfInterest);
 
     %%% INFUSION SETUP %%%
+    InfTexture = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
+    Screen('FillRect', InfTexture, BgColor);
+
+    % draw ovals and oval frames
     Ovals = {
         [571.09 67] % PROTOCOL 196KJ ellipse center
         [571.09 180] % PROTOCOL 564D ellipse center
@@ -177,23 +181,35 @@ function NeuroFeedbackTask()
         OvalRect{i, 1} = CenterRectOnPointd([0 0 70 70], Ovals{i}(1), Ovals{i}(2));
         FilledOvalRect{i, 1} = CenterRectOnPointd([0 0 68 68], Ovals{i}(1), Ovals{i}(2));
     end
-    
-    Screen('TextSize', Window, 46);
-    Screen('TextStyle', Window, 1);
+    Screen('FillOval', InfTexture, UnfilledColor, cell2mat(OvalRect)');
+    Screen('FrameOval', InfTexture, White, cell2mat(OvalRect)', 2);
+    % for i = 1:size(OvalRect, 1)
+    %     Screen('FillOval', InfTexture, Black, OvalRect{i});
+    %     Screen('FrameOval', InfTexture, White, OvalRect{i}, 2);
+    % end
+   
+    % draw oval texts 
+    Screen('TextSize', InfTexture, 46);
+    Screen('TextStyle', InfTexture, 1);
     OvalText = {
         'PROTOCOL 196KJ';
         'PROTOCOL 564D';
-        'CALIBRATION C';
+        'CALIBRATION KJ';
         'CALIBRATION D';
     };
     TextLeftRef = ConvertCoordinates(ScanCenter, [XCenter YCenter], ...
         {[81 43 407.54 56.78]});
     for i = 1:size(OvalText, 1)
-        OvalTextRect{i, 1} = Screen('TextBounds', Window, OvalText{i});
+        OvalTextRect{i, 1} = Screen('TextBounds', InfTexture, OvalText{i});
         OvalTextRect{i, 1} = AlignRect(OvalTextRect{i}, OvalRect{i}, 'center');
         OvalTextRect{i, 1} = AlignRect(OvalTextRect{i}, TextLeftRef{1}, 'left');
     end
-    
+    for iText = 1:size(OvalText, 1)
+        Screen('DrawText', InfTexture, OvalText{iText}, OvalTextRect{iText}(1), ...
+            OvalTextRect{iText}(2), White);
+    end
+   
+    % draw bg rectangles 
     InterfaceLoc = {
         [289.5 629] % number rectangle center [83 522 413 214]
         % [561.62 721.09] % mL center [517 683 88.96 74.07] 60 font
@@ -207,22 +223,30 @@ function NeuroFeedbackTask()
         InterfaceLoc{1}(2));
     ProgressBgRect = CenterRectOnPointd([705 31 705+236 31+705], InterfaceLoc{2}(1), ...
         InterfaceLoc{2}(2));
-    
-    Screen('TextFont', Window, 'Digital-7 Mono');
-    Screen('TextSize', Window, 250);
-    Screen('TextStyle', Window, 1);
-    BgNumRect = Screen('TextBounds', Window, '888');
+
+    Screen('FillRect', InfTexture, BoxColor, NumberRect);
+    Screen('FillRect', InfTexture, BoxColor, ProgressBgRect);
+
+    % draw unfilled text, set up for filled text    
+    Screen('TextFont', InfTexture, 'Digital-7 Mono');
+    Screen('TextSize', InfTexture, 250);
+    Screen('TextStyle', InfTexture, 2);
+    BgNumRect = Screen('TextBounds', InfTexture, '888');
     BgNumRect = AlignRect(BgNumRect, NumberRect, 'center');
-    
-    Screen('TextSize', Window, 60);
-    Screen('TextFont', Window, 'Arial');
-    Screen('TextStyle', Window, 0);
-    UnitRect = Screen('TextBounds', Window, VolText);
+   
+    % draw volume text 
+    Screen('TextSize', InfTexture, 60);
+    Screen('TextFont', InfTexture, 'Arial');
+    Screen('TextStyle', InfTexture, 0);
+    UnitRect = Screen('TextBounds', InfTexture, VolText);
     UnitRect = AlignRect(UnitRect, NumberRect, 'bottom');
     UnitRect = AlignRect(UnitRect, ...
         [(XCenter-(ScanCenter(1)-517)) 0 (XCenter-(ScanCenter(1)-517)) 0], ...
         'left');
-    
+    Screen('DrawText', InfTexture, VolText, UnitRect(1), UnitRect(2), ...
+        White);
+
+    % draw progression bars    
     ProgressLoc = {
         [823 616.5] % box1 [763.99 386 224 170]
         [823 383.5] % box2 [763.99 561 224 170] 
@@ -235,24 +259,8 @@ function NeuroFeedbackTask()
         ProgressRect{i, 1} = CenterRectOnPointd(ProgressBox, ProgressLoc{i}(1), ...
             ProgressLoc{i}(2));
     end
+    Screen('FillRect', InfTexture, UnfilledColor, cell2mat(ProgressRect)');
     
-    % open texture
-    InfTexture = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
-    Screen('FillRect', InfTexture, BgColor);
-    
-    % draw onto texture first
-    for i = 1:size(OvalRect, 1)
-        Screen('FillOval', InfTexture, Black, OvalRect{i});
-        Screen('FrameOval', InfTexture, White, OvalRect{i}, 2);
-    end
-    
-    Screen('FillRect', InfTexture, BoxColor, NumberRect);
-    Screen('FillRect', InfTexture, BoxColor, ProgressBgRect);
-    
-    for i = 1:size(ProgressRect, 1)
-        Screen('FillRect', InfTexture, UnfilledColor, ProgressRect{i});
-    end
-
     %%% WILLIMPROVE SETUP %%%
     WillImproveTexture = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
     Screen('FillRect', WillImproveTexture, BgColor);
@@ -472,14 +480,6 @@ function NeuroFeedbackTask()
             Screen('DrawTexture', Window, InfTexture);
             
             % draw infusion text
-            Screen('TextFont', Window, 'Arial');
-            Screen('TextSize', Window, 46);
-            Screen('TextStyle', Window, 1);
-            for iText = 1:size(OvalText, 1)
-                Screen('DrawText', Window, OvalText{iText}, OvalTextRect{iText}(1), ...
-                    OvalTextRect{iText}(2), White);
-            end
-            
             Screen('TextFont', Window, 'Digital-7 Mono');
             Screen('TextSize', Window, 250);
             Screen('TextStyle', Window, 2);
@@ -487,12 +487,6 @@ function NeuroFeedbackTask()
                 UnfilledColor);
             Screen('DrawText', Window, '000', BgNumRect(1), BgNumRect(2), ...  
                 TrialColor);
-            
-            Screen('TextFont', Window, 'Arial');
-            Screen('TextSize', Window, 60);
-            Screen('TextStyle', Window, 0);
-            Screen('DrawText', Window, VolText, UnitRect(1), UnitRect(2), ...
-                White);
             
             Screen('FillOval', Window, TrialColor, ...
                 FilledOvalRect{Design{k, INFUSIONNUM}}); 
@@ -508,15 +502,6 @@ function NeuroFeedbackTask()
                     %%% INFUSION RUNNING CODE %%%
                     Screen('DrawTexture', Window, InfTexture);
                     
-                    % draw infusion text
-                    Screen('TextFont', Window, 'Arial');
-                    Screen('TextSize', Window, 46);
-                    Screen('TextStyle', Window, 1);
-                    for iText = 1:size(OvalText, 1)
-                        Screen('DrawText', Window, OvalText{iText}, ...
-                            OvalTextRect{iText}(1), OvalTextRect{iText}(2), White);
-                    end
-                   
                     % draw numbers 
                     Screen('TextFont', Window, 'Digital-7 Mono');
                     Screen('TextSize', Window, 250);
@@ -525,13 +510,6 @@ function NeuroFeedbackTask()
                         UnfilledColor);
                     Screen('DrawText', Window, Volume{iInc}, BgNumRect(1), BgNumRect(2), ...  
                         TrialColor);
-                   
-                    % draw volume units 
-                    Screen('TextFont', Window, 'Arial');
-                    Screen('TextSize', Window, 60);
-                    Screen('TextStyle', Window, 0);
-                    Screen('DrawText', Window, VolText, UnitRect(1), UnitRect(2), ...
-                        White);
                    
                     % fill condition oval 
                     Screen('FillOval', Window, TrialColor, ...
@@ -726,7 +704,9 @@ function NeuroFeedbackTask()
     end
     
     Screen('TextSize', Window, 35);
-    DrawFormattedText(Window, 'Goodbye!', 'center', 'center');
+    Screen('TextFont', Window, 'Arial');
+    Screen('TextStyle', Window, 0);
+    DrawFormattedText(Window, 'Goodbye!', 'center', 'center', White);
     Screen('Flip', Window);
     WaitSecs(3);
     
