@@ -277,15 +277,6 @@ function NeuroFeedbackTask()
     DrawFormattedText(WillImproveTexture, 'NO', 'center', 'center', ...
         White, [], [], [], [], [], NoRect);
     
-    % get "Improved?" size
-    OldSize = Screen('TextSize', Window, 100);
-    ImprovedText = 'Improved?';
-    ImprovedRect = Screen('TextBounds', Window, ImprovedText);
-    ImprovedRect = CenterRectOnPoint(ImprovedRect, XCenter, YCenter - (384 - 768/4));
-    
-    Screen('FillRect', Window, Black);
-    Screen('TextSize', Window, OldSize);
-    
     %%% FEEDBACK SETUP %%%
     % Feedback rect location; this is used as position reference for most
     % other drawn objects
@@ -299,7 +290,7 @@ function NeuroFeedbackTask()
     Screen('FillRect', FeedbackTexture, [BgColor; UnfilledColor]', ...
         [Rect' CenteredFeedback']);
     
-    % set "Neurofeedback Signal" label location
+    % set "Amplitude" label location
     [NeuroTexture NeuroBox] = MakeTextTexture(Window, ...
         'Amplitude', BgColor, 'Digital-7 Mono', 55, White);
     NeuroXLoc = RefX - 69 - 5;
@@ -316,13 +307,31 @@ function NeuroFeedbackTask()
     Screen('DrawText', FeedbackTexture, '-100', RefX - 69, RefY + 727, White);
     Screen('TextFont', FeedbackTexture, OldFont);
     Screen('TextStyle', FeedbackTexture, OldStyle);
+
+    %%% IMPROVED SETUP %%%
+    ImprovedTexture = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
+    Screen('FillRect', ImprovedTexture, BgColor);
+    Screen('TextSize', ImprovedTexture, 100);
+    Screen('TextStyle', ImprovedTexture, 0);
+    ImprovedText = 'Improved?';
+    ImprovedRect = Screen('TextBounds', ImprovedTexture, ImprovedText);
+    ImprovedRect = CenterRectOnPoint(ImprovedRect, XCenter, YCenter - (384 - 768/4));
+    DrawFormattedText(ImprovedTexture, ImprovedText, 'center', 'center', ...
+        White, [], [], [], [], [], ImprovedRect);
+    % use same yes and now from "Will Improve?" section
+    Screen('TextStyle', ImprovedTexture, 1);
+    DrawFormattedText(ImprovedTexture, 'YES', 'center', 'center', ...
+        White, [], [], [], [], [], YesRect);
+    DrawFormattedText(ImprovedTexture, 'NO', 'center', 'center', ...
+        White, [], [], [], [], [], NoRect);
+
+    % "Improved?"
+    OldSize = Screen('TextSize', Window, 100);
+
+    Screen('FillRect', Window, Black);
+    Screen('TextSize', Window, OldSize);
     
-    % make a frame for my testing purposes
-    Frame = [0 0 1025 769];
-    CenteredFrame = CenterRectOnPoint(Frame, XCenter, YCenter);
-    Screen('FrameRect', FeedbackTexture, White, CenteredFrame);
-    
-    % now experiment with drawing signal
+    %%% SIGNAL SETUP %%%
     Scale = 2; % move by this many points across signals
     FlipSecs = 2/60; % time to display signal
     WaitFrames = round(FlipSecs / Refresh); % display signal every this frame
@@ -354,6 +363,8 @@ function NeuroFeedbackTask()
     for iRun = 1:numel(Signals)
         ModSignals{iRun} = cell(size(Signals{iRun}));
         ModBaselines{iRun} = cell(size(Baselines{iRun}));
+        
+        % add end of previous signal to next for continuous plotting between sections
         for i = 1:size(ModSignals{iRun}, 1)
             ModSignals{iRun}{i, 1} = Signals{iRun}{i, 1};
         
@@ -376,7 +387,7 @@ function NeuroFeedbackTask()
         end
         clear i k
         
-        
+        % convert to new range  
         for i = 1:size(ModSignals{iRun}, 1)
             for k = 1:size(ModSignals{iRun}, 2)
                 ModSignals{iRun}{i, k} = (ModSignals{iRun}{i, k} - YRange(1)) / ...
@@ -397,7 +408,7 @@ function NeuroFeedbackTask()
         end
         clear i k
         
-        
+        % convert to 'DrawLines' compatible  
         LineSignals{iRun} = cell(size(ModSignals{iRun}));
         for i = 1:size(LineSignals{iRun}, 1)
             for k = 1:size(LineSignals{iRun}, 2)
@@ -612,16 +623,7 @@ function NeuroFeedbackTask()
             clear iSig iEnd
     
             %%% IMPROVED %%%
-            Screen('FillRect', Window, BgColor);
-            Screen('TextSize', Window, 100);
-            Screen('TextStyle', Window, 0);
-            DrawFormattedText(Window, ImprovedText, 'center', 'center', ...
-                White, [], [], [], [], [], ImprovedRect);
-            Screen('TextStyle', Window, 1);
-            DrawFormattedText(Window, 'YES', 'center', 'center', ...
-                White, [], [], [], [], [], YesRect);
-            DrawFormattedText(Window, 'NO', 'center', 'center', ...
-                White, [], [], [], [], [], NoRect);
+            Screen('DrawTexture', Window, ImprovedTexture);
             ImpVbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5) * Refresh);
             KbQueueStart(DeviceIndex);
             RunDesign{k, IMPROVEDONSET} = ImpVbl - BeginTime;
