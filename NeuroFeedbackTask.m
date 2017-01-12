@@ -521,16 +521,16 @@ function NeuroFeedbackTask()
                     % fill rectangle
                     Screen('FillRect', Window, TrialColor, ...
                         cell2mat(ProgressRect(1:iInc, 1))');
-                    vbl = Screen('Flip', Window, vbl + (45 - 0.5) * Refresh, 1);
+                    vbl = Screen('Flip', Window, vbl + (60 - 0.5) * Refresh, 1);
                 end
             end
     
             %%% WILLIMPROVE RUNNING CODE %%%
             Screen('DrawTexture', Window, WillImproveTexture);
             if any(strcmp(RunDesign{k, INFUSION}, {'A', 'B'}))
-                ContVbl = Screen('Flip', Window, vbl + (45 - 0.5) * Refresh);
+                ContVbl = Screen('Flip', Window, vbl + (60 - 0.5) * Refresh);
             else
-                ContVbl = Screen('Flip', Window, vbl + 3 - 0.5 * Refresh);
+                ContVbl = Screen('Flip', Window, vbl + 4 - 0.5 * Refresh);
             end
             KbQueueStart(DeviceIndex);
             RunDesign{k, WILLIMPROVEONSET} = ContVbl - BeginTime;
