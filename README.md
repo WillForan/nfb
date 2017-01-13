@@ -39,7 +39,7 @@
           * 2 = No
       * 0 - 2 seconds random jitter
       
-** Design Options **
+**Design Options **
 * some options are only available on *nix operating systems
 * on windows options are displayed in a ui window
 * InScan
