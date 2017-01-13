@@ -36,21 +36,24 @@ try
 
     Screen('TextSize', Window, 100);
     fonts = {
-        'Arial';
-        'digital-7'; % monospaced
-        'Digital-7'; % monospaced
-        'Digital-7 Mono'; % monospaced
-        'digital 7' % monospaced
-        'Digital 7'; % monospaced
-        'Digtial 7 Mono'; % monospaced
-        'LCD'; % monospaced
-        'segment14'; % monospaced
-        'digital dismay';
+        'Arial', 0;
+        'digital-7', 0; % monospaced
+        'Digital-7', 0; % monospaced
+        'Digital-7 Mono', 0; % monospaced
+        'digital 7', 0; % monospaced
+        'Digital 7', 0; % monospaced
+        'Digital 7 Mono', 0; % monospaced
+        'Digital-7 Mono Italic', 0;
+        'Digital-7 Mono', 2;
+        'LCD', 0; % monospaced
+        'segment14', 0; % monospaced
+        'digital dismay', 0;
     };
 
     for i = 1:size(fonts)
-        str = sprintf('Screen %d\n%s\n%s', i, fonts{i}, TestStr);
-        Screen('TextFont', Window, fonts{i});
+        str = sprintf('Screen %d\n%s\n%s\n%d', i, fonts{i, 1}, TestStr, fonts{i, 2});
+        Screen('TextFont', Window, fonts{i, 1});
+        Screen('TextStyle', Window, fonts{i, 2})
         DrawFormattedText(Window, str, 'center', 'center', FilledColor);
         Screen('Flip', Window);
         KbStrokeWait;
