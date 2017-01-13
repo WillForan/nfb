@@ -85,3 +85,4 @@
 * DebugScripts/Development/CreateDesign.m - matlab script to create Design.csv file
 * DebugScripts/Development/CreateWaveforms.m - matlab script to create feedback signals
 * DedubScripts/Development/Waveforms.mat - mat file saving the feedback signals
+* Responses - participant response files are saved in this directory
