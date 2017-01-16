@@ -507,7 +507,7 @@ function NeuroFeedbackTask()
             %%% INFUSION RUNNING CODE %%%
             Screen('DrawTexture', Window, InfTexture);
             
-            % draw infusion number text
+            % draw numbers
             Screen('TextFont', Window, 'Digital-7 Mono');
             Screen('TextSize', Window, 250);
             Screen('TextStyle', Window, 2);
@@ -516,17 +516,17 @@ function NeuroFeedbackTask()
             Screen('DrawText', Window, '000', BgNumRect(1), BgNumRect(2), ...  
                 TrialColor);
            
-            % fill the correct oval 
+            % fill condition 
             Screen('FillOval', Window, TrialColor, ...
                 FilledOvalRect{RunDesign{k, INFUSIONNUM}}); 
 
             % display only text for current condition only
             Screen('TextFont', Window, 'Arial');
-            Screen('TextSize', InfTexture, 46);
-            Screen('TextStyle', InfTexture, 1);
-            Screen('DrawText', Window, OvalText{RunDesign{k, INFUSIONNUM}, ...
+            Screen('TextSize', Window, 46);
+            Screen('TextStyle', Window, 1);
+            Screen('DrawText', Window, OvalText{RunDesign{k, INFUSIONNUM}}, ...
                 OvalTextRect{RunDesign{k, INFUSIONNUM}}(1), ...
-                OvalTextRect{RunDesgin{k, INFUSIONNUM}}(2), ...
+                OvalTextRect{RunDesign{k, INFUSIONNUM}}(2), ...
                 White);
 
             vbl = Screen('Flip', Window, Until, 1);
@@ -553,6 +553,15 @@ function NeuroFeedbackTask()
                     % fill condition oval 
                     Screen('FillOval', Window, TrialColor, ...
                         FilledOvalRect{Design{k, INFUSIONNUM}}); 
+
+                    % display only text for current condition only
+                    Screen('TextFont', Window, 'Arial');
+                    Screen('TextSize', Window, 46);
+                    Screen('TextStyle', Window, 1);
+                    Screen('DrawText', Window, OvalText{RunDesign{k, INFUSIONNUM}}, ...
+                        OvalTextRect{RunDesign{k, INFUSIONNUM}}(1), ...
+                        OvalTextRect{RunDesign{k, INFUSIONNUM}}(2), ...
+                        White);
 
                     % fill rectangle
                     Screen('FillRect', Window, TrialColor, ...
