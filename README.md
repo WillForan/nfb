@@ -2,14 +2,14 @@
 
 **Design**
 * 2 runs
-  * Run1 = 24 minutes (1439.817 seconds)
-  * Run2 = 24.16 minutes (1449.333 seconds)
+  * Run1 = 23.67 minutes (1420.667 seconds)
+  * Run2 = 23.83 minutes (1429.517 seconds)
   * 72 Blocks per run 
     * 4 conditions
-      * Protocol 196KJ (A; 15 signals, 3 baseline)
-      * Protocol 564D  (B, 10 signals, 8 baseline)
-      * Protocol KJ    (C; 15 signals, 3 baseline)
-      * Protocol D     (D; 10 signals, 8 baseline)
+      * Protocol 196KJ  (A; 15 signals, 3 baseline)
+      * Protocol 564D   (B, 10 signals, 8 baseline)
+      * Calibration I   (C; 15 signals, 3 baseline)
+      * Calibration II  (D; 10 signals, 8 baseline)
     * 18 trials for each condition
     * 15 unique feedback signals for each run
       * B and D show signals that are subset of A and C signals
@@ -25,7 +25,8 @@
         * Keyboard responses are restricted to 1, 2
           * 1 = Yes
           * 2 = No
-      * 0 - 2 seconds random jitter
+      * 0.25 - 2 seconds random jitter
+        * Jitters are sampled from an exponential distribution
       * 10 seconds feedback
         * 3 stages
           * 1-3 seconds baseline (excluding the initial baseline screen)
@@ -37,7 +38,8 @@
         * Keyboard responses restricted to 1, 2
           * 1 = Yes
           * 2 = No
-      * 0 - 2 seconds random jitter
+      * 0.25 - 2 seconds random jitter
+        * Jitters are sampled from an exponential distribution
       
 **Design Options**
 * some options are only available on *nix operating systems
@@ -58,23 +60,23 @@
   * 1
     * Protocol 196KJ = red
     * Protocol 564D = light blue
-    * Protocol C = green
-    * Protocol KJ = yellow
+    * Calibration I = green
+    * Calibration II = yellow
   * 2
     * Protocol 196KJ = light blue
     * Protocol 564D = red
-    * Protocol C = yellow
-    * Protocol KJ = green
+    * Calibration I = yellow
+    * Calibration II = green
   * 3
     * Protocol 196Kj = green
     * Protocol 564D = yellow
-    * Protocol C = red
-    * Protocol KJ = light blue
+    * Calibration I = red
+    * Calibration II = light blue
   * 4
     * Protocol 196Kj = yellow
     * Protocol 564D = green
-    * Protocol C = light blue
-    * Protocol KJ = red
+    * Calibration I = light blue
+    * Calibration II = red
     
 **File/Directory Descriptions**
 * NeurofeedbackTask.m - matlab script to run the social cognition task
