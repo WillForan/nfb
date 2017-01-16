@@ -154,7 +154,6 @@ function NeuroFeedbackTask()
     VolText = sprintf('%sL', char(181));
     
     KbName('UnifyKeyNames');
-    Screen('ColorRange', Window, 1, [], 1);
     % Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
@@ -178,6 +177,7 @@ function NeuroFeedbackTask()
     
     % we want X = Left-Right, Y = top-bottom
     [Window, Rect] = Screen('OpenWindow', ScreenNumber, BgColor);
+    Screen('ColorRange', Window, 1, [], 1);
     PriorityLevel = MaxPriority(Window);
     Priority(PriorityLevel);
     [XCenter, YCenter] = RectCenter(Rect);
