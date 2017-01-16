@@ -153,7 +153,8 @@ function NeuroFeedbackTask()
     end
     VolText = sprintf('%sL', char(181));
     
-    PsychDefaultSetup(2); % default settings
+    KbName('UnifyKeyNames');
+    Screen('ColorRange', Window, 1, [], 1);
     % Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
@@ -176,7 +177,7 @@ function NeuroFeedbackTask()
     FilledColor = [41 249 64] * 1/255;
     
     % we want X = Left-Right, Y = top-bottom
-    [Window, Rect] = PsychImaging('OpenWindow', ScreenNumber, BgColor);
+    [Window, Rect] = Screen('OpenWindow', ScreenNumber, BgColor);
     PriorityLevel = MaxPriority(Window);
     Priority(PriorityLevel);
     [XCenter, YCenter] = RectCenter(Rect);
@@ -552,7 +553,7 @@ function NeuroFeedbackTask()
                    
                     % fill condition oval 
                     Screen('FillOval', Window, TrialColor, ...
-                        FilledOvalRect{Design{k, INFUSIONNUM}}); 
+                        FilledOvalRect{RunDesign{k, INFUSIONNUM}}); 
 
                     % display only text for current condition only
                     Screen('TextFont', Window, 'Arial');
