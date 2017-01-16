@@ -27,6 +27,7 @@ function RestingTask()
     end
 
     PsychDefaultSetup(2); % default settings
+    % Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
     if Suppress
@@ -84,8 +85,6 @@ function RestingTask()
     % end task
     Screen('TextSize', Window, 35);
     DrawFormattedText(Window, 'Goodbye!', 'center', 'center', Grey);
-    fprintf(1, 'BeginTime: %0.2f\n', BeginTime);
-    fprintf(1, 'EndTime:   %0.2f\n', BeginTime + 480 - 0.5 * Refresh);
     EndTime = Screen('Flip', Window, BeginTime + (NumFrames - 0.5) * Refresh); 
     WaitSecs(1.5);
 
