@@ -216,10 +216,6 @@ function NeuroFeedbackTask()
     end
     Screen('FillOval', InfTexture, UnfilledColor, cell2mat(OvalRect)');
     Screen('FrameOval', InfTexture, White, cell2mat(OvalRect)', 2);
-    % for i = 1:size(OvalRect, 1)
-    %     Screen('FillOval', InfTexture, Black, OvalRect{i});
-    %     Screen('FrameOval', InfTexture, White, OvalRect{i}, 2);
-    % end
    
     % draw oval texts 
     Screen('TextSize', InfTexture, 46);
@@ -227,8 +223,8 @@ function NeuroFeedbackTask()
     OvalText = {
         'PROTOCOL 196KJ';
         'PROTOCOL 564D';
-        'CALIBRATION KJ';
-        'CALIBRATION D';
+        'CALIBRATION I';
+        'CALIBRATION II';
     };
     TextLeftRef = ConvertCoordinates(ScanCenter, [XCenter YCenter], ...
         {[81 43 407.54 56.78]});
@@ -236,10 +232,6 @@ function NeuroFeedbackTask()
         OvalTextRect{i, 1} = Screen('TextBounds', InfTexture, OvalText{i});
         OvalTextRect{i, 1} = AlignRect(OvalTextRect{i}, OvalRect{i}, 'center');
         OvalTextRect{i, 1} = AlignRect(OvalTextRect{i}, TextLeftRef{1}, 'left');
-    end
-    for iText = 1:size(OvalText, 1)
-        Screen('DrawText', InfTexture, OvalText{iText}, OvalTextRect{iText}(1), ...
-            OvalTextRect{iText}(2), White);
     end
    
     % draw bg rectangles 
@@ -515,7 +507,7 @@ function NeuroFeedbackTask()
             %%% INFUSION RUNNING CODE %%%
             Screen('DrawTexture', Window, InfTexture);
             
-            % draw infusion text
+            % draw infusion number text
             Screen('TextFont', Window, 'Digital-7 Mono');
             Screen('TextSize', Window, 250);
             Screen('TextStyle', Window, 2);
@@ -523,9 +515,20 @@ function NeuroFeedbackTask()
                 UnfilledColor);
             Screen('DrawText', Window, '000', BgNumRect(1), BgNumRect(2), ...  
                 TrialColor);
-            
+           
+            % fill the correct oval 
             Screen('FillOval', Window, TrialColor, ...
-                FilledOvalRect{Design{k, INFUSIONNUM}}); 
+                FilledOvalRect{RunDesign{k, INFUSIONNUM}}); 
+
+            % display only text for current condition only
+            Screen('TextFont', Window, 'Arial');
+            Screen('TextSize', InfTexture, 46);
+            Screen('TextStyle', InfTexture, 1);
+            Screen('DrawText', Window, OvalText{RunDesign{k, INFUSIONNUM}, ...
+                OvalTextRect{RunDesign{k, INFUSIONNUM}}(1), ...
+                OvalTextRect{RunDesgin{k, INFUSIONNUM}}(2), ...
+                White);
+
             vbl = Screen('Flip', Window, Until, 1);
             if k == 1
                 BeginTime = vbl;
@@ -746,7 +749,7 @@ function NeuroFeedbackTask()
     Screen('TextStyle', Window, 0);
     DrawFormattedText(Window, 'Goodbye!', 'center', 'center', White);
     Screen('Flip', Window);
-    WaitSecs(3);
+    WaitSecs(1.5);
     
     % close everything
     KbQueueRelease(DeviceIndex);
