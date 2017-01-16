@@ -31,8 +31,11 @@ for i = 1:NumRuns
 
     % make random jitter1 and 2
     lambda = 1/60;
-    c = 120;
-    Jitter = floor(-1/lambda * log(1-rand(NumTrials, 2)*(1-exp(-lambda*120))));
+    c1 = 15;
+    c2 = 120;
+    e1 = exp(-lambda*c1);
+    e2 = exp(-lambda*c2);
+    Jitter = floor(-1/lambda * log(e1-rand(NumTrials, 2)*(e1-e2)));
 
     % assign waveforms
     Waveforms = zeros(NumTrials, 1);
