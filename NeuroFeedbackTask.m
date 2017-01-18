@@ -27,7 +27,7 @@ function NeuroFeedbackTask()
     fprintf(1, 'Testing:     %d\n', Testing);
     fprintf(1, 'Suppres:     %d\n', Suppress);
     fprintf(1, 'Version:     %d\n', Version);
-    fprintf(1, *** OPTIONS ***\n\n');
+    fprintf(1, '*** OPTIONS ***\n\n');
     
     if InScan == 0
         PsychDebugWindowConfiguration
