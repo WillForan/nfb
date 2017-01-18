@@ -15,9 +15,19 @@ function NeuroFeedbackTask()
     Participant = Responses{2};
     StartRun = str2num(Responses{3});
     EndRun = str2num(Responses{4});
-    Testing = str2num(Response{5});
+    Testing = str2num(Responses{5});
     Suppress = str2num(Responses{6});
     Version = str2num(Responses{7});
+
+    fprintf(1, '*** OPTIONS ***\n');
+    fprintf(1, 'InScan:      %d\n', InScan);
+    fprintf(1, 'Participant: %s\n', Participant);
+    fprintf(1, 'StartRun:    %d\n', StartRun);
+    fprintf(1, 'EndRun:      %d\n', EndRun);
+    fprintf(1, 'Testing:     %d\n', Testing);
+    fprintf(1, 'Suppres:     %d\n', Suppress);
+    fprintf(1, 'Version:     %d\n', Version);
+    fprintf(1, *** OPTIONS ***\n\n');
     
     if InScan == 0
         PsychDebugWindowConfiguration
