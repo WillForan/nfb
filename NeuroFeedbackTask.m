@@ -4,53 +4,20 @@ function NeuroFeedbackTask()
     clear all;
     DeviceIndex = [];
     
-    if isunix
-        InScan = -1;
-        StartRun = -1;
-        EndRun = -1;
-        Testing = -1;
-        Suppress = -1;
-        Version = -1;
-    
-        % Turns on PTB debugging
-        while ~any(InScan == [1 0])
-            InScan = input('Scan? (1:Yes, 0:No): ');
-        end
-    
-        Participant = input('Participant ID: ', 's');
-    
-        while ~any(StartRun == [1 2])
-            StartRun = input('Start run: 1 - 2: ');
-        end
-    
-        while ~any(EndRun == [1 2])
-            EndRun = input('End run: 1 - 2: ');
-        end
-    
-        % Determines csv used
-        while ~any(Testing == [1 0])
-            Testing = input('Testing? (1:Yes, 0:No): ');
-        end
-    
-        while ~any(Suppress == [1 0])
-            Suppress = input('Suppress? (1: Yes, 0:No): ');
-        end
-
-        while ~any(Version == [1 2 3 4])
-            Version = input('Version? (1, 2, 3, 4): ');
-        end
-
-    else
-        Responses = inputdlg({'Scan (1:Yes, 0:No):', ...
-            'Participant ID:', 'Start run: 1 - 2:', 'End run: 1 - 2:', ...
-            'Version: (1, 2, 3, 4)'});
-        InScan = str2num(Responses{1});
-        Participant = Responses{2};
-        StartRun = str2num(Responses{3});
-        EndRun = str2num(Responses{4});
-        Testing = 0;
-        Suppress = 1;
-    end
+    Responses = inputdlg({'Scan (1:Yes, 0:No):', ...
+        'Participant ID:', ...
+        'Start run: 1 - 2:', ...
+        'End run: 1 - 2:', ...
+        'Testing: (1:Yes, 0:No)', ...
+        'Suppress (1:Yes, 0:No)', ...
+        'Version: (1, 2, 3, 4)'});
+    InScan = str2num(Responses{1});
+    Participant = Responses{2};
+    StartRun = str2num(Responses{3});
+    EndRun = str2num(Responses{4});
+    Testing = str2num(Response{5});
+    Suppress = str2num(Responses{6});
+    Version = str2num(Responses{7});
     
     if InScan == 0
         PsychDebugWindowConfiguration
@@ -143,16 +110,15 @@ function NeuroFeedbackTask()
     VolText = sprintf('%sL', char(181));
     
     KbName('UnifyKeyNames');
+    % Screen('Preference', 'SkipSyncTests', 1);
     % Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
-    % Screen('Preference', 'TextAntiAliasing', 2);
-    % Screen('Preference', 'TextAlphaBlending', 1);
     if Suppress
         Screen('Preference', 'SuppressAllWarnings', 1);
         Screen('Preference', 'Verbosity', 0);
     end
-    Screens = Screen('Screens'); % get scren number
+    Screens = Screen('Screens'); % get screen number
     ScreenNumber = max(Screens);
     
     % Define commonly used colors
