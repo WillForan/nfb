@@ -119,34 +119,23 @@ function NeuroFeedbackTask()
         end
     end
 
+    % default color scheme (used in infusion and feedback)
+    Colors = {
+        [1 0 0];
+        [7/255 255 255];
+        [0 1 0];
+        [1 1 0];
+    };
+   
+    % set Colors color order based on Version 
     if Version == 1
-        Colors = {
-            [1 0 0];
-            [7/255 255 255];
-            [0 1 0];
-            [1 1 0];
-        };
+        ColorOrder = [1 2 3 4];
     elseif Version == 2
-        Colors = {
-            [7/255 255 255];
-            [1 0 0];
-            [1 1 0];
-            [0 1 0];
-        };
+        ColorOrder = [2 1 4 3];
     elseif Version == 3
-        Colors = {
-            [0 1 0];
-            [1 1 0];
-            [1 0 0];
-            [7/255 255 255];
-        };
+        ColorOrder = [3 4 1 2];
     elseif Version == 4
-        Colors = {
-            [1 1 0];
-            [0 1 0];
-            [7/255 255 255];
-            [1 0 0];
-        };
+        ColorOrder = [4 3 2 1];
     else
         sca;
         error('Unknown error version: %d\n', Version);
@@ -166,11 +155,11 @@ function NeuroFeedbackTask()
     Screens = Screen('Screens'); % get scren number
     ScreenNumber = max(Screens);
     
-    % Define black and white
+    % Define commonly used colors
     White = WhiteIndex(ScreenNumber);
     Black = BlackIndex(ScreenNumber);
     Grey = White * 0.5;
-    BgColor = [44 58 55] * 1/255;
+    BgColor = [45 59 55] * 1/255;
     UnfilledColor = [38 41 26] * 1/255;
     BoxColor = [21 32 17] * 1/255;
     FilledColor = [41 249 64] * 1/255;
@@ -250,16 +239,22 @@ function NeuroFeedbackTask()
     ProgressBgRect = CenterRectOnPointd([705 31 705+236 31+705], InterfaceLoc{2}(1), ...
         InterfaceLoc{2}(2));
 
-    Screen('FillRect', InfTexture, BoxColor, NumberRect);
     Screen('FillRect', InfTexture, BoxColor, ProgressBgRect);
 
-    % draw unfilled text, set up for filled text    
-    Screen('TextFont', Window, 'Digital-7 Mono');
-    Screen('TextSize', Window, 250);
-    Screen('TextStyle', Window, 2);
-    BgNumRect = Screen('TextBounds', Window, '888');
-    BgNumRect = AlignRect(BgNumRect, NumberRect, 'center');
-   
+    % create Infusion number textures
+    InfColors = {'Red', 'Blue', 'Green', 'Yellow'};
+    InfNumbers = {'000', '033', '067', '100'};
+    InfNumTextures = zeros(numel(InfColors), numel(InfNumbers));
+    for i = 1:numel(InfColors)
+        for k = 1:numel(InfNumbers)
+            FName = fullfile(pwd, 'Images', 'InfNumImages', ...
+                sprintf('%s_%s.png', InfColors{i}, InfNumbers{k}));
+            Im = imread(FName, 'png');
+            InfNumTextures(i, k) = Screen('MakeTexture', Window, Im);
+        end
+    end
+    clear i k
+           
     % draw volume text 
     Screen('TextSize', InfTexture, 60);
     Screen('TextFont', InfTexture, 'Arial');
@@ -314,33 +309,14 @@ function NeuroFeedbackTask()
     %%% FEEDBACK SETUP %%%
     % Feedback rect location; this is used as position reference for most
     % other drawn objects
-    FeedbackTexture = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
+    FName = fullfile(pwd, 'Images', 'FeedNumImages', 'Feedback.png');
+    Im = imread(FName, 'png');
+    FeedbackTexture = Screen('MakeTexture', Window, Im);
 
+    % create feedback rect for signal drawing
     FeedbackRect = [0 0 920 750];
     FeedbackXCenter = 52 + XCenter;
     CenteredFeedback = CenterRectOnPoint(FeedbackRect, FeedbackXCenter, YCenter);
-    RefX = CenteredFeedback(1);
-    RefY = CenteredFeedback(2);
-    Screen('FillRect', FeedbackTexture, [BgColor; UnfilledColor]', ...
-        [Rect' CenteredFeedback']);
-    
-    % set "Amplitude" label location
-    [NeuroTexture NeuroBox] = MakeTextTexture(Window, ...
-        'Amplitude', BgColor, 'Digital-7 Mono', 55, White);
-    NeuroXLoc = RefX - 69 - 5;
-    NeuroLoc = CenterRectOnPoint(NeuroBox, NeuroXLoc, YCenter);
-    Screen('DrawTexture', FeedbackTexture, NeuroTexture, [], NeuroLoc, -90);
-    
-    % draw feedback number labels
-    OldFont = Screen('TextFont', FeedbackTexture, 'Digital-7 Mono');
-    OldStyle = Screen('TextStyle', FeedbackTexture, 2);
-    Screen('DrawText', FeedbackTexture, '100', RefX - 52, RefY - 1, White);
-    Screen('DrawText', FeedbackTexture, '50', RefX - 35, RefY + 176, White);
-    Screen('DrawText', FeedbackTexture, '0', RefX - 18, RefY + 364, White);
-    Screen('DrawText', FeedbackTexture, '-50', RefX - 52, RefY + 550, White);
-    Screen('DrawText', FeedbackTexture, '-100', RefX - 69, RefY + 727, White);
-    Screen('TextFont', FeedbackTexture, OldFont);
-    Screen('TextStyle', FeedbackTexture, OldStyle);
 
     %%% IMPROVED SETUP %%%
     ImprovedTexture = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
@@ -503,31 +479,28 @@ function NeuroFeedbackTask()
     
         Until = 0;
         for k = 1:size(RunDesign, 1)
-            TrialColor = Colors{RunDesign{k, INFUSIONNUM}};
+            InfusionNum = RunDesign{k, INFUSIONNUM};
+            ColorIdx = ColorOrder(InfusionNum);
+            TrialColor = Colors{ColorIdx};
         
             %%% INFUSION RUNNING CODE %%%
             Screen('DrawTexture', Window, InfTexture);
             
             % draw numbers
-            Screen('TextFont', Window, 'Digital-7 Mono');
-            Screen('TextSize', Window, 250);
-            Screen('TextStyle', Window, 2);
-            Screen('DrawText', Window, '888', BgNumRect(1), BgNumRect(2), ...
-                UnfilledColor);
-            Screen('DrawText', Window, '000', BgNumRect(1), BgNumRect(2), ...  
-                TrialColor);
+            Screen('DrawTexture', Window, InfNumTextures(ColorIdx, 1), ...
+                [], NumberRect);
            
             % fill condition 
             Screen('FillOval', Window, TrialColor, ...
-                FilledOvalRect{RunDesign{k, INFUSIONNUM}}); 
+                FilledOvalRect{InfusionNum}); 
 
             % display only text for current condition only
             Screen('TextFont', Window, 'Arial');
             Screen('TextSize', Window, 46);
             Screen('TextStyle', Window, 1);
-            Screen('DrawText', Window, OvalText{RunDesign{k, INFUSIONNUM}}, ...
-                OvalTextRect{RunDesign{k, INFUSIONNUM}}(1), ...
-                OvalTextRect{RunDesign{k, INFUSIONNUM}}(2), ...
+            Screen('DrawText', Window, OvalText{InfusionNum}, ...
+                OvalTextRect{InfusionNum}(1), ...
+                OvalTextRect{InfusionNum}(2), ...
                 White);
 
             vbl = Screen('Flip', Window, Until, 1);
@@ -537,36 +510,17 @@ function NeuroFeedbackTask()
             RunDesign{k, INFONSET} = vbl - BeginTime;
 
             if any(strcmp(RunDesign{k, INFUSION}, {'A', 'B'}))
-                Volume = {'033', '066', '100'};
-                for iInc = 1:size(ProgressRect, 1)
+                for iInc = 2:size(InfNumTextures, 2)
                     %%% INFUSION RUNNING CODE %%%
-                    Screen('DrawTexture', Window, InfTexture);
                     
                     % draw numbers 
-                    Screen('TextFont', Window, 'Digital-7 Mono');
-                    Screen('TextSize', Window, 250);
-                    Screen('TextStyle', Window, 2);
-                    Screen('DrawText', Window, '888', BgNumRect(1), BgNumRect(2), ...
-                        UnfilledColor);
-                    Screen('DrawText', Window, Volume{iInc}, BgNumRect(1), BgNumRect(2), ...  
-                        TrialColor);
+                    Screen('DrawTexture', Window, ...
+                        InfNumTextures(ColorIdx, iInc), [], NumberRect);
                    
-                    % fill condition oval 
-                    Screen('FillOval', Window, TrialColor, ...
-                        FilledOvalRect{RunDesign{k, INFUSIONNUM}}); 
-
-                    % display only text for current condition only
-                    Screen('TextFont', Window, 'Arial');
-                    Screen('TextSize', Window, 46);
-                    Screen('TextStyle', Window, 1);
-                    Screen('DrawText', Window, OvalText{RunDesign{k, INFUSIONNUM}}, ...
-                        OvalTextRect{RunDesign{k, INFUSIONNUM}}(1), ...
-                        OvalTextRect{RunDesign{k, INFUSIONNUM}}(2), ...
-                        White);
-
                     % fill rectangle
                     Screen('FillRect', Window, TrialColor, ...
-                        cell2mat(ProgressRect(1:iInc, 1))');
+                        ProgressRect{iInc - 1, 1});
+
                     vbl = Screen('Flip', Window, vbl + (60 - 0.5) * Refresh, 1);
                 end
             end
@@ -763,10 +717,8 @@ function NeuroFeedbackTask()
     
     % close everything
     KbQueueRelease(DeviceIndex);
-    Screen('Close', WillImproveTexture);
-    Screen('Close', FeedbackTexture);
-    Screen('Close', InfTexture);
-    Screen('Close', Window);
+    Screen('CloseAll');
+
     sca;
     Priority(0);
 end
