@@ -74,12 +74,20 @@ try
     ShowCursor;
     ListenChar(0);
     Priority(0);
-catch
+catch err
     ShowCursor;
     sca;
     ListenChar(0);
     Priority(0);
+
+    OutDir = fullfile(pwd, 'QueryScanner');
+    mkdir(OutDir);
+    Outfile = fullfile(OutDir, 'QueryKbInput.txt');
+    Fid = fopen(Outfile, 'w');
+    fprintf(Fid, 'ERROR: %s\n', err.message);
+    fclose(Fid);
+
     fclose('all');
-    psychrethrow(psychlasterror);
+    rethrow(err);
 end
 
