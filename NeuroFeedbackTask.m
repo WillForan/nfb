@@ -19,15 +19,16 @@ function NeuroFeedbackTask()
     Suppress = str2num(Responses{6});
     Version = str2num(Responses{7});
 
-    fprintf(1, '*** OPTIONS ***\n');
-    fprintf(1, 'InScan:      %d\n', InScan);
-    fprintf(1, 'Participant: %s\n', Participant);
-    fprintf(1, 'StartRun:    %d\n', StartRun);
-    fprintf(1, 'EndRun:      %d\n', EndRun);
-    fprintf(1, 'Testing:     %d\n', Testing);
-    fprintf(1, 'Suppres:     %d\n', Suppress);
-    fprintf(1, 'Version:     %d\n', Version);
-    fprintf(1, '*** OPTIONS ***\n\n');
+    OptionText = [sprintf('*** OPTIONS ***\n') ...
+        sprintf('InScan:      %d\n', InScan) ...
+        sprintf('Participant: %s\n', Participant) ...
+        sprintf('StartRun:    %d\n', StartRun) ...
+        sprintf('EndRun:      %d\n', EndRun) ...
+        sprintf('Testing:     %d\n', Testing) ...
+        sprintf('Suppres:     %d\n', Suppress) ...
+        sprintf('Version:     %d\n', Version) ...
+        sprintf('*** OPTIONS ***\n\n')];
+    fprintf(1, '\n%s', OptionText);
     
     if InScan == 0
         PsychDebugWindowConfiguration
@@ -35,6 +36,14 @@ function NeuroFeedbackTask()
     
     OutDir = fullfile(pwd, 'Responses', Participant);
     mkdir(OutDir);
+
+    % print out options to text file
+    OutName = sprintf('%s_Options_%s', Participant, ...
+        datestr(now, 'yyyymmdd_HHMMSS'));
+    OptionFile = fullfile(OutDir, [OutName '.txt']);
+    OptionFid = fopen(OptionFile, 'w');
+    fprintf(OptionFid, OptionText);
+    fclose(OptionFid);
     
     % read in design
     if Testing
@@ -120,8 +129,8 @@ function NeuroFeedbackTask()
     VolText = sprintf('%sL', char(181));
     
     KbName('UnifyKeyNames');
-    % Screen('Preference', 'SkipSyncTests', 1);
-    % Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
+    % Screen('Preference', 'SkipSyncTests', 2);
+    Screen('Preference', 'VisualDebugLevel', 3); % skip introduction Screen
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
     if Suppress
