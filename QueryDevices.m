@@ -60,8 +60,9 @@ try
     % close output
     OutText{OutIndex} = sprintf('*** GetDevices INFORMATION ***\n\n');
 
-    mkdir(fullfile(pwd, 'ScannerQuery'));
-    OutFile = fullfile(pwd, 'ScannerQuery', 'GetDevices.txt');
+    OutDir = fullfile(pwd, 'QueryScanner');
+    mkdir(OutDir);
+    OutFile = fullfile(OutDir, 'QueryDevices.txt');
     Fid = fopen(OutFile, 'w');
     fprintf(1, '\n');
     for i = 1:numel(OutText)
