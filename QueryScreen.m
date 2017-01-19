@@ -19,7 +19,7 @@ try
 
     % set up text properties
     Screen('TextFont', Window, 'Arial');
-    Screen('TextSize', Window, 100);
+    Screen('TextSize', Window, 50);
     Screen('TextColor', Window, [1 1 1]);
 
     % now draw on screen
@@ -46,12 +46,12 @@ try
     sca;
     ListenChar(0);
     Priority(0);
-catch
+catch err
+    fclose('all');
     ShowCursor;
     sca;
     ListenChar(0);
     Priority(0);
-    err = psychlasterror;
 
     % print diagnostic file
     OutDir = fullfile(pwd, 'QueryScanner');
@@ -59,11 +59,10 @@ catch
     Outfile = fullfile(OutDir, 'QueryScreen.txt');
     Fid = fopen(Outfile, 'w');
     fprintf(Fid, 'There were problems with screen.\n');
-    fprintf(Fid, 'Message:    %s\n', err.message);
-    fprintf(Fid, 'Identifier: %s\n', err.identifier);
+    fprintf(Fid, 'ERROR:    %s\n', err.message);
     fclose(Fid);
 
-    psychrethrow(psychlasterror);
+    rethrow(err);
 end
 
 

@@ -3,7 +3,7 @@ PsychDebugWindowConfiguration
 
 try
     % change preferences
-    Screen('Preference', 'SkipSyncTests', 1);
+    Screen('Preference', 'SkipSyncTests', 2);
     Screen('Preference', 'VisualDebugLevel', 3);
 
     % screen initialization and refresh
@@ -82,6 +82,7 @@ try
     ListenChar(0);
     Priority(0);
 catch err
+    fclose('all');
     ShowCursor;
     sca;
     ListenChar(0);

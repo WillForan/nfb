@@ -2,7 +2,7 @@ clear all;
 
 try
     % change preferences
-    Screen('Preference', 'SkipSyncTests', 1);
+    Screen('Preference', 'SkipSyncTests', 2);
     Screen('Preference', 'VisualDebugLevel', 3);
 
     % screen initialization and refresh
@@ -25,7 +25,7 @@ try
     
     % set up text properties
     Screen('TextFont', Window, 'Arial');
-    Screen('TextSize', Window, 100);
+    Screen('TextSize', Window, 50);
     Screen('TextColor', Window, [1 1 1]);
     
     % initialize screen
@@ -75,6 +75,7 @@ try
     ListenChar(0);
     Priority(0);
 catch err
+    fclose('all');
     ShowCursor;
     sca;
     ListenChar(0);
@@ -87,7 +88,6 @@ catch err
     fprintf(Fid, 'ERROR: %s\n', err.message);
     fclose(Fid);
 
-    fclose('all');
     rethrow(err);
 end
 

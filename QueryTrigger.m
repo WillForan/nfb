@@ -95,6 +95,7 @@ try
     ListenChar(0);
     Priority(0);
 catch err
+    fclose('all');
     ShowCursor;
     sca;
     ListenChar(0);
@@ -104,9 +105,8 @@ catch err
     mkdir(OutDir);
     Outfile = fullfile(OutDir, 'QueryTrigger.txt');
     Fid = fopen(Outfile, 'w');
-    fprintf(Fid, 'Error: %s\n', err.message);
+    fprintf(Fid, 'ERROR: %s\n', err.message);
     fclose(Fid);
 
-    fclose('all');
     rethrow(err);
 end
