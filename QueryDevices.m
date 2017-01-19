@@ -2,6 +2,10 @@ clear all;
 PsychDebugWindowConfiguration
 
 try
+    % change preferences
+    Screen('Preference', 'SkipSyncTests', 1);
+    Screen('Preference', 'VisualDebugLevel', 3);
+
     % screen initialization and refresh
     Screens = Screen('Screens'); % get scren number
     ScreenNumber = max(Screens);
