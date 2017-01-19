@@ -13,7 +13,7 @@ try
     OutIndex = 1;
 
     % print header
-    OutText{OutIndex} = sprintf('\n*** GetDevices INFORMATION ***\n');
+    OutText{OutIndex} = sprintf('\n*** QueryDevices INFORMATION ***\n');
     OutIndex = OutIndex + 1;
 
     % get version
@@ -58,7 +58,7 @@ try
     OutIndex = OutIndex + 1;
     
     % close output
-    OutText{OutIndex} = sprintf('*** GetDevices INFORMATION ***\n\n');
+    OutText{OutIndex} = sprintf('*** QueryDevices INFORMATION ***\n\n');
 
     OutDir = fullfile(pwd, 'QueryScanner');
     mkdir(OutDir);
