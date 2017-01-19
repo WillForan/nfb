@@ -85,8 +85,8 @@ catch
     ShowCursor;
     sca;
     ListenChar(0);
-    psychrethrow(psychlasterror);
     Priority(0);
+    psychrethrow(psychlasterror);
 end
 
 % Rect
