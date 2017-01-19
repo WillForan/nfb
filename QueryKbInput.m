@@ -1,5 +1,4 @@
 clear all;
-PsychDebugWindowConfiguration
 
 try
     % change preferences
@@ -33,7 +32,8 @@ try
     DrawFormattedText(Window, 'Waiting for keyboard input...', 'center', 'center');
     Screen('Flip', Window);
 
-    ListenChar(2);    
+    ListenChar(2);
+    OutIndex = 1;    
     fprintf(1, '\n*** QueryKbInput INFORMATION ***\n');
     while 1
         [Pressed, Secs, KeyCode] = KbCheck;
@@ -49,14 +49,26 @@ try
             KeysPressed = KbNames(find(KeyCode));
             Str = '';
             for i = 1:numel(KeysPressed)
-                Str = strcat(Str, KeysPressed{i}, ' ');
+                Str = [Str, KeysPressed{i}, ' '];
+                OutText{OutIndex} = Str;
+                OutIndex = OutIndex + 1;
             end
+            Str = strcat(Str, '\n\nPress ESC to quit.\n');
             DrawFormattedText(Window, Str, 'center', 'center');
             Screen('Flip', Window);
             KbReleaseWait;
         end
     end
     fprintf(1, '\n*** QueryKbInput INFORMATION ***\n');
+
+    OutDir = fullfile(pwd, 'QueryScanner');
+    mkdir(OutDir);
+    Outfile = fullfile(OutDir, 'QueryKbInput.txt');
+    Fid = fopen(Outfile, 'w');
+    for i = 1:numel(OutText)
+        fprintf(Fid, '%s\n', OutText{i});
+    end
+    fclose(Fid);
 
     sca;
     ShowCursor;
@@ -68,11 +80,6 @@ catch
     ListenChar(0);
     psychrethrow(psychlasterror);
     Priority(0);
+    fclose('all');
 end
 
-OutDir = fullfile(pwd, 'QueryScanner');
-mkdir(OutDir);
-Outfile = fullfile(OutDir, 'QueryKbInput.txt');
-Fid = fopen(Outfile, 'w');
-fprintf(Fid, 'QueryKbInput was ran.\n');
-fclose(Fid);
