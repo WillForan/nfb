@@ -81,13 +81,20 @@ try
     ShowCursor;
     ListenChar(0);
     Priority(0);
-catch
+catch err
     ShowCursor;
     sca;
     ListenChar(0);
     Priority(0);
-    psychrethrow(psychlasterror);
+
+    % print error text file
+    OutDir = fullfile(pwd, 'QueryScanner');
+    mkdir(OutDir);
+    OutFile = fullfile(OutDir, 'QueryDevices.txt');
+    Fid = fopen(OutFile, 'w');
+    fprintf(1, 'ERROR: %s\n', err.message);
+    fclose(Fid);
+
+    rethrow(err);
 end
 
-% Rect
-% FrameRate
