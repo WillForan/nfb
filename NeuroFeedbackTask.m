@@ -170,6 +170,7 @@ function NeuroFeedbackTask()
     end
     clear i
     KbQueueCreate(DeviceIndex, KeysOfInterest);
+    TriggerKey = KbName('=+');
 
     %%% INFUSION SETUP %%%
     InfBgPng = {'InfBgA.png', 'InfBgB.png', 'InfBgC.png', 'InfBgD.png'};
@@ -350,6 +351,8 @@ function NeuroFeedbackTask()
         clear i k
     end
    
+    HideCursor;
+    ListenChar(-1);
     for i = StartRun:EndRun
         RunIdx = [Design{:, RUN}]' == i;
         RunDesign = Design(RunIdx, :);
@@ -362,8 +365,6 @@ function NeuroFeedbackTask()
             RunDesign{k, IMPROVEDRT} = nan;
         end
         clear k;
-    
-        KbEventFlush;
         
         % handle file naming
         OutName = sprintf('%s_V%d_Run_%02d_%s', Participant, Version, i, ...
@@ -371,23 +372,24 @@ function NeuroFeedbackTask()
         OutCsv = fullfile(OutDir, [OutName '.csv']);
         OutMat = fullfile(OutDir, [OutName '.mat']);
     
-        % show directions while waiting for trigger '^'
+        % show directions while waiting for trigger '='
         Screen('TextFont', Window, 'Arial');
         Screen('TextSize', Window, 35);
         Screen('TextStyle', Window, 0);
+        Screen('FillRect', Window, Black);
         DrawFormattedText(Window, ... 
-            'These are the task directions.\n\n Waiting for ''^'' to continue.', ...
+            'These are the task directions.\n\n Waiting for ''='' to continue.', ...
             'center', 'center', White);
         Screen('Flip', Window);
-        FlushEvents;
-        ListenChar;
         while 1
-            if CharAvail && GetChar == '^'
+            [Pressed, Secs, KeyCode] = KbCheck;
+            if Pressed && KeyCode(TriggerKey)
                 break;
             end
         end
     
         Until = 0;
+        Screen('FillRect', Window, BgColor);
         for k = 1:size(RunDesign, 1)
             InfusionNum = RunDesign{k, INFUSIONNUM};
             ColorIdx = ColorOrder(InfusionNum);
@@ -618,8 +620,9 @@ function NeuroFeedbackTask()
     
     % close everything
     KbQueueRelease(DeviceIndex);
-    Screen('CloseAll');
-
     sca;
+    ListenChar(0);
+    ShowCursor;
+    
     Priority(0);
 end
