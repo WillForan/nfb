@@ -126,7 +126,6 @@ function NeuroFeedbackTask()
         sca;
         error('Unknown error version: %d\n', Version);
     end
-    VolText = sprintf('%sL', char(181));
     
     KbName('UnifyKeyNames');
     % Screen('Preference', 'SkipSyncTests', 2);
@@ -181,7 +180,7 @@ function NeuroFeedbackTask()
         InfBgTextures(i) = Screen('MakeTexture', Window, Im);
     end
 
-    % draw ovals and oval frames
+    % get oval positions when filling for infusion
     Ovals = {
         [571.09 67] % PROTOCOL 196KJ ellipse center
         [571.09 180] % PROTOCOL 564D ellipse center
@@ -208,27 +207,15 @@ function NeuroFeedbackTask()
     InfNumTextures = zeros(numel(InfColors), numel(InfNumbers));
     for i = 1:numel(InfColors)
         for k = 1:numel(InfNumbers)
-            FName = fullfile(pwd, 'Images', 'InfNumImages', ...
+            FName = fullfile(pwd, 'Images', 'Infusion', ...
                 sprintf('%s_%s.png', InfColors{i}, InfNumbers{k}));
             Im = imread(FName, 'png');
             InfNumTextures(i, k) = Screen('MakeTexture', Window, Im);
         end
     end
     clear i k
-           
-    % draw volume text 
-    Screen('TextSize', InfTexture, 60);
-    Screen('TextFont', InfTexture, 'Arial');
-    Screen('TextStyle', InfTexture, 0);
-    UnitRect = Screen('TextBounds', InfTexture, VolText);
-    UnitRect = AlignRect(UnitRect, NumberRect, 'bottom');
-    UnitRect = AlignRect(UnitRect, ...
-        [(XCenter-(ScanCenter(1)-517)) 0 (XCenter-(ScanCenter(1)-517)) 0], ...
-        'left');
-    Screen('DrawText', InfTexture, VolText, UnitRect(1), UnitRect(2), ...
-        White);
 
-    % draw progression bars    
+    % get progression bar centers
     ProgressLoc = {
         [823 616.5] % box1 [763.99 386 224 170]
         [823 383.5] % box2 [763.99 561 224 170] 
