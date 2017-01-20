@@ -228,31 +228,11 @@ function NeuroFeedbackTask()
         ProgressRect{i, 1} = CenterRectOnPointd(ProgressBox, ProgressLoc{i}(1), ...
             ProgressLoc{i}(2));
     end
-    Screen('FillRect', InfTexture, UnfilledColor, cell2mat(ProgressRect)');
     
     %%% WILLIMPROVE SETUP %%%
-    WillImproveTexture = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
-    Screen('FillRect', WillImproveTexture, BgColor);
-
-    % "WillImp\nInfusion?"
-    Screen('TextSize', WillImproveTexture, 100);
-    WillImpText = 'Will improve?';
-    WillImpRect = Screen('TextBounds', WillImproveTexture, WillImpText);
-    WillImpRect = CenterRectOnPoint(WillImpRect, XCenter, YCenter - (384 - 768/4));
-    DrawFormattedText(WillImproveTexture, WillImpText, 'center', 'center', ...
-        White, [], [], [], [], [], WillImpRect);
-
-    % get "YES" and "NO" size
-    Screen('TextStyle', WillImproveTexture, 1);
-    YesRect = Screen('TextBounds', Window, 'YES');
-    YesRect = CenterRectOnPoint(YesRect, XCenter - (512 - 1024/4), YCenter);
-    DrawFormattedText(WillImproveTexture, 'YES', 'center', 'center', ...
-        White, [], [], [], [], [], YesRect);
-
-    NoRect = Screen('TextBounds', Window, 'NO');
-    NoRect = CenterRectOnPoint(NoRect, XCenter - (512 - 1024*3/4), YCenter);
-    DrawFormattedText(WillImproveTexture, 'NO', 'center', 'center', ...
-        White, [], [], [], [], [], NoRect);
+    FileName = fullfile(pwd, 'Images', 'Questions', 'WillImprove.png');
+    Im = imread(FileName, 'png');
+    WillImproveTexture = Screen('MakeTexture', Window, Im);
     
     %%% FEEDBACK SETUP %%%
     % Feedback rect location; this is used as position reference for most
@@ -267,27 +247,9 @@ function NeuroFeedbackTask()
     CenteredFeedback = CenterRectOnPoint(FeedbackRect, FeedbackXCenter, YCenter);
 
     %%% IMPROVED SETUP %%%
-    ImprovedTexture = Screen('MakeTexture', Window, zeros(Rect(4), Rect(3)));
-    Screen('FillRect', ImprovedTexture, BgColor);
-    Screen('TextSize', ImprovedTexture, 100);
-    Screen('TextStyle', ImprovedTexture, 0);
-    ImprovedText = 'Improved?';
-    ImprovedRect = Screen('TextBounds', ImprovedTexture, ImprovedText);
-    ImprovedRect = CenterRectOnPoint(ImprovedRect, XCenter, YCenter - (384 - 768/4));
-    DrawFormattedText(ImprovedTexture, ImprovedText, 'center', 'center', ...
-        White, [], [], [], [], [], ImprovedRect);
-    % use same yes and now from "Will Improve?" section
-    Screen('TextStyle', ImprovedTexture, 1);
-    DrawFormattedText(ImprovedTexture, 'YES', 'center', 'center', ...
-        White, [], [], [], [], [], YesRect);
-    DrawFormattedText(ImprovedTexture, 'NO', 'center', 'center', ...
-        White, [], [], [], [], [], NoRect);
-
-    % "Improved?"
-    OldSize = Screen('TextSize', Window, 100);
-
-    Screen('FillRect', Window, Black);
-    Screen('TextSize', Window, OldSize);
+    FileName = fullfile(pwd, 'Images', 'Questions',  'Improved.png');
+    Im = imread(FileName, 'png');
+    ImprovedTexture = Screen('MakeTexture', Window, Im);    
     
     %%% SIGNAL SETUP %%%
     Scale = 2; % move by this many points across signals
