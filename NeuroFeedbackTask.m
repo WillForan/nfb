@@ -58,9 +58,6 @@ try
         PsychDebugWindowConfiguration
     end
     
-    OutDir = fullfile(pwd, 'Responses', Participant);
-    mkdir(OutDir);
-
     % print out options to text file
     OutName = sprintf('%s_Options_%s', Participant, ...
         datestr(now, 'yyyymmdd_HHMMSS'));
@@ -187,7 +184,8 @@ try
     
     % set up keyboard response
     KbNames = KbName('KeyNames');
-    KeyNamesOfInterest = {'1!', '2@', '1', '2'};
+    KeyNamesOfInterest = {'1!', '2@', '3#', '4$', '5%', '6^', '7&', '8*', ...
+        '9(', '0)', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'};
     KeysOfInterest = zeros(1, 256);
     for i = 1:numel(KeyNamesOfInterest)
         KeysOfInterest(KbName(KeyNamesOfInterest{i})) = 1;
