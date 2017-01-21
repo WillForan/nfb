@@ -1,24 +1,48 @@
-function NeuroFeedbackTask()
+function NeuroFeedbackTask(varargin)
+% function NeuroFeedbackTask([Scan], [Participant], [StartRun], [EndRun],
+%   [Testing], [Suppress], [Version])
 
+try
     sca;
-    clear all;
     DeviceIndex = [];
-    
-    Responses = inputdlg({'Scan (1:Yes, 0:No):', ...
-        'Participant ID:', ...
-        'Start run: 1 - 2:', ...
-        'End run: 1 - 2:', ...
-        'Testing: (1:Yes, 0:No)', ...
-        'Suppress (1:Yes, 0:No)', ...
-        'Version: (1, 2, 3, 4)'});
-    InScan = str2num(Responses{1});
-    Participant = Responses{2};
-    StartRun = str2num(Responses{3});
-    EndRun = str2num(Responses{4});
-    Testing = str2num(Responses{5});
-    Suppress = str2num(Responses{6});
-    Version = str2num(Responses{7});
 
+    if isempty(varargin)
+        Responses = inputdlg({'Scan (1:Yes, 0:No):', ...
+            'Participant ID:', ...
+            'Start run: 1 - 2:', ...
+            'End run: 1 - 2:', ...
+            'Testing: (1:Yes, 0:No)', ...
+            'Suppress (1:Yes, 0:No)', ...
+            'Version: (1, 2, 3, 4)'});
+        InScan = str2double(Responses{1});
+        Participant = Responses{2};
+        StartRun = str2double(Responses{3});
+        EndRun = str2double(Responses{4});
+        Testing = str2double(Responses{5});
+        Suppress = str2double(Responses{6});
+        Version = str2double(Responses{7});
+    elseif numel(varargin) == 7
+        InScan = varargin{1};
+        Participant = varargin{2};
+        StartRun = varargin{3};
+        EndRun = varargin{4};
+        Testing = varargin{5};
+        Suppress = varargin{6};
+        Version = varargin{7};
+    else
+        error('Invalid number of arguments.');
+    end
+
+    % make participant out directory
+    OutDir = fullfile(pwd, 'Responses', Participant);
+    mkdir(OutDir);
+    
+    % start diary to log strange PTB behaviors
+    OutName = sprintf('%s_Diary_%s', Participant, ...
+        datestr(now, 'yyyymmdd_HHMMSS'));
+    DiaryFile = fullfile(OutDir, [OutName '.txt']);
+    diary(DiaryFile);
+    
     OptionText = [sprintf('*** OPTIONS ***\n') ...
         sprintf('InScan:      %d\n', InScan) ...
         sprintf('Participant: %s\n', Participant) ...
@@ -623,6 +647,21 @@ function NeuroFeedbackTask()
     sca;
     ListenChar(0);
     ShowCursor;
-    
     Priority(0);
+    diary off
+    close all
+    clear all
+catch err
+    % close everything
+    KbQueueRelease(DeviceIndex);
+    sca;
+    ListenChar(0);
+    ShowCursor;
+    Priority(0);
+    fclose('all');
+    close all
+    fprintf(1, '%s\n', err.message);
+    diary off
+    rethrow(err);
+end
 end
