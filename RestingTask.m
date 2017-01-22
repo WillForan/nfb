@@ -1,46 +1,46 @@
-function RestingTask()
+function RestingTask(varargin)
+% function RestingTask([InScan], [Participant])
 
+try
     sca;
-    clear all;
     DeviceIndex = [];
     
-    if isunix
-        InScan = -1;
-        Suppress = -1;
-    
-        % Turns on PTB debugging
-        while ~any(InScan == [1 0])
-            InScan = input('Scan? (1:Yes, 0:No): ');
-        end
-    
-        while ~any(Suppress == [1 0])
-            Suppress = input('Suppress? (1: Yes, 0:No): ');
-        end
+    if isempty(varargin)
+        Responses = inputdlg({'Scan (1:Yes, 0:No):', ...
+            'Participant ID:'});
+        InScan = str2double(Responses{1});
+        Participant = Responses{2};
+    elseif numel(varargin) == 2
+        InScan = varargin{1};
+        Participant = varargin{2};
     else
-        Responses = inputdlg({'Scan (1:Yes, 0:No):'});
-        InScan = str2num(Responses{1});
-        Suppress = 1;
+        error('ERROR: Invalid number of arguments.');
     end
 
+    OutDir = fullfile('Resting', Participant);
+    mkdir(OutDir);
+    
+    % start diary to log strange PTB behaviors
+    OutName = sprintf('%s_Diary_%s', Participant, ...
+        datestr(now, 'yyyymmdd_HHMMSS'));
+    DiaryFile = fullfile(OutDir, [OutName '.txt']);
+    diary(DiaryFile);
+    
     if InScan == 0
         PsychDebugWindowConfiguration
     end
 
     PsychDefaultSetup(2); % default settings
-    % Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
+    Screen('Preference', 'VisualDebugLevel', 3); % skip introduction Screen
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
-    if Suppress
-        Screen('Preference', 'SuppressAllWarnings', 1);
-        Screen('Preference', 'Verbosity', 0);
-    end
     Screens = Screen('Screens'); % get scren number
     ScreenNumber = max(Screens);
 
     % Define black and white
-    White = WhiteIndex(ScreenNumber);
-    Black = BlackIndex(ScreenNumber);
-    Grey = White * 0.5;
+    White = [1 1 1];
+    Black = [0 0 0];
+    Grey = White * 0.7;
 
     % we want X = Left-Right, Y = top-bottom
     [Window, Rect] = PsychImaging('OpenWindow', ScreenNumber, Black);
@@ -57,7 +57,8 @@ function RestingTask()
     % specify duration
     NumFrames = round(480/Refresh);
 
-    KbEventFlush;
+    % specify trigger key
+    TriggerKey = KbName('=+');
     
     % show directions while waiting for trigger '^'
     Screen('TextFont', Window, 'Arial');
@@ -66,13 +67,13 @@ function RestingTask()
     DrawFormattedText(Window, ... 
         ['The next scan is resting state.\n'...
          'Stare at the crosshair for the entire duration.\n\n' ...
-         'Waiting for ''^'' to continue.'], ...
+         'Waiting for scanner signal ''='' to continue.'], ...
         'center', 'center', Grey);
     Screen('Flip', Window);
-    FlushEvents;
     ListenChar;
     while 1
-        if CharAvail && GetChar == '^'
+        [Pressed, Secs, KeyCode] = KbCheck(DeviceIndex);
+        if Pressed && KeyCode(TriggerKey)
             break;
         end
     end
@@ -86,14 +87,25 @@ function RestingTask()
     Screen('TextSize', Window, 35);
     DrawFormattedText(Window, 'Goodbye!', 'center', 'center', Grey);
     EndTime = Screen('Flip', Window, BeginTime + (NumFrames - 0.5) * Refresh); 
-    WaitSecs(1.5);
+    WaitSecs(1);
 
     % close everything
-    Screen('Close', Window);
     sca;
+    ListenChar(0);
+    ShowCursor;
     Priority(0);
 
     TotalTime = EndTime - BeginTime;
     fprintf(1, 'Total duration: %0.2f seconds (%0.2f minutes)\n', ...
         TotalTime, TotalTime/60);
+    
+    diary off
+catch err
+    sca;
+    ListenChar(0);
+    ShowCursor;
+    Priority(0);
+    fprintf(1, '%s\n', err.message);
+    diary off
+    rethrow(err);
 end
