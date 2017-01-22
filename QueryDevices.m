@@ -1,14 +1,14 @@
 clear all;
-PsychDebugWindowConfiguration
+% PsychDebugWindowConfiguration
 
 try
     % change preferences
-    Screen('Preference', 'SkipSyncTests', 2);
+    % Screen('Preference', 'SkipSyncTests', 2);
     Screen('Preference', 'VisualDebugLevel', 3);
 
     % screen initialization and refresh
     Screens = Screen('Screens'); % get scren number
-    ScreenNumber = max(Screens);
+    ScreenNumber = 1;
     [Window, Rect] = Screen('OpenWindow', ScreenNumber);
     Info = Screen('GetWindowInfo', Window);
     PriorityLevel = MaxPriority(Window);
@@ -26,7 +26,7 @@ try
     OutIndex = OutIndex + 1;
 
     % get all screens information
-    for i = ScreenNumber
+    for i = Screens
         Hz = Screen('FrameRate', i);
         SRect = Screen('Rect', i);
 
