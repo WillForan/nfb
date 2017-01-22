@@ -27,8 +27,8 @@ try
     [Refresh] = Screen('GetFlipInterval', Window);
     
     % Define commonly used colors
-    White = WhiteIndex(ScreenNumber);
-    Black = BlackIndex(ScreenNumber);
+    White = [1 1 1];
+    Black = [0 0 0];
     Gray = White * 0.5;
     BgColor = [45 59 55] * 1/255;
     UnfilledColor = [38 41 26] * 1/255;
@@ -39,7 +39,7 @@ try
     % set up text properties
     Screen('TextFont', Window, 'Arial');
     Screen('TextSize', Window, 50);
-    Screen('TextColor', Window, [1 1 1]);
+    Screen('TextColor', Window, White);
     Screen('FillRect', Window, BgColor);
 
     % now draw on screen
@@ -53,17 +53,17 @@ try
     end
     WaitSecs('UntilTime', Until);
 
-    % print diagnostic file
-    Outfile = fullfile(OutDir, 'QueryScreen.txt');
-    Fid = fopen(Outfile, 'w');
-    fprintf(Fid, 'No problems detected with screen.\n');
-    fclose(Fid);
-
     % now close everything
     ShowCursor;
     sca;
     ListenChar(0);
     Priority(0);
+    
+    % print diagnostic file
+    Outfile = fullfile(OutDir, 'QueryScreen.txt');
+    Fid = fopen(Outfile, 'w');
+    fprintf(Fid, 'No problems detected with screen.\n');
+    fclose(Fid);
 catch err
     fclose('all');
     ShowCursor;

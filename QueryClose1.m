@@ -18,6 +18,7 @@ try
     Screens = Screen('Screens'); % get scren number
     ScreenNumber = max(Screens);
     [Window, Rect] = Screen('OpenWindow', ScreenNumber);
+    fprintf(1, 'Done opening screen.\n');
     Screen('ColorRange', Window, 1, [], 1);
     PriorityLevel = MaxPriority(Window);
     Priority(PriorityLevel);
@@ -48,19 +49,21 @@ try
         vbl = Screen('Flip', Window, Until);
         Until = vbl + 1 - Refresh * 0.5;
     end
-    WaitSecs('UntilTime', Until);
+    WaitSecs(1);
 
+    fprintf(1, 'sca\n');
     sca;
     ShowCursor;
     ListenChar(0);
     Priority(0);
     diary off
+    fprintf(1, 'Script ended successfully.\n');
 catch err
     ShowCursor;
     sca;
     ListenChar(0);
     Priority(0);
-    fprintf(1, '%s\n', err.message);
+    fprintf(1, 'ERROR: %s\n', err.message);
     diary off
     rethrow(err);
 end
