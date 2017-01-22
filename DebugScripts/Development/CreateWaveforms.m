@@ -12,19 +12,15 @@ WaitFrames = round(FlipSecs / Refresh); % display signal every this frame
 % end of the screen to the other; FlipSecs and MaxX depend on each other
 MaxX = Scale*120;
 N = Scale*4*1/FlipSecs + Scale*10*1/FlipSecs-1;
-
-
-% 4 initial baseline + 1 baseline + 5 ramp + 4 max
-Index1 = 1:(5*Scale*1/FlipSecs-1);
-Index2 = (Index1(end)+1):(Index1(end)+1+5*Scale*1/FlipSecs-1);
-Index3 = (Index2(end)+1):N;
 FinalVal = 80;
+NumRuns = 4;
+UniqueBaseline = 5;
+UniquePositive = 7;
 
-NumRuns = 2;
 % Baselines
 % Signals
 for iRun = 1:NumRuns
-    for i = 1:15
+    for i = 1:UniquePositive
         Noise = 8.5*randn(1, N);
         T1 = randi([60 180]);
         T2 = randi([120 240]);
@@ -48,7 +44,7 @@ for iRun = 1:NumRuns
         Sin1 = Mag1*sin(2*pi*(1:N)*(1/60) + Phase1*pi);
         Sin2 = Mag2*sin(2*pi*(1:N)*(1/2) + Phase1*pi);
     
-        if i < 9
+        if i < UniqueBaseline
             Baselines{iRun}{i, 1} = Noise(Index1);
             Baselines{iRun}{i, 2} = Noise(Index2);
             Baselines{iRun}{i, 3} = Noise(Index3);
