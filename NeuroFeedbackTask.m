@@ -72,12 +72,12 @@ try
     else
         DesignFid = fopen('Design.csv', 'r');
     end
-    Tmp = textscan(DesignFid, '%f%f%s%s%f%f%f', ...
+    Tmp = textscan(DesignFid, '%f%f%s%s%f%f%f%f%f', ...
         'Delimiter', ',', 'Headerlines', 1);
     fclose(DesignFid);
-    % more columns: InfuisonNum, InfOnset, WillImpOnset, J1Onset, Feed1Onset, Feed2Onset, Feed3Onset, ImprovedOnset, J2Onset, WillImpResp, WillImpRt, ImproveResp, ImprovedRt
+    % more columns: InfuisonNum, InfOnset, J1Onset, WillImpOnset, J2Onset, Feed1Onset, Feed2Onset, Feed3Onset, J3Onset, ImprovedOnset, J4Onset, WillImpResp, WillImpRt, ImproveResp, ImprovedRt
     % split feedback into baseline and feedback later
-    Design = cell(numel(Tmp{1}), numel(Tmp) + 13);
+    Design = cell(numel(Tmp{1}), numel(Tmp) + 15);
     for i = 1:numel(Tmp)
         for k = 1:numel(Tmp{1})
             if iscell(Tmp{i})
@@ -97,19 +97,23 @@ try
     WAVEFORM = 5;
     JITTER1DUR = 6;
     JITTER2DUR = 7;
-    INFUSIONNUM = 8;
-    INFONSET = 9;
-    WILLIMPROVEONSET = 10;
-    J1ONSET = 11;
-    FEED1ONSET = 12;
-    FEED2ONSET = 13;
-    FEED3ONSET = 14;
-    IMPROVEDONSET = 15;
-    J2ONSET = 16;
-    WILLIMPROVERESP = 17;
-    WILLIMPROVERT = 18;
-    IMPROVEDRESP = 19;
-    IMPROVEDRT = 20;
+    JITTER3DUR = 8;
+    JITTER4DUR = 9;
+    INFUSIONNUM = 10;
+    INFONSET = 11;
+    J1ONSET = 12;
+    WILLIMPROVEONSET = 13;
+    J2ONSET = 14;
+    FEED1ONSET = 15;
+    FEED2ONSET = 16;
+    FEED3ONSET = 17;
+    J3ONSET = 18;
+    IMPROVEDONSET = 19;
+    J4ONSET = 20;
+    WILLIMPROVERESP = 21;
+    WILLIMPROVERT = 22;
+    IMPROVEDRESP = 23;
+    IMPROVEDRT = 24;
 
     % assign INFUSIONNUM
     for i = 1:size(Design, 1)
@@ -375,16 +379,18 @@ try
    
     HideCursor;
     ListenChar(-1);
+    % define common times and number of frames
+    FlipSeconds = (round((1:10)/Refresh) - 0.1) * Refresh;
     for i = StartRun:EndRun
         RunIdx = [Design{:, RUN}]' == i;
-        RunDesign = Design(RunIdx, :);
+        RunParams = Design(RunIdx, :);
     
         % pre-populate RT and Response with NaN
-        for k = 1:size(RunDesign)
-            RunDesign{k, WILLIMPROVERESP} = nan;
-            RunDesign{k, WILLIMPROVERT} = nan;
-            RunDesign{k, IMPROVEDRESP} = nan;
-            RunDesign{k, IMPROVEDRT} = nan;
+        for k = 1:size(RunParams)
+            RunParams{k, WILLIMPROVERESP} = nan;
+            RunParams{k, WILLIMPROVERT} = nan;
+            RunParams{k, IMPROVEDRESP} = nan;
+            RunParams{k, IMPROVEDRT} = nan;
         end
         clear k;
         
@@ -412,8 +418,8 @@ try
     
         Until = 0;
         Screen('FillRect', Window, BgColor);
-        for k = 1:size(RunDesign, 1)
-            InfusionNum = RunDesign{k, INFUSIONNUM};
+        for k = 1:size(RunParams, 1)
+            InfusionNum = RunParams{k, INFUSIONNUM};
             ColorIdx = ColorOrder(InfusionNum);
             TrialColor = Colors{ColorIdx};
         
@@ -432,9 +438,9 @@ try
             if k == 1
                 BeginTime = vbl;
             end
-            RunDesign{k, INFONSET} = vbl - BeginTime;
+            RunParams{k, INFONSET} = vbl - BeginTime;
 
-            if any(strcmp(RunDesign{k, INFUSION}, {'A', 'B'}))
+            if any(strcmp(RunParams{k, INFUSION}, {'A', 'B'}))
                 for iInc = 2:size(InfNumTextures, 2)
                     %%% INFUSION RUNNING CODE %%%
                     
@@ -446,46 +452,51 @@ try
                     Screen('FillRect', Window, TrialColor, ...
                         ProgressRect{iInc - 1, 1});
 
-                    vbl = Screen('Flip', Window, vbl + (60 - 0.5) * Refresh, 1);
+                    vbl = Screen('Flip', Window, vbl + FlipSeconds(1), 1);
                 end
             end
+            
+            %%% JITTER1 %%%
+            Screen('FillRect', Window, BgColor);
+            if any(strcmp(RunParams{k, INFUSION}, {'A', 'B'}))
+                vbl = Screen('Flip', Window, vbl + FlipSeconds(1));
+            else
+                vbl = Screen('Flip', Window, vbl + FlipSeconds(4));
+            end
+            RunParams{k, J1ONSET} = vbl - BeginTime;
     
             %%% WILLIMPROVE RUNNING CODE %%%
             Screen('DrawTexture', Window, WillImproveTexture);
-            if any(strcmp(RunDesign{k, INFUSION}, {'A', 'B'}))
-                ContVbl = Screen('Flip', Window, vbl + (60 - 0.5) * Refresh);
-            else
-                ContVbl = Screen('Flip', Window, vbl + 4 - 0.5 * Refresh);
-            end
+            ContVbl = Screen('Flip', Window, vbl + (RunParams{k, JITTER1DUR} - 0.1) * Refresh);
             KbQueueStart(DeviceIndex);
-            RunDesign{k, WILLIMPROVEONSET} = ContVbl - BeginTime;
+            RunParams{k, WILLIMPROVEONSET} = ContVbl - BeginTime;
         
-            %%% JITTER1 %%%
+            %%% JITTER2 %%%
             Screen('FillRect', Window, BgColor);
-            vbl = Screen('Flip', Window, ContVbl + 2 - 0.5 * Refresh);
+            vbl = Screen('Flip', Window, ContVbl + FlipSeconds(2));
+            RunParams{k, J2ONSET} = vbl - BeginTime;
     
             KbQueueStop(DeviceIndex);
             [DidRespond, TimeKeysPressed] = KbQueueCheck(DeviceIndex);
             if DidRespond
                 TimeKeysPressed(TimeKeysPressed == 0) = nan;
                 [RT, Idx] = min(TimeKeysPressed);
-                RunDesign{k, WILLIMPROVERESP} = KbNames{Idx};
-                RunDesign{k, WILLIMPROVERT} = RT - ContVbl;
+                RunParams{k, WILLIMPROVERESP} = KbNames{Idx};
+                RunParams{k, WILLIMPROVERT} = RT - ContVbl;
             end
             KbQueueFlush(DeviceIndex);
     
             fprintf(1, 'Run:              %d\n', i);
             fprintf(1, 'Trial:            %d\n', k);
-            fprintf(1, 'Infusion:         %s\n', RunDesign{k, INFUSION});
-            fprintf(1, 'InfRT:            %0.4f\n', RunDesign{k, WILLIMPROVERT});
-            fprintf(1, 'InfResponse:      %s\n', RunDesign{k, WILLIMPROVERESP});
-            RunDesign{k, J1ONSET} = vbl - BeginTime;
+            fprintf(1, 'Infusion:         %s\n', RunParams{k, INFUSION});
+            fprintf(1, 'InfRT:            %0.4f\n', RunParams{k, WILLIMPROVERT});
+            fprintf(1, 'InfResponse:      %s\n', RunParams{k, WILLIMPROVERESP});5
             
             %%% FEEDBACK RUNNING CODE %%%
-            if strcmp(RunDesign{k, FEEDBACK}, 'Signal')
-                Waveforms = LineSignals{i}(RunDesign{k, WAVEFORM}, :);
+            if strcmp(RunParams{k, FEEDBACK}, 'Signal')
+                Waveforms = LineSignals{i}(RunParams{k, WAVEFORM}, :);
             else
-                Waveforms = LineBaselines{i}(RunDesign{k, WAVEFORM}, :);
+                Waveforms = LineBaselines{i}(RunParams{k, WAVEFORM}, :);
             end
     
             for iSig = 1:numel(Waveforms)
@@ -504,58 +515,63 @@ try
 
                     if Begin == 1
                         if iSig == 1
-                            Until = vbl + (RunDesign{k, JITTER1DUR} - 0.5) * Refresh;
+                            Until = vbl + (RunParams{k, JITTER2DUR} - 0.1) * Refresh;
                         else
-                            Until = vbl + (WaitFrames - 0.5) * Refresh;
+                            Until = vbl + (WaitFrames - 0.1) * Refresh;
                         end
                         vbl = Screen('Flip', Window, Until);
     
                         if iSig == 1
-                            RunDesign{k, FEED1ONSET} = vbl - BeginTime;
+                            RunParams{k, FEED1ONSET} = vbl - BeginTime;
                         elseif iSig == 2
-                            RunDesign{k, FEED2ONSET} = vbl - BeginTime;
+                            RunParams{k, FEED2ONSET} = vbl - BeginTime;
                         else
-                            RunDesign{k, FEED3ONSET} = vbl - BeginTime;
+                            RunParams{k, FEED3ONSET} = vbl - BeginTime;
                         end
                     else
                         % can try no duration here to see what happens
                         % but will need duration if I plan to show signal every nth frame
                         % with n > 1, so might as well keep it for now
-                        vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5) * Refresh);
+                        vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.1) * Refresh);
                     end
                     Begin = Begin + 2 * Scale;
                 end
             end
             clear iSig iEnd
     
+            %%% JITTER 3 %%%
+            Screen('FillRect', Window, BgColor);
+            vbl = Screen('Flip', Window, vbl + (WaitFrames - 0.1) * Refresh);
+            RunParams{k, J3ONSET} = vbl - BeginTime;
+            
             %%% IMPROVED %%%
             Screen('DrawTexture', Window, ImprovedTexture);
-            ImpVbl = Screen('Flip', Window, vbl + (WaitFrames - 0.5) * Refresh);
             KbQueueStart(DeviceIndex);
-            RunDesign{k, IMPROVEDONSET} = ImpVbl - BeginTime;
+            ImpVbl = Screen('Flip', Window, vbl + (RunParams{k, JITTER3DUR} - 0.1) * Refresh);
+            RunParams{k, IMPROVEDONSET} = ImpVbl - BeginTime;
         
-            %%% JITTER2 %%%
+            %%% JITTER4 %%%
             % Screen('FillRect', Window, BgColor);
-            vbl = Screen('Flip', Window, ImpVbl + 2 - 0.5 * Refresh);
+            vbl = Screen('Flip', Window, ImpVbl + FlipSeconds(2));
             KbQueueStop(DeviceIndex);
             [DidRespond, TimeKeysPressed] = KbQueueCheck(DeviceIndex);
             if DidRespond
                 TimeKeysPressed(TimeKeysPressed == 0) = nan;
                 [RT, Idx] = min(TimeKeysPressed);
-                RunDesign{k, IMPROVEDRESP} = KbNames{Idx};
-                RunDesign{k, IMPROVEDRT} = RT - ImpVbl;
+                RunParams{k, IMPROVEDRESP} = KbNames{Idx};
+                RunParams{k, IMPROVEDRT} = RT - ImpVbl;
             end
             KbQueueFlush(DeviceIndex);
 
-            fprintf(1, 'ImprovedRT:       %0.4f\n', RunDesign{k, IMPROVEDRT});
-            fprintf(1, 'ImprovedResponse: %s\n\n', RunDesign{k, IMPROVEDRESP});
+            fprintf(1, 'ImprovedRT:       %0.4f\n', RunParams{k, IMPROVEDRT});
+            fprintf(1, 'ImprovedResponse: %s\n\n', RunParams{k, IMPROVEDRESP});
 
-            RunDesign{k, J2ONSET} = vbl - BeginTime;
-            Until = vbl + (RunDesign{k, JITTER2DUR} - 0.5) * Refresh;
+            RunParams{k, J4ONSET} = vbl - BeginTime;
+            Until = vbl + (RunParams{k, JITTER4DUR}) * Refresh;
         end
         WaitSecs('UntilTime', Until);
         % now write out run design
-        save(OutMat, 'RunDesign');
+        save(OutMat, 'RunParams');
         OutFid = fopen(OutCsv, 'w');
         fprintf(OutFid, ...
             ['Participant,', ...
@@ -568,65 +584,101 @@ try
             'Waveform,', ...
             'Jitter1Dur,', ...
             'Jitter2Dur,', ...
+            'Jitter3Dur,', ...
+            'Jitter4Dur,', ...
             'InfOnset,', ...
-            'WillImpOnset,', ...
             'J1Onset,', ...
+            'WillImpOnset,', ...
+            'J2Onset,', ...
             'Feed1Onset,', ...
             'Feed2Onset,', ...
             'Feed3Onset,', ...
+            'J3Onset,', ...
             'ImprovedOnset,', ...
-            'J2Onset,', ...
+            'J4Onset,', ...
             'WillImpResp,', ...
             'WillImpRt,', ...
             'ImprovedResp,', ...
             'ImprovedRt\n']);
-        for DesignIdx = 1:size(RunDesign, 1)
+        for DesignIdx = 1:size(RunParams, 1)
             fprintf(OutFid, '%s,', Participant);
             fprintf(OutFid, '%d,', Version);
             fprintf(OutFid, '%d,', i);
-            fprintf(OutFid, '%d,', RunDesign{DesignIdx, TRIALNUM});
-            fprintf(OutFid, '%s,', RunDesign{DesignIdx, INFUSION});
-            fprintf(OutFid, '%d,', RunDesign{DesignIdx, INFUSIONNUM});
-            fprintf(OutFid, '%s,', RunDesign{DesignIdx, FEEDBACK});
-            fprintf(OutFid, '%d,', RunDesign{DesignIdx, WAVEFORM});
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, JITTER1DUR} * Refresh);
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, JITTER2DUR} * Refresh);
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, INFONSET});
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, WILLIMPROVEONSET});
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, J1ONSET}); 
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, FEED1ONSET});
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, FEED2ONSET});
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, FEED3ONSET});
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, IMPROVEDONSET});
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, J2ONSET});
+            fprintf(OutFid, '%d,', RunParams{DesignIdx, TRIALNUM});
+            fprintf(OutFid, '%s,', RunParams{DesignIdx, INFUSION});
+            fprintf(OutFid, '%d,', RunParams{DesignIdx, INFUSIONNUM});
+            fprintf(OutFid, '%s,', RunParams{DesignIdx, FEEDBACK});
+            fprintf(OutFid, '%d,', RunParams{DesignIdx, WAVEFORM});
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, JITTER1DUR} * Refresh);
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, JITTER2DUR} * Refresh);
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, JITTER3DUR} * Refresh);
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, JITTER4DUR} * Refresh);
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, INFONSET});
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, J1ONSET});
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, WILLIMPROVEONSET});
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, J2ONSET}); 
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, FEED1ONSET});
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, FEED2ONSET});
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, FEED3ONSET});
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, J3ONSET});
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, IMPROVEDONSET});
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, J4ONSET});
     
             % handle resposne now
-            Response = RunDesign{DesignIdx, WILLIMPROVERESP};
+            Response = RunParams{DesignIdx, WILLIMPROVERESP};
             if ischar(Response)
                 if any(strcmp({'1', '1!'}, Response))
                     Response = 1;
                 elseif any(strcmp({'2', '2@'}, Response))
                     Response = 2;
+                elseif any(strcmp({'3', '3#'}, Response))
+                    Response = 3;
+                elseif any(strcmp({'4', '4$'}, Response))
+                    Response = 4;
+                elseif any(strcmp({'5', '5%'}, Response))
+                    Response = 5;
+                elseif any(strcmp({'6', '6^'}, Response))
+                    Response = 6;
+                elseif any(strcmp({'7', '7&'}, Response))
+                    Response = 7;
+                elseif any(strcmp({'8', '8*'}, Response))
+                    Response = 8;
+                elseif any(strcmp({'9', '9('}, Response))
+                    Response = 9;
                 else
                     Response = nan;
                 end
             end
             fprintf(OutFid, '%d,', Response);
-            fprintf(OutFid, '%0.4f,', RunDesign{DesignIdx, WILLIMPROVERT});
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, WILLIMPROVERT});
         
             % handle resposne now
-            Response = RunDesign{DesignIdx, IMPROVEDRESP};
+            Response = RunParams{DesignIdx, IMPROVEDRESP};
             if ischar(Response)
                 if any(strcmp({'1', '1!'}, Response))
                     Response = 1;
                 elseif any(strcmp({'2', '2@'}, Response))
                     Response = 2;
+                elseif any(strcmp({'3', '3#'}, Response))
+                    Response = 3;
+                elseif any(strcmp({'4', '4$'}, Response))
+                    Response = 4;
+                elseif any(strcmp({'5', '5%'}, Response))
+                    Response = 5;
+                elseif any(strcmp({'6', '6^'}, Response))
+                    Response = 6;
+                elseif any(strcmp({'7', '7&'}, Response))
+                    Response = 7;
+                elseif any(strcmp({'8', '8*'}, Response))
+                    Response = 8;
+                elseif any(strcmp({'9', '9('}, Response))
+                    Response = 9;
                 else
                     Response = nan;
                 end
             end
             fprintf(OutFid, '%d,', Response);
-            fprintf(OutFid, '%0.4f\n', RunDesign{DesignIdx, IMPROVEDRT});
+            fprintf(OutFid, '%0.4f\n', RunParams{DesignIdx, IMPROVEDRT});
         end
         fclose(OutFid);
         
