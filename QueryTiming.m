@@ -67,12 +67,6 @@ try
     sca;
     ListenChar(0);
     Priority(0);
-    
-    % print diagnostic file
-    Outfile = fullfile(OutDir, 'QueryScreen.txt');
-    Fid = fopen(Outfile, 'w');
-    fprintf(Fid, 'No problems detected with screen.\n');
-    fclose(Fid);
 catch err
     fclose('all');
     ShowCursor;
