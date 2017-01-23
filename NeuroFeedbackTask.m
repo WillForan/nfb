@@ -1,6 +1,6 @@
 function NeuroFeedbackTask(varargin)
 % function NeuroFeedbackTask([Scan], [Participant], [StartRun], [EndRun],
-%   [Testing], [Suppress], [Version])
+%   [Testing], [Version])
 
 try
     sca;
@@ -9,26 +9,23 @@ try
     if isempty(varargin)
         Responses = inputdlg({'Scan (1:Yes, 0:No):', ...
             'Participant ID:', ...
-            'Start run: 1 - 2:', ...
-            'End run: 1 - 2:', ...
+            'Start run: 1 - 4:', ...
+            'End run: 1 - 4:', ...
             'Testing: (1:Yes, 0:No)', ...
-            'Suppress (1:Yes, 0:No)', ...
             'Version: (1, 2, 3, 4)'});
         InScan = str2double(Responses{1});
         Participant = Responses{2};
         StartRun = str2double(Responses{3});
         EndRun = str2double(Responses{4});
         Testing = str2double(Responses{5});
-        Suppress = str2double(Responses{6});
-        Version = str2double(Responses{7});
-    elseif numel(varargin) == 7
+        Version = str2double(Responses{6});
+    elseif numel(varargin) == 6
         InScan = varargin{1};
         Participant = varargin{2};
         StartRun = varargin{3};
         EndRun = varargin{4};
         Testing = varargin{5};
-        Suppress = varargin{6};
-        Version = varargin{7};
+        Version = varargin{6};
     else
         error('Invalid number of arguments.');
     end
@@ -44,13 +41,12 @@ try
     diary(DiaryFile);
     
     OptionText = [sprintf('*** OPTIONS ***\n') ...
-        sprintf('InScan:      %d\n', InScan) ...
-        sprintf('Participant: %s\n', Participant) ...
-        sprintf('StartRun:    %d\n', StartRun) ...
-        sprintf('EndRun:      %d\n', EndRun) ...
-        sprintf('Testing:     %d\n', Testing) ...
-        sprintf('Suppres:     %d\n', Suppress) ...
-        sprintf('Version:     %d\n', Version) ...
+        sprintf('OPTIONS: InScan      %d\n', InScan) ...
+        sprintf('OPTIONS: Participant %s\n', Participant) ...
+        sprintf('OPTIONS: StartRun    %d\n', StartRun) ...
+        sprintf('OPTIONS: EndRun      %d\n', EndRun) ...
+        sprintf('OPTIONS: Testing     %d\n', Testing) ...
+        sprintf('OPTIONS: Version     %d\n', Version) ...
         sprintf('*** OPTIONS ***\n\n')];
     fprintf(1, '\n%s', OptionText);
     
@@ -75,7 +71,9 @@ try
     Tmp = textscan(DesignFid, '%f%f%s%s%f%f%f%f%f', ...
         'Delimiter', ',', 'Headerlines', 1);
     fclose(DesignFid);
-    % more columns: InfuisonNum, InfOnset, J1Onset, WillImpOnset, J2Onset, Feed1Onset, Feed2Onset, Feed3Onset, J3Onset, ImprovedOnset, J4Onset, WillImpResp, WillImpRt, ImproveResp, ImprovedRt
+    % more columns: InfuisonNum, InfOnset, J1Onset, WillImpOnset, J2Onset, Feed1Onset, 
+    %               Feed2Onset, Feed3Onset, J3Onset, ImprovedOnset, J4Onset, WillImpResp, 
+    %               WillImpRt, ImproveResp, ImprovedRt
     % split feedback into baseline and feedback later
     Design = cell(numel(Tmp{1}), numel(Tmp) + 15);
     for i = 1:numel(Tmp)
@@ -129,6 +127,7 @@ try
             error('Unknown infusion: %s, row: %d', Design{i, INFUSION}, i);
         end
     end
+    clear i
 
     % default color scheme (used in infusion and feedback)
     Colors = {
@@ -157,10 +156,6 @@ try
     Screen('Preference', 'VisualDebugLevel', 3); % skip introduction Screen
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
-    if Suppress
-        Screen('Preference', 'SuppressAllWarnings', 1);
-        Screen('Preference', 'Verbosity', 0);
-    end
     Screens = Screen('Screens'); % get screen number
     ScreenNumber = max(Screens);
     
@@ -486,11 +481,11 @@ try
             end
             KbQueueFlush(DeviceIndex);
     
-            fprintf(1, 'Run:              %d\n', i);
-            fprintf(1, 'Trial:            %d\n', k);
-            fprintf(1, 'Infusion:         %s\n', RunParams{k, INFUSION});
-            fprintf(1, 'InfRT:            %0.4f\n', RunParams{k, WILLIMPROVERT});
-            fprintf(1, 'InfResponse:      %s\n', RunParams{k, WILLIMPROVERESP});5
+            fprintf(1, 'RESPONSE: Run              %d\n', i);
+            fprintf(1, 'RESPONSE: Trial            %d\n', k);
+            fprintf(1, 'RESPONSE: Infusion         %s\n', RunParams{k, INFUSION});
+            fprintf(1, 'RESPONSE: InfRT            %0.4f\n', RunParams{k, WILLIMPROVERT});
+            fprintf(1, 'RESPONSE: InfResponse      %s\n', RunParams{k, WILLIMPROVERESP});
             
             %%% FEEDBACK RUNNING CODE %%%
             if strcmp(RunParams{k, FEEDBACK}, 'Signal')
@@ -563,11 +558,11 @@ try
             end
             KbQueueFlush(DeviceIndex);
 
-            fprintf(1, 'ImprovedRT:       %0.4f\n', RunParams{k, IMPROVEDRT});
-            fprintf(1, 'ImprovedResponse: %s\n\n', RunParams{k, IMPROVEDRESP});
+            fprintf(1, 'RESPONSE: ImprovedRT       %0.4f\n', RunParams{k, IMPROVEDRT});
+            fprintf(1, 'RESPONSE: ImprovedResponse %s\n\n', RunParams{k, IMPROVEDRESP});
 
             RunParams{k, J4ONSET} = vbl - BeginTime;
-            Until = vbl + (RunParams{k, JITTER4DUR}) * Refresh;
+            Until = vbl + (RunParams{k, JITTER4DUR} - 0.1) * Refresh;
         end
         WaitSecs('UntilTime', Until);
         % now write out run design
