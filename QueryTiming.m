@@ -61,6 +61,20 @@ try
         Vbl = CurVbl;
     end
     WaitSecs(1);
+    
+    OutFile = fullfile(OutDir, 'QueryTiming.csv');
+    Fid = fopen(OutFile, 'w');
+    fprintf(Fid, 'Offset,Flip,Duration\n');
+    for i = 1:size(data, 1)
+        for k = 1:size(data, 2)
+            if k == size(data, 2)
+                fprintf(Fid, '%0.4f\n', data(i, k));
+            else
+                fprintf(Fid, '%0.4f,', data(i, k));
+            end
+        end
+    end
+    fclose(Fid);
 
     % now close everything
     ShowCursor;
