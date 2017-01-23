@@ -17,9 +17,9 @@ Possible = PrintAllPermutations(Trials);
 NumJitters = 4;
 TrialBlocks = 9;
 UniquePositive = 7;
-UniqueBaseline = 5;
+UniqueBaseline = 4;
 NumBaseAC = 2;
-NumPosBD = 4;
+NumPosBD = 5;
 
 fid = fopen('Design.csv', 'w');
 fprintf(fid, 'Run,');
