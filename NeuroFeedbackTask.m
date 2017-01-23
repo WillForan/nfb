@@ -264,9 +264,12 @@ try
     FeedbackTexture = Screen('MakeTexture', Window, Im);
 
     % create feedback rect for signal drawing
-    FeedbackRect = [0 0 920 750];
-    FeedbackXCenter = 52 + XCenter;
-    CenteredFeedback = CenterRectOnPoint(FeedbackRect, FeedbackXCenter, YCenter);
+    FeedbackRect = [0 0 923 750];
+    OrigFeedbackRect = [0 0 920 750];
+    FeedbackXCenter = 50.5 + XCenter;
+    OrigFeedXCenter = 52 + XCenter;
+    CenteredFeedback = CenterRectOnPointd(FeedbackRect, FeedbackXCenter, YCenter);
+    CenteredOrigFeed = CenterRectOnPointd(OrigFeedbackRect, OrigFeedXCenter, YCenter);
 
     %%% IMPROVED SETUP %%%
     FileName = fullfile(pwd, 'Images', 'Questions',  'Improved.png');
@@ -284,7 +287,7 @@ try
     % create original and plotted ranges
     XRange = [0 (MaxX-1)];
     YRange = [-100 100];
-    NewXRange = [CenteredFeedback(1) CenteredFeedback(3)];
+    NewXRange = [CenteredOrigFeed(1) CenteredOrigFeed(3)];
     NewYRange = [CenteredFeedback(2) CenteredFeedback(4)];
     
     % dummy signals
@@ -502,7 +505,7 @@ try
     
                     % draw feedback line
                     Screen('DrawLines', Window, ...
-                        [NewX_Line NewXRange(1) NewXRange(2); ...
+                        [NewX_Line CenteredFeedback(1) CenteredFeedback(3); ...
                         Waveforms{iSig}(Begin:iEnd) sum(NewYRange)/2 sum(NewYRange)/2], ...
                         [repmat(4, length(Begin:iEnd)/2, 1); 1], ...
                         [repmat(TrialColor', 1, iEnd-Begin+1) [1 1 1; 1 1 1]']);
