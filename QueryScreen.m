@@ -64,6 +64,7 @@ try
     Fid = fopen(Outfile, 'w');
     fprintf(Fid, 'No problems detected with screen.\n');
     fclose(Fid);
+    diary off
 catch err
     fclose('all');
     ShowCursor;

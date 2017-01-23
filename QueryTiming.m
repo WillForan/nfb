@@ -81,6 +81,7 @@ try
     sca;
     ListenChar(0);
     Priority(0);
+    diary off
 catch err
     fclose('all');
     ShowCursor;
