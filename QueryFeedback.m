@@ -45,9 +45,12 @@ try
     FeedbackTexture = Screen('MakeTexture', Window, Im);
 
     % create feedback rect for signal drawing
-    FeedbackRect = [0 0 920 750];
-    FeedbackXCenter = 52 + XCenter;
-    CenteredFeedback = CenterRectOnPoint(FeedbackRect, FeedbackXCenter, YCenter);
+    FeedbackRect = [0 0 923 750];
+    OrigFeedbackRect = [0 0 920 750];
+    FeedbackXCenter = 50.5 + XCenter;
+    OrigFeedXCenter = 52 + XCenter;
+    CenteredFeedback = CenterRectOnPointd(FeedbackRect, FeedbackXCenter, YCenter);
+    CenteredOrigFeed = CenterRectOnPointd(OrigFeedbackRect, OrigFeedXCenter, YCenter);
 
     %%% SIGNAL SETUP %%%
     Scale = 2; % move by this many points across signals
@@ -60,7 +63,7 @@ try
     % create original and plotted ranges
     XRange = [0 (MaxX-1)];
     YRange = [-100 100];
-    NewXRange = [CenteredFeedback(1) CenteredFeedback(3)];
+    NewXRange = [CenteredOrigFeed(1) CenteredOrigFeed(3)];
     NewYRange = [CenteredFeedback(2) CenteredFeedback(4)];
     
     % dummy signals
@@ -183,10 +186,11 @@ try
     % initialize screen display
     Screen('DrawTexture', Window, FeedbackTexture);
     Screen('DrawLines', Window, ...
-        [NewX_Line NewXRange(1) NewXRange(2); ...
+        [NewX_Line CenteredFeedback(1) CenteredFeedback(3); ...
         Waveforms{Stage}(StageBegin:StageEnd) sum(NewYRange)/2 sum(NewYRange)/2], ...
         [repmat(4, (StageEnd - StageBegin + 1)/2, 1); 1], ...
         [repmat([1 0 0]', 1, StageEnd-StageBegin+1) [1 1 1;1 1 1]']);
+    % Screen('FrameRect', Window, White, CenteredFeedback);
     DrawFormattedText(Window, ...
         [sprintf('Position:   %d\n', Position), ...
          sprintf('Stage:      %d\n', Stage), ...
@@ -252,13 +256,15 @@ try
             
             if Flip
                 Screen('DrawTexture', Window, FeedbackTexture);
+
                 
                 % draw feedback line
                 Screen('DrawLines', Window, ...
-                    [NewX_Line NewXRange(1) NewXRange(2); ...
+                    [NewX_Line CenteredFeedback(1) CenteredFeedback(3); ...
                     Waveforms{Stage}(StageBegin:StageEnd) sum(NewYRange)/2 sum(NewYRange)/2], ...
                     [repmat(4, (StageEnd - StageBegin + 1)/2, 1); 1], ...
                     [repmat([1 0 0]', 1, StageEnd-StageBegin+1) [1 1 1; 1 1 1]']);
+                % Screen('FrameRect', Window, White, CenteredFeedback);
                 DrawFormattedText(Window, ...
                     [sprintf('Position:   %d\n', Position), ...
                      sprintf('Stage:      %d\n', Stage), ...
