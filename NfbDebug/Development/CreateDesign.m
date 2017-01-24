@@ -21,7 +21,7 @@ UniqueBaseline = 4;
 NumBaseAC = 1;
 NumPosBD = 4;
 
-fid = fopen('Design.csv', 'w');
+fid = fopen('NfbDesign.csv', 'w');
 fprintf(fid, 'Run,');
 fprintf(fid, 'TrialNum,');
 fprintf(fid, 'Infusion,');
