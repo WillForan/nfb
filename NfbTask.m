@@ -1,5 +1,5 @@
-function NeuroFeedbackTask(varargin)
-% function NeuroFeedbackTask([Scan], [Participant], [StartRun], [EndRun],
+function NfbTask(varargin)
+% function NfbTask([Scan], [Participant], [StartRun], [EndRun],
 %   [Testing], [Version])
 
 try
