@@ -11,15 +11,15 @@ rng(1234567890);
 % 9 trials of each (1, 2, 3, 4)
 
 NumRuns = 4;
-NumTrials = 36;
+NumTrials = 32;
 Trials = [1 2 3 4];
 Possible = PrintAllPermutations(Trials);
 NumJitters = 4;
-TrialBlocks = 9;
+TrialBlocks = 8;
 UniquePositive = 7;
 UniqueBaseline = 4;
-NumBaseAC = 2;
-NumPosBD = 5;
+NumBaseAC = 1;
+NumPosBD = 4;
 
 fid = fopen('Design.csv', 'w');
 fprintf(fid, 'Run,');
