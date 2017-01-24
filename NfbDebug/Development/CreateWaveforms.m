@@ -1,8 +1,9 @@
 clear all;
 rng(1234567890);
 
-% 0.5-1.5 seconds of extended baseline (30-90)
-% 0.5-2   seconds increment            (30-120) 
+Interval1 = [60 120];
+Interval2 = [30 180];
+FeedbackTime = 9;
 % remaining seconds at max
 Refresh = 1/60;
 Scale = 2; % move by this many points across signals
@@ -11,19 +12,20 @@ WaitFrames = round(FlipSecs / Refresh); % display signal every this frame
 % set MaxX, this value determines the number of seconds to move from one
 % end of the screen to the other; FlipSecs and MaxX depend on each other
 MaxX = Scale*120;
-N = Scale*4*1/FlipSecs + Scale*8*1/FlipSecs-1;
+N = Scale*4*1/FlipSecs + Scale*FeedbackTime*1/FlipSecs-1;
 FinalVal = 80;
 NumRuns = 4;
-UniqueBaseline = 5;
 UniquePositive = 7;
+UniqueBaseline = 4;
+
 
 % Baselines
 % Signals
 for iRun = 1:NumRuns
     for i = 1:UniquePositive
         Noise = 8.5*randn(1, N);
-        T1 = randi([30 90]);
-        T2 = randi([30 160]);
+        T1 = randi(Interval1);
+        T2 = randi(Interval2);
         if mod(T2, 2)
             T2 = T2 - 1;
         end

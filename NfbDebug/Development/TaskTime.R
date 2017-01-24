@@ -39,12 +39,14 @@ write.csv(SelectedTimes, file="PossibleTimes.csv", quote=F, row.names=F)
   
 
 
-BaseTrialDur <- 16
-data <- read.csv("Design.csv")
+BaseTrialDur <- 17
+data <- read.csv("NfbDesign.csv")
 MeanJitter <- mean(c(data$Jitter1Dur, data$Jitter2Dur, data$Jitter3Dur, data$Jitter4Dur))
 data.time <- data %>%
   group_by(Run) %>%
-  summarize(Seconds = (sum(Jitter1Dur) + sum(Jitter2Dur) + sum(Jitter3Dur) + sum(Jitter4Dur))/60 + BaseTrialDur*n(),
-    Minutes = Seconds/60)
+  summarize(JitterSeconds = (sum(Jitter1Dur) + sum(Jitter2Dur) + sum(Jitter3Dur) + sum(Jitter4Dur))/60,
+    TrialSeconds = BaseTrialDur*n(),
+    TotalSeconds = JitterSeconds + TrialSeconds,
+    Minutes = TotalSeconds/60)
 TotalMinutes <- sum(data.time$Minutes)
     

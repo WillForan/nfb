@@ -41,9 +41,9 @@ for i = 1:NumRuns
     RunTrials = RunTrials(:);
 
     % make 4 exponentially distributed distributions
-    lambda = 1/60;
-    c1 = 5;
-    c2 = 120;
+    lambda = 1/65;
+    c1 = 0;
+    c2 = 180;
     e1 = exp(-lambda*c1);
     e2 = exp(-lambda*c2);
     Jitter = floor(-1/lambda * log(e1-rand(NumTrials, NumJitters)*(e1-e2)));
