@@ -31,11 +31,11 @@ try
     end
 
     % make participant out directory
-    OutDir = fullfile(pwd, 'Responses', Participant);
+    OutDir = fullfile(pwd, 'NfbResponses', Participant);
     mkdir(OutDir);
     
     % start diary to log strange PTB behaviors
-    OutName = sprintf('%s_Diary_%s', Participant, ...
+    OutName = sprintf('%s_Nfb_Diary_%s', Participant, ...
         datestr(now, 'yyyymmdd_HHMMSS'));
     DiaryFile = fullfile(OutDir, [OutName '.txt']);
     diary(DiaryFile);
@@ -55,7 +55,7 @@ try
     end
     
     % print out options to text file
-    OutName = sprintf('%s_Options_%s', Participant, ...
+    OutName = sprintf('%s_Nfb_Options_%s', Participant, ...
         datestr(now, 'yyyymmdd_HHMMSS'));
     OptionFile = fullfile(OutDir, [OutName '.txt']);
     OptionFid = fopen(OptionFile, 'w');
@@ -64,10 +64,11 @@ try
     
     % read in design
     if Testing
-        DesignFid = fopen('TestOrder.csv', 'r');
+        DesignFile = fullfile(pwd, 'NfbDebug', 'Development', 'NfbTesting.csv');
     else
-        DesignFid = fopen('Design.csv', 'r');
+        DesignFile = fullfile(pwd, 'NfbDebug', 'Development', 'NfbDesign.csv');
     end
+    DesignFid = fopen(DesignFile, 'r');
     Tmp = textscan(DesignFid, '%f%f%s%s%f%f%f%f%f', ...
         'Delimiter', ',', 'Headerlines', 1);
     fclose(DesignFid);
@@ -393,7 +394,7 @@ try
         clear k;
         
         % handle file naming
-        OutName = sprintf('%s_V%d_Run_%02d_%s', Participant, Version, i, ...
+        OutName = sprintf('%s_Nfb_V%d_Run_%02d_%s', Participant, Version, i, ...
             datestr(now, 'yyyymmdd_HHMMSS'));
         OutCsv = fullfile(OutDir, [OutName '.csv']);
         OutMat = fullfile(OutDir, [OutName '.mat']);
