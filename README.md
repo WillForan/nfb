@@ -1,19 +1,22 @@
 # nfb
 
 **Design**
-* 2 runs
-  * Run1 = 23.67 minutes (1420.667 seconds)
-  * Run2 = 23.83 minutes (1429.517 seconds)
-  * 72 Blocks per run 
+* 4 runs
+  * Run1 = 10.9 minutes (654 seconds)
+  * Run2 = 11.0 minutes (662 seconds)
+  * Run3 = 11.0 minutes (663 seconds)
+  * Run4 = 11.0 minutes (659 seconds)
+  * TotalTime = 43.9 minutes
+  * 32 Blocks per run 
     * 4 conditions
-      * Protocol 196KJ  (A; 15 signals, 3 baseline)
-      * Protocol 564D   (B, 10 signals, 8 baseline)
-      * Calibration I   (C; 15 signals, 3 baseline)
-      * Calibration II  (D; 10 signals, 8 baseline)
-    * 18 trials for each condition
-    * 15 unique feedback signals for each run
+      * Protocol 196KJ  (A; 7 signals, 1 baseline)
+      * Protocol 564D   (B, 4 signals, 4 baseline)
+      * Calibration I   (C; 7 signals, 1 baseline)
+      * Calibration II  (D; 4 signals, 4 baseline)
+    * 8 trials for each condition
+    * 7 unique feedback signals for each run
       * B and D show signals that are subset of A and C signals
-    * 8 unique feedback baselines for each run
+    * 4 unique feedback baselines for each run
       * A and C show baselines that are subset of B and D baselines
     * Each condition has a different fill color
       * Colors are counterbalanced across 4 different versions
@@ -21,24 +24,26 @@
       * 4 seconds infusion:
         * 4 stages: 0, 33, 66, 100, 100
         * Each stage displays for 1 second
+      * 0 - 3 seconds of random jitter 
+        * Jitters are sample from an exponential distribution
       * 2 seconds will improve
-        * Keyboard responses are restricted to 1, 2
-          * 1 = Yes
-          * 2 = No
-      * 0.25 - 2 seconds random jitter
+        * Keyboard responses are restricted to 1, 2, 3, 4, 5, 6, 7, 8, 9 0
+          * ?? = Yes
+          * ?? = No
+      * 0 - 3 seconds random jitter
         * Jitters are sampled from an exponential distribution
       * 10 seconds feedback
         * 3 stages
-          * 1-3 seconds baseline (excluding the initial baseline screen)
-          * 2-4 seconds ramp
+          * 1-2 seconds baseline (excluding the initial baseline screen)
+          * 0.5-3 seconds ramp
           * rest at max
-        * Feedback consists of Gaussian noise
+        * Feedback consists of Gaussian noise2
         * For stages 2,3 two sine waves are added to signal
       * 2 seconds improved
         * Keyboard responses restricted to 1, 2
           * 1 = Yes
           * 2 = No
-      * 0.25 - 2 seconds random jitter
+      * 0 - 3 seconds random jitter
         * Jitters are sampled from an exponential distribution
       
 **Design Options**
@@ -53,9 +58,6 @@
 * Testing
   * 1 = Yes, this will use TestOrder.csv as the design which is signficiantly shorter for testing purposes
   * 2 = No, this will use Design.csv as the design which is what you want to use in the scanner
-* Suppress
-  * 1 = Yes, suprress all psychtoolbox output
-  * 2 = No, do not suppress psychtoolobx output
 * Version controls the color scheme
   * 1
     * Protocol 196KJ = red
@@ -79,12 +81,11 @@
     * Calibration II = red
     
 **File/Directory Descriptions**
-* NeurofeedbackTask.m - matlab script to run the social cognition task
-* Design.csv - csv file listing the trials used in the experiment. Manually edit this file if you want to use a specific trial order, but make sure you keep the same format; otherwise, the task will not run.
-* GetDevice.m - matlab file to list connected devices to computer. Use this to identify the DeviceIndex value for SocialCognitionTask. This is useless for Windows machines (confirm this statement).
-* TestFont.m - script to test fonts using drawtext
-* Fonts - directory containing the necessary fonts
-* DebugScripts/Development/CreateDesign.m - matlab script to create Design.csv file
-* DebugScripts/Development/CreateWaveforms.m - matlab script to create feedback signals
-* DedubScripts/Development/Waveforms.mat - mat file saving the feedback signals
-* Responses - participant response files are saved in this directory
+* NfbTask.m - matlab script to run the social cognition task
+* NfbDebug/Development/NfbDesign.csv - csv file listing the trials used in the experiment. Manually edit this file if you want to use a specific trial order, but make sure you keep the same format; otherwise, the task will not run.
+* Queries/QueryDevices.m - matlab file to list connected devices to computer. Use this to identify the DeviceIndex value for SocialCognitionTask. This is useless for Windows machines (confirm this statement).
+* Fonts - directory containing the necessary fonts (not needed any more)
+* NfbDebug/Development/CreateDesign.m - matlab script to create Design.csv file
+* NfbDebug/Development/CreateWaveforms.m - matlab script to create feedback signals
+* NfbDedug/Development/Waveforms.mat - mat file saving the feedback signals
+* NfbResponses - participant response files are saved in this directory
