@@ -46,7 +46,7 @@ for iRun = 1:NumRuns
         Sin1 = Mag1*sin(2*pi*(1:N)*(1/60) + Phase1*pi);
         Sin2 = Mag2*sin(2*pi*(1:N)*(1/2) + Phase1*pi);
     
-        if i < UniqueBaseline
+        if i <= UniqueBaseline
             Baselines{iRun}{i, 1} = Noise(Index1);
             Baselines{iRun}{i, 2} = Noise(Index2);
             Baselines{iRun}{i, 3} = Noise(Index3);
