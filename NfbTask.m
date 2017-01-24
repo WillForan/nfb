@@ -64,7 +64,7 @@ try
     
     % read in design
     if Testing
-        DesignFile = fullfile(pwd, 'NfbDebug', 'Development', 'NfbTesting.csv');
+        DesignFile = fullfile(pwd, 'NfbDebug', 'Development', 'NfbTestOrder.csv');
     else
         DesignFile = fullfile(pwd, 'NfbDebug', 'Development', 'NfbDesign.csv');
     end
@@ -294,7 +294,7 @@ try
     % dummy signals
     X = 0:(MaxX-1);
     % load Signal and Baselines
-    FileName = fullfile(pwd, 'DebugScripts', 'Development', 'Waveforms.mat');
+    FileName = fullfile(pwd, 'NfbDebug', 'Development', 'Waveforms.mat');
     load(FileName);
 
     % convert from old range values to new range values
@@ -702,7 +702,7 @@ try
     clear all
 catch err
     % close everything
-    KbQueueRelease(DeviceIndex);
+    KbQueueRelease();
     sca;
     ListenChar(0);
     ShowCursor;
