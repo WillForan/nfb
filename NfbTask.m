@@ -52,6 +52,9 @@ try
     
     if InScan == 0
         PsychDebugWindowConfiguration
+    else
+        HideCursor;
+        ListenChar(-1);
     end
     
     % print out options to text file
@@ -376,8 +379,6 @@ try
         clear i k
     end
    
-    HideCursor;
-    ListenChar(-1);
     % define common times and number of frames
     FlipSeconds = (round((1:10)/Refresh) - 0.1) * Refresh;
     for i = StartRun:EndRun
