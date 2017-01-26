@@ -580,13 +580,9 @@ try
             RunParams{k, J4ONSET} = vbl - BeginTime;
             Until = vbl + (RunParams{k, JITTER4DUR} - 0.1) * Refresh;
         end
-        Screen('TextSize', Window, 35);
-        Screen('TextFont', Window, 'Arial');
-        Screen('TextStyle', Window, 0);
-        DrawFormattedText(Window, 'Goodbye!', 'center', 'center', White);
-        Screen('Flip', Window, Until);
 
         % record last feedback rate response
+        WaitSecs('UntilTime', Until);
         KbQueueStop(DeviceIndex);
         [DidRespond, TimeKeysPressed] = KbQueueCheck(DeviceIndex);
         if DidRespond
@@ -715,6 +711,11 @@ try
         fprintf(1, '\n');
     end
     
+    Screen('TextSize', Window, 35);
+    Screen('TextFont', Window, 'Arial');
+    Screen('TextStyle', Window, 0);
+    DrawFormattedText(Window, 'Goodbye!', 'center', 'center', White);
+    Screen('Flip', Window, Until);
     WaitSecs(1.25);
     
     % close everything
