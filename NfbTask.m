@@ -443,8 +443,8 @@ try
                 if DidRespond
                     TimeKeysPressed(TimeKeysPressed == 0) = nan;
                     [RT, Idx] = min(TimeKeysPressed);
-                    RunParams{k, IMPROVEDRESP} = KbNames{Idx};
-                    RunParams{k, IMPROVEDRT} = RT - ImpVbl;
+                    RunParams{k - 1, IMPROVEDRESP} = KbNames{Idx};
+                    RunParams{k - 1, IMPROVEDRT} = RT - ImpVbl;
                 end
                 KbQueueFlush(DeviceIndex);
 
