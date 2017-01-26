@@ -449,8 +449,10 @@ try
                 end
                 KbQueueFlush(DeviceIndex);
 
-                fprintf(1, 'RESPONSE: ImprovedRT       %0.4f\n', RunParams{k, IMPROVEDRT});
-                fprintf(1, 'RESPONSE: ImprovedResponse %s\n\n', RunParams{k, IMPROVEDRESP});
+                fprintf(1, 'RESPONSE: ImprovedRT       %0.4f\n', ...
+                    RunParams{k - 1, IMPROVEDRT});
+                fprintf(1, 'RESPONSE: ImprovedResponse %s\n\n', ...
+                    RunParams{k - 1, IMPROVEDRESP});
             end
 
             RunParams{k, INFONSET} = vbl - BeginTime;

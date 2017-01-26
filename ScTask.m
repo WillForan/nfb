@@ -244,8 +244,8 @@ try
                 end
                 KbQueueFlush(DeviceIndex);
 
-                fprintf(1, 'RESPONSE: FaceRT       %0.4f\n', RunParams{k, FACERT});
-                fprintf(1, 'RESPONSE: FaceResponse %s\n\n', RunParams{k, FACERESPONSE});
+                fprintf(1, 'RESPONSE: FaceRT       %0.4f\n', RunParams{k - 1, FACERT});
+                fprintf(1, 'RESPONSE: FaceResponse %s\n\n', RunParams{k - 1, FACERESPONSE});
             end
             RunParams{k, CONTEXTONSET} = vbl - BeginTime;
 
@@ -275,8 +275,8 @@ try
         if Pressed
             FirstPress(FirstPress == 0) = nan;
             [RT, Idx] = min(FirstPress);
-            RunParams{k - 1, FACERESPONSE} = KbNames{Idx};
-            RunParams{k - 1, FACERT} = RT - RunParams{k - 1, FACEONSET};
+            RunParams{k, FACERESPONSE} = KbNames{Idx};
+            RunParams{k, FACERT} = RT - RunParams{k, FACEONSET};
         end
         KbQueueFlush(DeviceIndex);
         fprintf(1, 'RESPONSE: FaceRT       %0.4f\n', RunParams{k, FACERT});
