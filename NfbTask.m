@@ -12,13 +12,16 @@ try
             'Start run: 1 - 4:', ...
             'End run: 1 - 4:', ...
             'Testing: (1:Yes, 0:No)', ...
-            'Version: (1, 2, 3, 4)'});
+            'Version: (1, 2, 3, 4)', ...
+            'Initial Yes/No: (1:Yes/No, 2:No/Yes)'}, ...
+            '', 1, {'1', '', '1', '4', '0', '', '1'});
         InScan = str2double(Responses{1});
         Participant = Responses{2};
         StartRun = str2double(Responses{3});
         EndRun = str2double(Responses{4});
         Testing = str2double(Responses{5});
         Version = str2double(Responses{6});
+        ResponsePos = str2double(Responses{7});
     elseif numel(varargin) == 6
         InScan = varargin{1};
         Participant = varargin{2};
@@ -26,6 +29,7 @@ try
         EndRun = varargin{4};
         Testing = varargin{5};
         Version = varargin{6};
+        ResponsePos = varargin{7};
     else
         error('Invalid number of arguments.');
     end
@@ -41,20 +45,18 @@ try
     diary(DiaryFile);
     
     OptionText = [sprintf('*** OPTIONS ***\n') ...
-        sprintf('OPTIONS: InScan      %d\n', InScan) ...
-        sprintf('OPTIONS: Participant %s\n', Participant) ...
-        sprintf('OPTIONS: StartRun    %d\n', StartRun) ...
-        sprintf('OPTIONS: EndRun      %d\n', EndRun) ...
-        sprintf('OPTIONS: Testing     %d\n', Testing) ...
-        sprintf('OPTIONS: Version     %d\n', Version) ...
+        sprintf('OPTIONS: InScan         %d\n', InScan) ...
+        sprintf('OPTIONS: Participant    %s\n', Participant) ...
+        sprintf('OPTIONS: StartRun       %d\n', StartRun) ...
+        sprintf('OPTIONS: EndRun         %d\n', EndRun) ...
+        sprintf('OPTIONS: Testing        %d\n', Testing) ...
+        sprintf('OPTIONS: Version        %d\n', Version) ...
+        sprintf('OPTIONS: Initial Yes/No %d\n', ResponsePos) ...
         sprintf('*** OPTIONS ***\n\n')];
     fprintf(1, '\n%s', OptionText);
-    
+
     if InScan == 0
         PsychDebugWindowConfiguration
-    else
-        HideCursor;
-        ListenChar(-1);
     end
     
     % print out options to text file
@@ -77,9 +79,9 @@ try
     fclose(DesignFid);
     % more columns: InfuisonNum, InfOnset, J1Onset, WillImpOnset, J2Onset, Feed1Onset, 
     %               Feed2Onset, Feed3Onset, J3Onset, ImprovedOnset, J4Onset, WillImpResp, 
-    %               WillImpRt, ImproveResp, ImprovedRt
+    %               WillImpRespText, WillImpRt, ImproveResp, ImrpveRespText, ImprovedRt
     % split feedback into baseline and feedback later
-    Design = cell(numel(Tmp{1}), numel(Tmp) + 15);
+    Design = cell(numel(Tmp{1}), numel(Tmp) + 17);
     for i = 1:numel(Tmp)
         for k = 1:numel(Tmp{1})
             if iscell(Tmp{i})
@@ -113,9 +115,11 @@ try
     IMPROVEDONSET = 19;
     J4ONSET = 20;
     WILLIMPROVERESP = 21;
-    WILLIMPROVERT = 22;
-    IMPROVEDRESP = 23;
-    IMPROVEDRT = 24;
+    WILLIMPROVERESPTEXT = 22;
+    WILLIMPROVERT = 23;
+    IMPROVEDRESP = 24;
+    IMPROVEDRESPTEXT = 25;
+    IMPROVEDRT = 26;
 
     % assign INFUSIONNUM
     for i = 1:size(Design, 1)
@@ -164,8 +168,8 @@ try
     ScreenNumber = max(Screens);
     
     % Define commonly used colors
-    White = WhiteIndex(ScreenNumber);
-    Black = BlackIndex(ScreenNumber);
+    White = [1 1 1];
+    Black = [0 0 0];
     Grey = White * 0.5;
     BgColor = [45 59 55] * 1/255;
     UnfilledColor = [38 41 26] * 1/255;
@@ -181,6 +185,10 @@ try
     Refresh = Screen('GetFlipInterval', Window);
     ScanRect = [0 0 1024 768];
     [ScanCenter(1), ScanCenter(2)] = RectCenter(ScanRect);
+    if InScan == 1
+        HideCursor(ScreenNumber);
+        ListenChar(-1);
+    end
     
     % blend
     Screen('BlendFunction', Window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
@@ -196,6 +204,8 @@ try
     clear i
     KbQueueCreate(DeviceIndex, KeysOfInterest);
     TriggerKey = KbName('=+');
+    LeftResponses = {'1!', '2@', '3#', '4$', '5%', '1', '2', '3', '4', '5'};
+    RightResponses = {'6^', '7&', '8*', '9(', '0)', '6', '7', '8', '9', '0'};
 
     %%% INFUSION SETUP %%%
     InfBgPng = {'InfBgA.png', 'InfBgB.png', 'InfBgC.png', 'InfBgD.png'};
@@ -256,9 +266,13 @@ try
     end
     
     %%% WILLIMPROVE SETUP %%%
-    FileName = fullfile(pwd, 'NfbImages', 'Questions', 'WillImprove.png');
+    FileName = fullfile(pwd, 'NfbImages', 'Questions', 'YesNoWillImprove.png');
     Im = imread(FileName, 'png');
-    WillImproveTexture = Screen('MakeTexture', Window, Im);
+    WillImproveTexture(1) = Screen('MakeTexture', Window, Im);
+
+    FileName = fullfile(pwd, 'NfbImages', 'Questions', 'NoYesWillImprove.png');
+    Im = imread(FileName, 'png');
+    WillImproveTexture(2) = Screen('MakeTexture', Window, Im);
     
     %%% FEEDBACK SETUP %%%
     % Feedback rect location; this is used as position reference for most
@@ -276,9 +290,13 @@ try
     CenteredOrigFeed = CenterRectOnPointd(OrigFeedbackRect, OrigFeedXCenter, YCenter);
 
     %%% IMPROVED SETUP %%%
-    FileName = fullfile(pwd, 'NfbImages', 'Questions',  'Improved.png');
+    FileName = fullfile(pwd, 'NfbImages', 'Questions',  'YesNoImproved.png');
     Im = imread(FileName, 'png');
-    ImprovedTexture = Screen('MakeTexture', Window, Im);    
+    ImprovedTexture(1) = Screen('MakeTexture', Window, Im);    
+
+    FileName = fullfile(pwd, 'NfbImages', 'Questions', 'NoYesImproved.png');
+    Im = imread(FileName, 'png');
+    ImprovedTexture(2) = Screen('MakeTexture', Window, Im);
     
     %%% SIGNAL SETUP %%%
     Scale = 2; % move by this many points across signals
@@ -483,7 +501,11 @@ try
             RunParams{k, J1ONSET} = vbl - BeginTime;
     
             %%% WILLIMPROVE RUNNING CODE %%%
-            Screen('DrawTexture', Window, WillImproveTexture);
+            if mod(ResponsePos, 2)
+                Screen('DrawTexture', Window, WillImproveTexture(1));
+            else
+                Screen('DrawTexture', Window, WillImproveTexture(2));
+            end
             ContVbl = Screen('Flip', Window, ...
                 vbl + (RunParams{k, JITTER1DUR} - 0.1) * Refresh);
             KbQueueStart(DeviceIndex);
@@ -568,7 +590,11 @@ try
             RunParams{k, J3ONSET} = vbl - BeginTime;
             
             %%% IMPROVED %%%
-            Screen('DrawTexture', Window, ImprovedTexture);
+            if mod(ResponsePos, 2)
+                Screen('DrawTexture', Window, ImprovedTexture(1));
+            else
+                Screen('DrawTexture', Window, ImprovedTexture(2));
+            end
             ImpVbl = Screen('Flip', Window, vbl + (RunParams{k, JITTER3DUR} - 0.1) * Refresh);
             KbQueueStart(DeviceIndex);
             RunParams{k, IMPROVEDONSET} = ImpVbl - BeginTime;
@@ -602,6 +628,7 @@ try
         fprintf(OutFid, ...
             ['Participant,', ...
             'Version,', ...
+            'ResponsePos,', ...
             'Run,', ...
             'TrialNum,', ...
             'Infusion,', ...
@@ -622,14 +649,17 @@ try
             'J3Onset,', ...
             'ImprovedOnset,', ...
             'J4Onset,', ...
-            'WillImpResp,', ...
+            'WillImpRespNum,', ...
+            'WillImpRespText,', ...
             'WillImpRt,', ...
-            'ImprovedResp,', ...
+            'ImprovedRespNum,', ...
+            'ImprovedRespText,', ...
             'ImprovedRt\n']);
         for DesignIdx = 1:size(RunParams, 1)
             fprintf(OutFid, '%s,', Participant);
             fprintf(OutFid, '%d,', Version);
-            fprintf(OutFid, '%d,', i);
+            fprintf(OutFid, '%d,', ResponsePos);
+            fprintf(OutFid, '%d,', RunParams{DesignIdx, RUN});
             fprintf(OutFid, '%d,', RunParams{DesignIdx, TRIALNUM});
             fprintf(OutFid, '%s,', RunParams{DesignIdx, INFUSION});
             fprintf(OutFid, '%d,', RunParams{DesignIdx, INFUSIONNUM});
@@ -671,11 +701,32 @@ try
                     Response = 8;
                 elseif any(strcmp({'9', '9('}, Response))
                     Response = 9;
+                elseif any(strcmp({'0', '0)'}, Respnose))
+                    Response = 0;
                 else
                     Response = nan;
                 end
             end
             fprintf(OutFid, '%d,', Response);
+
+            if mod(ResponsePos, 2)
+                if any(strcmp(LeftResponses, RunParams{DesignIdx, WILLIMPROVERESP}))
+                    RunParams{DesignIdx, WILLIMPROVERESPTEXT} = 'Yes';
+                elseif any(strcmp(RightResponses, RunParams{DesignIdx, WILLIMPROVERESP}))
+                    RunParams{DesignIdx, WILLIMPROVERESPTEXT} = 'No';
+                else
+                    RunParams{DesignIdx, WILLIMPROVERESPTEXT} = 'NaN';
+                end
+            else
+                if any(strcmp(LeftResponses, RunParams{DesignIdx, WILLIMPROVERESP}))
+                    RunParams{DesignIdx, WILLIMPROVERESPTEXT} = 'No';
+                elseif any(strcmp(RightResponses, RunParams{DesignIdx, WILLIMPROVERESP}))
+                    RunParams{DesignIdx, WILLIMPROVERESPTEXT} = 'Yes';
+                else
+                    RunParams{DesignIdx, WILLIMPROVERESPTEXT} = 'NaN';
+                end
+            end
+            fprintf(OutFid, '%s,', RunParams{DesignIdx, WILLIMPROVERESPTEXT});
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, WILLIMPROVERT});
         
             % handle resposne now
@@ -699,14 +750,35 @@ try
                     Response = 8;
                 elseif any(strcmp({'9', '9('}, Response))
                     Response = 9;
+                elseif any(strcmp({'0', '0)'}, Response))
                 else
                     Response = nan;
                 end
             end
             fprintf(OutFid, '%d,', Response);
+
+            if mod(ResponsePos, 2)
+                if any(strcmp(LeftResponses, RunParams{DesignIdx, IMPROVEDRESP}))
+                    RunParams{DesignIdx, IMPROVEDRESPTEXT} = 'Yes';
+                elseif any(strcmp(RightResponses, RunParams{DesignIdx, IMPROVEDRESP}))
+                    RunParams{DesignIdx, IMPROVEDRESPTEXT} = 'No';
+                else
+                    RunParams{DesignIdx, IMPROVEDRESPTEXT} = 'NaN';
+                end
+            else
+                if any(strcmp(LeftResponses, RunParams{DesignIdx, IMPROVEDRESP}))
+                    RunParams{DesignIdx, IMPROVEDRESPTEXT} = 'No';
+                elseif any(strcmp(RightResponses, RunParams{DesignIdx, IMPROVEDRESP}))
+                    RunParams{DesignIdx, IMPROVEDRESPTEXT} = 'Yes';
+                else
+                    RunParams{DesignIdx, IMPROVEDRESPTEXT} = 'NaN';
+                end
+            end
+            fprintf(OutFid, '%s,', RunParams{DesignIdx, IMPROVEDRESPTEXT});
             fprintf(OutFid, '%0.4f\n', RunParams{DesignIdx, IMPROVEDRT});
         end
         fclose(OutFid);
+        ResponsePos = ResponsePos + 1;
         
         fprintf(1, '\n');
     end
