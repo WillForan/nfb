@@ -13,7 +13,8 @@ try
             'Run1 Order: 1 - 2:', ...
             'Run2: 1 - 5:', ...
             'Run2 Order: 1 - 2:', ...
-            'Testing: (1:Yes, 0:No)'}, '', 1, {'', '', '', '1', '', '2', ''});
+            'Testing: (1:Yes, 0:No)'}, ...
+            '', 1, {'1', '', '', '1', '', '2', '0', '1'});
         InScan = str2double(Responses{1});
         Participant = Responses{2};
         if isempty(Responses{5})
@@ -39,9 +40,6 @@ try
 
     if InScan == 0
         PsychDebugWindowConfiguration
-    else
-        HideCursor;
-        ListenChar(-1);
     end
     
     OutDir = fullfile(pwd, 'ScResponses', Participant);
@@ -57,8 +55,20 @@ try
     OptionText = [sprintf('*** OPTIONS ***\n') ...
         sprintf('OPTIONS: InScan      %d\n', InScan) ...
         sprintf('OPTIONS: Participant %s\n', Participant) ...
-        sprintf('OPTIONS: Run1        %d\n', Runs(1)) ...
-        sprintf('OPTIONS: Run2        %d\n', Runs(2)) ...
+        sprintf('OPTIONS: Run1        %d\n', Runs(1, 1)) ...
+        sprintf('OPTIONS: Run1 Order  %d\n', Runs(1, 2))]
+
+    if size(Runs, 1) == 2
+        OptionText = [OptionText ...
+            sprintf('OPTIONS: Run2        %d\n', Runs(2, 1)) ...
+            sprintf('OPTIONS: Run2 Order  %d\n', Runs(2, 2))]
+    else
+        OptionText = [OptionText ...
+            sprintf('OPTIONS: Run2        NA') ...
+            sprintf('OPTIONS: Run2 Order  NA')]
+    end
+
+    OptionText = [OptionText ...
         sprintf('OPTIONS: Testing     %d\n', Testing) ...
         sprintf('*** OPTIONS ***\n\n')];
     fprintf(1, '\n%s', OptionText);
@@ -73,8 +83,9 @@ try
     Tmp = textscan(DesignFid, '%f%f%f%f%f%f%s%s%d%s%s%s', ...
         'Delimiter', ',', 'Headerlines', 1);
     fclose(DesignFid);
-    % more columns: ActualIsi, ContextOnset,FaceOnset,JitterOnset,FaceResponse,FaceRT
-    Design = cell(numel(Tmp{1}), numel(Tmp) + 4);
+    % more columns: ActualIsi, ContextOnset, FaceOnset, JitterOnset, 
+    %               FaceResponse, FaceResponseText, FaceRT 
+    Design = cell(numel(Tmp{1}), numel(Tmp) + 7);
     for i = 1:numel(Tmp)
         for k = 1:numel(Tmp{1})
             if iscell(Tmp{i})
@@ -104,7 +115,8 @@ try
     FACEONSET = 15;
     JITTERONSET = 16;
     FACERESPONSE = 17;
-    FACERT = 18;
+    FACERESPONSETEXT = 18;
+    FACERT = 19;
     
     PsychDefaultSetup(2); 
     Screen('Preference', 'VisualDebugLevel', 3);
@@ -125,6 +137,10 @@ try
     ScanRect = [0 0 1024 768];
     [ScanCenter(1), ScanCenter(2)] = RectCenter(ScanRect);
     ScanCentered = CenterRectOnPoint(ScanRect, XCenter, YCenter);
+    if InScan == 1
+        HideCursor(ScreenNumber);
+        ListenChar(-1);
+    end
 
     % Set up alpha-blending for smooth (anti-aliased) lines
     Screen('BlendFunction', Window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
@@ -143,6 +159,8 @@ try
     clear i
     KbQueueCreate(DeviceIndex, KeysOfInterest);
     TriggerKey = KbName('=+');
+    LeftResponses = {'1!', '2@', '3#', '4$', '5%', '1', '2', '3', '4', '5'};
+    RightResponses = {'6^', '7&', '8*', '9(', '0)', '6', '7', '8', '9', '0'};
 
     % calculate ISI duration in terms of flip interval
     for i = 1:size(Design, 1)
@@ -156,8 +174,9 @@ try
 
     % preload images and assign values for bar and text location
     fprintf(1, 'Preloading images. This will take some time.\n');
-    for iOrder = 1:length(Runs)
-        iRun = Runs(iOrder);
+    for k = 1:size(Runs, 1)
+        iOrder = Runs(k, 2);
+        iRun = Runs(k, 1);
 
         OrderIdx = [Design{:, ORDER}]' == iOrder;
         RunIdx = OrderIdx & [Design{:, RUN}]' == iRun;
@@ -182,10 +201,14 @@ try
     Im = imread(FName, 'png');
     JitterTexture = Screen('MakeTexture', Window, Im);
 
-    % load rate background
-    FName = fullfile(pwd, 'ScImages', 'Backgrounds', 'FaceBackground.png');
+    % load rate backgrounds
+    FName = fullfile(pwd, 'ScImages', 'Backgrounds', 'YesNoFaceBackground.png');
     Im = imread(FName, 'png');
-    FaceBgTexture = Screen('MakeTexture', Window, Im);
+    FaceBgTexture(1) = Screen('MakeTexture', Window, Im);
+
+    FName = fullfile(pwd, 'ScImages', 'Backgrounds', 'NoYesFaceBackground.png');
+    Im = imread(FName, 'png');
+    FaceBgTexture(2) = Screen('MakeTexture', Window, Im);
 
     % calculate face center
     FaceCenter = [512 312];
@@ -212,7 +235,7 @@ try
         OutCsv = fullfile(OutDir, [OutName '.csv']);
         OutMat = fullfile(OutDir, [OutName '.mat']);
 
-        % show directions while waiting for trigger '^'
+        % show directions while waiting for trigger '='
         DrawFormattedText(Window, ... 
             'These are the task directions.\n\n Waiting for ''='' to continue.', ...
             'center', 'center');
@@ -240,30 +263,36 @@ try
                     FirstPress(FirstPress == 0) = nan;
                     [RT, Idx] = min(FirstPress);
                     RunParams{k - 1, FACERESPONSE} = KbNames{Idx};
-                    RunParams{k - 1, FACERT} = RT - RunParams{k - 1, FACEONSET};
+                    RunParams{k - 1, FACERT} = RT - FaceVbl;
                 end
                 KbQueueFlush(DeviceIndex);
 
-                fprintf(1, 'RESPONSE: FaceRT       %0.4f\n', RunParams{k - 1, FACERT});
-                fprintf(1, 'RESPONSE: FaceResponse %s\n\n', RunParams{k - 1, FACERESPONSE});
+                fprintf(1, 'RESPONSE: FaceRT       %0.4f\n', ...
+                    RunParams{k - 1, FACERT});
+                fprintf(1, 'RESPONSE: FaceResponse %s\n\n', ...
+                    RunParams{k - 1, FACERESPONSE});
             end
             RunParams{k, CONTEXTONSET} = vbl - BeginTime;
 
             %%% FACE %%%
-            Screen('DrawTexture', Window, FaceBgTexture);
+            if mod(Runs(i, 2), 2)
+                Screen('DrawTexture', Window, FaceBgTexture(1));
+            else
+                Screen('DrawTexture', Window, FaceBgTexture(2));
+            end
             FaceRect = Screen('Rect', TexFace{i}{k});
             if strcmp(RunParams{k, FACEFILE}, '27M_H.png')
                 FaceRect = FaceRect / 2.2;
             end
             FaceRect = CenterRectOnPoint(FaceRect, FaceCenter(1), FaceCenter(2));
             Screen('DrawTexture', Window, TexFace{i}{k}, [], FaceRect);
-            vbl = Screen('Flip', Window, vbl + FlipSeconds(3));
+            FaceVbl = Screen('Flip', Window, vbl + FlipSeconds(3));
             KbQueueStart(DeviceIndex);
             RunParams{k, FACEONSET} = vbl - BeginTime;
 
             %%% JITTER %%%
             Screen('DrawTexture', Window, JitterTexture);
-            vbl = Screen('Flip', Window, vbl + FlipSeconds(2));
+            vbl = Screen('Flip', Window, FaceVbl + FlipSeconds(2));
             RunParams{k, JITTERONSET} = vbl - BeginTime;
             Until = vbl + RunParams{k, ACTUALISI} - 0.1 * Refresh;
         end
@@ -276,7 +305,7 @@ try
             FirstPress(FirstPress == 0) = nan;
             [RT, Idx] = min(FirstPress);
             RunParams{k, FACERESPONSE} = KbNames{Idx};
-            RunParams{k, FACERT} = RT - RunParams{k, FACEONSET};
+            RunParams{k, FACERT} = RT - FaceVbl;
         end
         KbQueueFlush(DeviceIndex);
         fprintf(1, 'RESPONSE: FaceRT       %0.4f\n', RunParams{k, FACERT});
@@ -303,7 +332,8 @@ try
             'ContextOnset,', ...
             'FaceOnset,', ...
             'JitterOnset,', ...
-            'FaceResponse,', ...
+            'FaceResponseNum,', ...
+            'FaceResponseText,', ...
             'FaceRt\n']);
         for DesignIdx = 1:size(RunParams, 1)
             fprintf(OutFid, '%s,', Participant);
@@ -324,22 +354,36 @@ try
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, FACEONSET});
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, JITTERONSET});
     
-            % handle resposne now
+            % handle response now
             Response = RunParams{DesignIdx, FACERESPONSE};
             if ischar(Response)
-                if any(strcmp(KeyNamesOfInterest(1:10), Response))
-                    Response = find(strcmp(KeyNamesOfInterest(1:10), Response));
-                elseif any(strcmp(KeyNamesOfInterest(11:end), Response, Response))
-                    Response = find(strcmp(KeyNamesOfInterest(11:end), Response));
+                Response = find(strcmp(KeyNamesOfInterest, Response));
+                if ~isempty(Response)
+                    Response = mod(Response, 10);
                 else
                     Response = nan;
                 end
-    
-                if Response == 10
-                    Response = 0;
-                end
             end
             fprintf(OutFid, '%d,', Response);
+
+            if mod(Runs(i, 2), 2)
+                if any(strcmp(LeftResponses, RunParams{DesignIdx, FACERESPONSE}))
+                    RunParams{DesignIdx, FACERESPONSETEXT} = 'Positive';
+                elseif any(strcmp(RightResponses, RunParams{DesignIdx, FACERESPONSE}))
+                    RunParams{DesignIdx, FACERESPONSETEXT} = 'Negative';
+                else
+                    RunParams{DesignIdx, FACERESPONSETEXT} = 'NaN';
+                end
+            else
+                if any(strcmp(LeftResponses, RunParams{DesignIdx, FACERESPONSE}))
+                    RunParams{DesignIdx, FACERESPONSETEXT} = 'Negative';
+                elseif any(strcmp(RightResponses, RunParams{DesignIdx, FACERESPONSE}))
+                    RunParams{DesignIdx, FACERESPONSETEXT} = 'Positive';
+                else
+                    RunParams{DesignIdx, FACERESPONSETEXT} = 'NaN';
+                end
+            end
+            fprintf(OutFid, '%s,', RunParams{DesignIdx, FACERESPONSETEXT});
     
             fprintf(OutFid, '%0.4f\n', RunParams{DesignIdx, FACERT});
         end
