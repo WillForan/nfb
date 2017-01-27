@@ -12,16 +12,14 @@ try
             'Start run: 1 - 4:', ...
             'End run: 1 - 4:', ...
             'Testing: (1:Yes, 0:No)', ...
-            'Version: (1, 2, 3, 4)', ...
-            'Initial Yes/No: (1:Yes/No, 2:No/Yes)'}, ...
-            '', 1, {'1', '', '1', '4', '0', '', '1'});
+            'Version: (1, 2, 3, 4)'}, ...
+            '', 1, {'1', '', '1', '4', '0', ''});
         InScan = str2double(Responses{1});
         Participant = Responses{2};
         StartRun = str2double(Responses{3});
         EndRun = str2double(Responses{4});
         Testing = str2double(Responses{5});
         Version = str2double(Responses{6});
-        ResponsePos = str2double(Responses{7});
     elseif numel(varargin) == 6
         InScan = varargin{1};
         Participant = varargin{2};
@@ -29,7 +27,6 @@ try
         EndRun = varargin{4};
         Testing = varargin{5};
         Version = varargin{6};
-        ResponsePos = varargin{7};
     else
         error('Invalid number of arguments.');
     end
@@ -51,7 +48,6 @@ try
         sprintf('OPTIONS: EndRun         %d\n', EndRun) ...
         sprintf('OPTIONS: Testing        %d\n', Testing) ...
         sprintf('OPTIONS: Version        %d\n', Version) ...
-        sprintf('OPTIONS: Initial Yes/No %d\n', ResponsePos) ...
         sprintf('*** OPTIONS ***\n\n')];
     fprintf(1, '\n%s', OptionText);
 
@@ -80,7 +76,6 @@ try
     % more columns: InfuisonNum, InfOnset, J1Onset, WillImpOnset, J2Onset, Feed1Onset, 
     %               Feed2Onset, Feed3Onset, J3Onset, ImprovedOnset, J4Onset, WillImpResp, 
     %               WillImpRespText, WillImpRt, ImproveResp, ImrpveRespText, ImprovedRt
-    % split feedback into baseline and feedback later
     Design = cell(numel(Tmp{1}), numel(Tmp) + 17);
     for i = 1:numel(Tmp)
         for k = 1:numel(Tmp{1})
@@ -501,7 +496,7 @@ try
             RunParams{k, J1ONSET} = vbl - BeginTime;
     
             %%% WILLIMPROVE RUNNING CODE %%%
-            if mod(ResponsePos, 2)
+            if mod(RunParams{k, RUN}, 2)
                 Screen('DrawTexture', Window, WillImproveTexture(1));
             else
                 Screen('DrawTexture', Window, WillImproveTexture(2));
@@ -590,7 +585,7 @@ try
             RunParams{k, J3ONSET} = vbl - BeginTime;
             
             %%% IMPROVED %%%
-            if mod(ResponsePos, 2)
+            if mod(RunParams{k, RUN}, 2)
                 Screen('DrawTexture', Window, ImprovedTexture(1));
             else
                 Screen('DrawTexture', Window, ImprovedTexture(2));
@@ -628,7 +623,6 @@ try
         fprintf(OutFid, ...
             ['Participant,', ...
             'Version,', ...
-            'ResponsePos,', ...
             'Run,', ...
             'TrialNum,', ...
             'Infusion,', ...
@@ -658,7 +652,6 @@ try
         for DesignIdx = 1:size(RunParams, 1)
             fprintf(OutFid, '%s,', Participant);
             fprintf(OutFid, '%d,', Version);
-            fprintf(OutFid, '%d,', ResponsePos);
             fprintf(OutFid, '%d,', RunParams{DesignIdx, RUN});
             fprintf(OutFid, '%d,', RunParams{DesignIdx, TRIALNUM});
             fprintf(OutFid, '%s,', RunParams{DesignIdx, INFUSION});
@@ -680,36 +673,19 @@ try
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, IMPROVEDONSET});
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, J4ONSET});
     
-            % handle resposne now
+            % handle response now
             Response = RunParams{DesignIdx, WILLIMPROVERESP};
             if ischar(Response)
-                if any(strcmp({'1', '1!'}, Response))
-                    Response = 1;
-                elseif any(strcmp({'2', '2@'}, Response))
-                    Response = 2;
-                elseif any(strcmp({'3', '3#'}, Response))
-                    Response = 3;
-                elseif any(strcmp({'4', '4$'}, Response))
-                    Response = 4;
-                elseif any(strcmp({'5', '5%'}, Response))
-                    Response = 5;
-                elseif any(strcmp({'6', '6^'}, Response))
-                    Response = 6;
-                elseif any(strcmp({'7', '7&'}, Response))
-                    Response = 7;
-                elseif any(strcmp({'8', '8*'}, Response))
-                    Response = 8;
-                elseif any(strcmp({'9', '9('}, Response))
-                    Response = 9;
-                elseif any(strcmp({'0', '0)'}, Respnose))
-                    Response = 0;
+                Response = find(strcmp(KeyNamesOfInterest, Response));
+                if ~isempty(Response)
+                    Response = mod(Response, 10);
                 else
                     Response = nan;
                 end
             end
             fprintf(OutFid, '%d,', Response);
 
-            if mod(ResponsePos, 2)
+            if mod(RunParams{DesignIdx, RUN}, 2)
                 if any(strcmp(LeftResponses, RunParams{DesignIdx, WILLIMPROVERESP}))
                     RunParams{DesignIdx, WILLIMPROVERESPTEXT} = 'Yes';
                 elseif any(strcmp(RightResponses, RunParams{DesignIdx, WILLIMPROVERESP}))
@@ -732,32 +708,16 @@ try
             % handle resposne now
             Response = RunParams{DesignIdx, IMPROVEDRESP};
             if ischar(Response)
-                if any(strcmp({'1', '1!'}, Response))
-                    Response = 1;
-                elseif any(strcmp({'2', '2@'}, Response))
-                    Response = 2;
-                elseif any(strcmp({'3', '3#'}, Response))
-                    Response = 3;
-                elseif any(strcmp({'4', '4$'}, Response))
-                    Response = 4;
-                elseif any(strcmp({'5', '5%'}, Response))
-                    Response = 5;
-                elseif any(strcmp({'6', '6^'}, Response))
-                    Response = 6;
-                elseif any(strcmp({'7', '7&'}, Response))
-                    Response = 7;
-                elseif any(strcmp({'8', '8*'}, Response))
-                    Response = 8;
-                elseif any(strcmp({'9', '9('}, Response))
-                    Response = 9;
-                elseif any(strcmp({'0', '0)'}, Response))
+                Response = find(strcmp(KeyNamesOfInterest, Response));
+                if ~isempty(Response)
+                    Response = mod(Response, 10);
                 else
                     Response = nan;
                 end
             end
             fprintf(OutFid, '%d,', Response);
 
-            if mod(ResponsePos, 2)
+            if mod(RunParams{DesignIdx, RUN}, 2)
                 if any(strcmp(LeftResponses, RunParams{DesignIdx, IMPROVEDRESP}))
                     RunParams{DesignIdx, IMPROVEDRESPTEXT} = 'Yes';
                 elseif any(strcmp(RightResponses, RunParams{DesignIdx, IMPROVEDRESP}))
@@ -778,8 +738,6 @@ try
             fprintf(OutFid, '%0.4f\n', RunParams{DesignIdx, IMPROVEDRT});
         end
         fclose(OutFid);
-        ResponsePos = ResponsePos + 1;
-        
         fprintf(1, '\n');
     end
     
