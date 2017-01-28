@@ -11,26 +11,21 @@ rng(1234567890);
 % 9 trials of each (1, 2, 3, 4)
 
 NumRuns = 4;
-NumTrials = 32;
+NumTrials = 36;
 Trials = [1 2 3 4];
 Possible = PrintAllPermutations(Trials);
-NumJitters = 4;
-TrialBlocks = 8;
-UniquePositive = 7;
-UniqueBaseline = 4;
-NumBaseAC = 1;
-NumPosBD = 4;
+TrialBlocks = NumTrials / length(Trials);
+UniquePositive = 8;
+UniqueBaseline = 6;
+NumBaseAC = TrialBlocks - UniquePositive;
+NumPosBD = TrialBlocks - UniqueBaseline;
 
 fid = fopen('NfbDesign.csv', 'w');
 fprintf(fid, 'Run,');
 fprintf(fid, 'TrialNum,');
 fprintf(fid, 'Infusion,');
 fprintf(fid, 'Feedback,');
-fprintf(fid, 'Waveform,');
-fprintf(fid, 'Jitter1Dur,');
-fprintf(fid, 'Jitter2Dur,');
-fprintf(fid, 'Jitter3Dur,');
-fprintf(fid, 'Jitter4Dur\n');
+fprintf(fid, 'Waveform\n');
 
 for i = 1:NumRuns
 
@@ -41,12 +36,12 @@ for i = 1:NumRuns
     RunTrials = RunTrials(:);
 
     % make 4 exponentially distributed distributions
-    lambda = 1/65;
-    c1 = 0;
-    c2 = 180;
-    e1 = exp(-lambda*c1);
-    e2 = exp(-lambda*c2);
-    Jitter = floor(-1/lambda * log(e1-rand(NumTrials, NumJitters)*(e1-e2)));
+    % lambda = 1/65;
+    % c1 = 0;
+    % c2 = 180;
+    % e1 = exp(-lambda*c1);
+    % e2 = exp(-lambda*c2);
+    % Jitter = floor(-1/lambda * log(e1-rand(NumTrials, NumJitters)*(e1-e2)));
 
     % assign waveforms
     Waveforms = zeros(NumTrials, 1);
@@ -108,11 +103,7 @@ for i = 1:NumRuns
         end
         fprintf(fid, '%s,', FeedbackVal);
 
-        fprintf(fid, '%d,', Waveforms(k));
-        fprintf(fid, '%0.4f,', Jitter(k, 1));
-        fprintf(fid, '%0.4f,', Jitter(k, 2));
-        fprintf(fid, '%0.4f,', Jitter(k, 3));
-        fprintf(fid, '%0.4f\n', Jitter(k, 4));
+        fprintf(fid, '%d\n', Waveforms(k));
     end
 end
 fclose(fid);

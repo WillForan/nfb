@@ -1,9 +1,9 @@
 clear all;
 rng(1234567890);
 
-Interval1 = [60 120];
-Interval2 = [30 180];
-FeedbackTime = 9;
+Interval1 = [15 120];
+Interval2 = [90 200];
+FeedbackTime = 10;
 % remaining seconds at max
 Refresh = 1/60;
 Scale = 2; % move by this many points across signals
@@ -15,8 +15,11 @@ MaxX = Scale*120;
 N = Scale*4*1/FlipSecs + Scale*FeedbackTime*1/FlipSecs-1;
 FinalVal = 80;
 NumRuns = 4;
-UniquePositive = 7;
-UniqueBaseline = 4;
+
+% 85% of 9 trials 
+UniquePositive = 8;
+% 65% of 9 trials
+UniqueBaseline = 6;
 
 
 % Baselines
