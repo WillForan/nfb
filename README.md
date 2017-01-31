@@ -97,37 +97,37 @@
  * Each version was generated using this script: http://www.bobspunt.com/easy-optimize-x/ which maximizes efficiency.
  * 72 trials per run
    * 6 Conditions
-    * 1: Pleasant - Happy (Congruent)
-    * 2: Pleasant - Fearful (Incongruent)
-    * 3: Pleasant - Neutral (Neutral)
-    * 4: Unpleasant - Happy (Incongruent)
-    * 5: Unpleasant - Fearful (Congruent)
-    * 6: Unpleasant - Neutral (Neutral)
+     * 1: Pleasant - Happy (Congruent)
+     * 2: Pleasant - Fearful (Incongruent)
+     * 3: Pleasant - Neutral (Neutral)
+     * 4: Unpleasant - Happy (Incongruent)
+     * 5: Unpleasant - Fearful (Congruent)
+     * 6: Unpleasant - Neutral (Neutral)
    * 12 trials for each condition in 1 run
    * appropriate images were randomly selected for each trial with sample
-    * for example all Happy images including all genders were pooled together and then randomly assigned to conditions 1 and 4
+     * for example all Happy images including all genders were pooled together and then randomly assigned to conditions 1 and 4
    * 1 trial:
-    * 3 seconds contextual picture
-     * 72 unique pictures per run (144 total)
-      * 36 pleasant per run
-      * 36 unpleasant per run
+     * 3 seconds contextual picture
+       * 72 unique pictures per run (144 total)
+         * 36 pleasant per run
+         * 36 unpleasant per run
      * 2 seconds face and rating
-      * Keyboard responses are restricted to 1, 2, 3, 4, 5, 6, 7, 8, 9, 0
-       * 1,2,3,4,5 = left response
-       * 6,7,8,9,0 = right response
-      * 36 male face per run (72 total)
-       * 24 individuals
-        * happy, fearful, neutral
-        * 3 * 24 = 72
-      * 36 female faces per run (72 total)
-       * 18 individuals
-        * happy, fearful, neutral
-        * 3 * 18 = 54
-       * some images are repeated
+       * Keyboard responses are restricted to 1, 2, 3, 4, 5, 6, 7, 8, 9, 0
+         * 1,2,3,4,5 = left response
+         * 6,7,8,9,0 = right response
+       * 36 male face per run (72 total)
+         * 24 individuals
+           * happy, fearful, neutral
+           * 3 * 24 = 72
+       * 36 female faces per run (72 total)
+         * 18 individuals
+           * happy, fearful, neutral
+           * 3 * 18 = 54
+           * some images are repeated
       * 2 - 6 seconds jittered inter-stimulus interval (ISI) sampled from an exponential distribution
-       * Average of 3 seconds
-       * min = 2 seconds
-       * max = 5.59 seconds
+        * Average of 3 seconds
+        * min = 2 seconds
+        * max = 5.59 seconds
   
 **Design Options**
 * Scan
