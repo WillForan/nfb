@@ -40,7 +40,7 @@ try
     %%% FEEDBACK SETUP %%%
     % Feedback rect location; this is used as position reference for most
     % other drawn objects
-    FName = fullfile(pwd, 'Images', 'FeedNumImages', 'Feedback.png');
+    FName = fullfile(pwd, '../', 'NfbImages', 'FeedNumImages', 'Feedback.png');
     Im = imread(FName, 'png');
     FeedbackTexture = Screen('MakeTexture', Window, Im);
 
@@ -69,7 +69,7 @@ try
     % dummy signals
     X = 0:(MaxX-1);
     % load Signal and Baselines
-    FileName = fullfile(pwd, 'DebugScripts', 'Development', 'Waveforms.mat');
+    FileName = fullfile(pwd, '../', 'NfbDebug', 'Development', 'Waveforms.mat');
     load(FileName);
 
     % convert from old range values to new range values
