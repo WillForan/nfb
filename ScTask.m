@@ -162,6 +162,9 @@ try
     clear i
     KbQueueCreate(DeviceIndex, KeysOfInterest);
     TriggerKey = KbName('=+');
+    ConfirmKeyNames = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', ...
+        'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', ...
+        'y', 'z'};
     LeftResponses = {'1!', '2@', '3#', '4$', '5%', '1', '2', '3', '4', '5'};
     RightResponses = {'6^', '7&', '8*', '9(', '0)', '6', '7', '8', '9', '0'};
 
@@ -176,7 +179,7 @@ try
     Screen('TextColor', Window, White);
 
     % preload images and assign values for bar and text location
-    fprintf(1, 'Preloading images. This will take some time.\n');
+    fprintf(1, 'NOTIFICATION: Preloading images. This will take some time.\n');
     for k = 1:size(Runs, 1)
         iOrder = Runs(k, 2);
         iRun = Runs(k, 1);
@@ -239,8 +242,10 @@ try
         OutMat = fullfile(OutDir, [OutName '.mat']);
 
         % show directions while waiting for trigger '='
+        
         DrawFormattedText(Window, ... 
-            'These are the task directions.\n\n Waiting for ''='' to continue.', ...
+            [sprintf('The next task is Run %02d of Social Cognition.\n', Runs(i, 1)), ...
+            'Waiting for ''='' to continue.'], ...
             'center', 'center');
         Screen('Flip', Window);
         while 1
@@ -301,7 +306,6 @@ try
         end
 
         % record last response after last jitter
-        WaitSecs('UntilTime', Until);
         KbQueueStop(DeviceIndex);
         [Pressed, FirstPress] = KbQueueCheck(DeviceIndex);
         if Pressed
@@ -393,11 +397,45 @@ try
         fclose(OutFid);
     
         fprintf(1, '\n');
+
+        % confirmation screen
+        if i ~= size(Runs, 1)
+            Screen('FillRect', Window, Black);
+            Screen('TextSize', Window, 50);
+            Screen('TextFont', Window, 'Arial');
+            Screen('TextStyle', Window, 0);
+            DrawFormattedText(Window, ...
+                [sprintf('End run %d.\n', Runs(i, 1)) ...
+                'Waiting for confirmation to begin next run.'], ...
+                'center', 'center', White);
+            vbl = Screen('Flip', Window, Until);
+            fprintf(1, ['NOTIFICATION: End run %d. ' ...
+                'Press any button (a-z) to move to signal waiting screen.\n'], i);
+
+            KbEventFlush;
+            InLoop = 1;
+            while InLoop
+                [Pressed, Secs, KeyCode] = KbCheck;
+                if Pressed
+                    BitPressed = find(KeyCode);
+                    for iBit = BitPressed
+                        if any(strcmp(KbNames{iBit}, ConfirmKeyNames))
+                            InLoop = 0;
+                        end
+                    end
+                end
+            end
+        end
     end
 
     %%% GODYBE %%%
-    DrawFormattedText(Window, 'Goodbye!', 'center', 'center');
-    Screen('Flip', Window);
+    Screen('TextSize', Window, 50);
+    Screen('TextFont', Window, 'Arial');
+    Screen('TextStyle', Window, 0);
+    DrawFormattedText(Window, ...
+        sprintf('End run %d.\nFinished social cognition!', Runs(i, 1)), ...
+        'center', 'center', White);
+    Screen('Flip', Window, Until);
     WaitSecs(1.25);
     
     % close everything
