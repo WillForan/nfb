@@ -8,8 +8,7 @@ try
 
     % screen initialization and refresh
     Screens = Screen('Screens'); % get scren number
-    ScreenNumber = 1;
-    [Window, Rect] = Screen('OpenWindow', ScreenNumber);
+    [Window, Rect] = Screen('OpenWindow', max(Screens));
     Info = Screen('GetWindowInfo', Window);
     PriorityLevel = MaxPriority(Window);
     Priority(PriorityLevel);
