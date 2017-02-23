@@ -118,7 +118,10 @@ try
     FACERESPONSETEXT = 18;
     FACERT = 19;
     
-    PsychDefaultSetup(2); 
+    KbName('UnifyKeyNames');
+    if ~IsLinux()
+        Screen('Preference', 'SkipSyncTests', 2);
+    end
     Screen('Preference', 'VisualDebugLevel', 3);
     Screens = Screen('Screens');
     ScreenNumber = max(Screens);
@@ -129,7 +132,8 @@ try
     Grey = White * 0.5;
     
     % we want X = Left-Right, Y = top-bottom
-    [Window, Rect] = PsychImaging('OpenWindow', ScreenNumber, Black); 
+    [Window, Rect] = Screen('OpenWindow', ScreenNumber, Black); 
+    Screen('ColorRange', Window, 1, [], 1);
     PriorityLevel = MaxPriority(Window);
     Priority(PriorityLevel);
     [XCenter, YCenter] = RectCenter(Rect); % get the center of the coordinate Window
@@ -146,7 +150,6 @@ try
     Screen('BlendFunction', Window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
     
     % set up keyboard
-    KbName('UnifyKeyNames');
     KbNames = KbName('KeyNames');
     KeyNamesOfInterest = {'1!', '2@', '3#', '4$', '5%', ...
         '6^', '7&', '8*', '9(', '0)', ...
