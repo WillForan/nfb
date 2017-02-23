@@ -73,10 +73,10 @@ try
     Tmp = textscan(DesignFid, '%f%f%s%s%f%f%f%f%f', ...
         'Delimiter', ',', 'Headerlines', 1);
     fclose(DesignFid);
-    % more columns: InfuisonNum, InfOnset, J1Onset, WillImpOnset, J2Onset, Feed1Onset, 
-    %               Feed2Onset, Feed3Onset, ImprovedOnset, WillImpResp, 
-    %               WillImpRespText, WillImpRt, ImproveResp, ImrpveRespText, ImprovedRt
-    Design = cell(numel(Tmp{1}), numel(Tmp) + 15);
+    % more columns: J1Seconds, J2Seconds, InfuisonNum, InfOnset, WillImpOnset, J1Onset, Feed1Onset, 
+    %               Feed2Onset, Feed3Onset, ImprovedOnset, J2Onset, WillImpResp, 
+    %               WillImpRespText, WillImpRt, ImproveResp, ImproveRespText, ImprovedRt
+    Design = cell(numel(Tmp{1}), numel(Tmp) + 17);
     for i = 1:numel(Tmp)
         for k = 1:numel(Tmp{1})
             if iscell(Tmp{i})
@@ -94,24 +94,31 @@ try
     INFUSION = 3;
     FEEDBACK = 4;
     WAVEFORM = 5;
-    INFUSIONNUM = 6;
-    INFONSET = 7;
-    WILLIMPROVEONSET = 8;
-    J1ONSET = 9;
-    FEED1ONSET = 10;
-    FEED2ONSET = 11;
-    FEED3ONSET = 12;
-    IMPROVEDONSET = 13;
-    J2ONSET = 14;
-    WILLIMPROVERESP = 15;
-    WILLIMPROVERESPTEXT = 16;
-    WILLIMPROVERT = 17;
-    IMPROVEDRESP = 18;
-    IMPROVEDRESPTEXT = 19;
-    IMPROVEDRT = 20;
+    JITTER1 = 6;
+    JITTER2 = 7;
+    J1SECONDS = 8;
+    J2SECONDS = 9;
+    INFUSIONNUM = 10;
+    INFONSET = 11;
+    WILLIMPROVEONSET = 12;
+    J1ONSET = 13;
+    FEED1ONSET = 14;
+    FEED2ONSET = 15;
+    FEED3ONSET = 16;
+    IMPROVEDONSET = 17;
+    J2ONSET = 18;
+    WILLIMPROVERESP = 19;
+    WILLIMPROVERESPTEXT = 20;
+    WILLIMPROVERT = 21;
+    IMPROVEDRESP = 22;
+    IMPROVEDRESPTEXT = 23;
+    IMPROVEDRT = 24;
 
-    % assign INFUSIONNUM
+    % assign jitter seconds and INFUSIONNUM
     for i = 1:size(Design, 1)
+        Design{i, J1SECONDS} = Design{i, JITTER1} / 60;
+        Design{i, J2SECONDS} = Design{i, JITTER2} / 60;
+
         if Design{i, INFUSION} == 'A'
             Design{i, INFUSIONNUM} = 1;
         elseif Design{i, INFUSION} == 'B'
@@ -193,6 +200,9 @@ try
     clear i
     KbQueueCreate(DeviceIndex, KeysOfInterest);
     TriggerKey = KbName('=+');
+    ConfirmKeyNames = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', ...
+        'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', ...
+        'y', 'z'};
     LeftResponses = {'1!', '2@', '3#', '4$', '5%', '1', '2', '3', '4', '5'};
     RightResponses = {'6^', '7&', '8*', '9(', '0)', '6', '7', '8', '9', '0'};
 
@@ -392,14 +402,12 @@ try
         RunIdx = [Design{:, RUN}]' == i;
         RunParams = Design(RunIdx, :);
     
-        % pre-populate RT, response, jitter onsets and with NaN
+        % pre-populate RT, response, and with NaN
         for k = 1:size(RunParams)
             RunParams{k, WILLIMPROVERESP} = nan;
             RunParams{k, WILLIMPROVERT} = nan;
             RunParams{k, IMPROVEDRESP} = nan;
             RunParams{k, IMPROVEDRT} = nan;
-            RunParams{k, J1ONSET} = nan;
-            RunParams{k, J2ONSET} = nan;
         end
         clear k;
         
@@ -415,23 +423,23 @@ try
         Screen('TextStyle', Window, 0);
         Screen('FillRect', Window, Black);
         DrawFormattedText(Window, ... 
-            'These are the task directions.\n\n Waiting for ''='' to continue.', ...
+            ['The next task is the Neurofeedback task.\n', ...
+             'The screen will remain blank for some time and then the task will begin.\n', ...
+             ' Waiting for ''='' to continue.'], ...
             'center', 'center', White);
+        fprintf(1, 'NOTIFICATION: Waiting for scanner signal....\n');
 
-        if i == StartRun
-            Screen('Flip', Window);
-        else
-            Screen('Flip', Window, ImpVbl + FlipSeconds(2));
-        end
-
+        Screen('Flip', Window);
+        Screen('FillRect', Window, BgColor);
         while 1
             [Pressed, Secs, KeyCode] = KbCheck;
             if Pressed && KeyCode(TriggerKey)
                 break;
             end
         end
-    
-        Screen('FillRect', Window, BgColor);
+
+        BeginTime = Screen('Flip', Window);
+        Until = BeginTime + FlipSeconds(10);
         for k = 1:size(RunParams, 1)
             InfusionNum = RunParams{k, INFUSIONNUM};
             ColorIdx = ColorOrder(InfusionNum);
@@ -448,12 +456,7 @@ try
             Screen('FillOval', Window, TrialColor, ...
                 FilledOvalRect{InfusionNum}); 
 
-            if k == 1
-                vbl = Screen('Flip', Window, 0, 1);
-                BeginTime = vbl;
-            else
-                vbl = Screen('Flip', Window, ImpVbl + FlipSeconds(2), 1);
-            end
+            vbl = Screen('Flip', Window, Until, 1);
             RunParams{k, INFONSET} = vbl - BeginTime;
 
             if any(strcmp(RunParams{k, INFUSION}, {'A', 'B'}))
@@ -468,6 +471,9 @@ try
 
                     vbl = Screen('Flip', Window, vbl + FlipSeconds(1), 1);
                 end
+                Until = vbl + FlipSeconds(1);
+            else
+                Until = vbl + FlipSeconds(4);
             end
             
             %%% WILLIMPROVE RUNNING CODE %%%
@@ -476,32 +482,24 @@ try
             else
                 Screen('DrawTexture', Window, WillImproveTexture(2));
             end
-
-            KbQueueFlush(DeviceIndex);
-            if any(strcmp(RunParams{k, INFUSION}, {'A', 'B'}))
-                ContVbl = Screen('Flip', Window, vbl + FlipSeconds(1));
-            else
-                ContVbl = Screen('Flip', Window, vbl + FlipSeconds(4));
-            end
+            WillImpVbl = Screen('Flip', Window, Until);
             KbQueueStart(DeviceIndex);
-            RunParams{k, WILLIMPROVEONSET} = ContVbl - BeginTime;
+            RunParams{k, WILLIMPROVEONSET} = WillImpVbl - BeginTime;
 
-            while (GetSecs - ContVbl) < (2 - Refresh)
-                [DidRespond, TimeKeysPressed] = KbQueueCheck(DeviceIndex);
-                if DidRespond
-                    TimeKeysPressed(TimeKeysPressed == 0) = nan;
-                    [RT, Idx] = min(TimeKeysPressed);
-                    RunParams{k, WILLIMPROVERESP} = KbNames{Idx};
-                    RunParams{k, WILLIMPROVERT} = RT - ContVbl;
+            %%% JITTER1 %%%
+            Screen('FillRect', Window, BgColor);
+            vbl = Screen('Flip', Window, WillImpVbl + FlipSeconds(2));
+            RunParams{k, J1ONSET} = vbl - BeginTime;
 
-                    %%% JITTER1 %%%
-                    Screen('FillRect', Window, BgColor);
-                    vbl = Screen('Flip', Window);
-                    RunParams{k, J1ONSET} = vbl - BeginTime;
-                    break;
-                end
-            end
+            % record will improve response
             KbQueueStop(DeviceIndex);
+            [DidRespond, TimeKeysPressed] = KbQueueCheck(DeviceIndex);
+            if DidRespond
+                TimeKeysPressed(TimeKeysPressed == 0) = nan;
+                [RT, Idx] = min(TimeKeysPressed);
+                RunParams{k, WILLIMPROVERESP} = KbNames{Idx};
+                RunParams{k, WILLIMPROVERT} = RT - WillImpVbl;
+            end
 
             % print out response
             fprintf(1, 'RESPONSE: Run              %d\n', i);
@@ -536,12 +534,11 @@ try
 
                     if Begin == 1
                         if iSig == 1
-                            vbl = Screen('Flip', Window, ...
-                                ContVbl + FlipSeconds(2));
+                            Until = vbl + (RunParams{k, JITTER1} - 0.1) * Refresh;
                         else
-                            vbl = Screen('Flip', Window, ...
-                                vbl + (WaitFrames - 0.1) * Refresh);
+                            Until = vbl + (WaitFrames - 0.1) * Refresh;
                         end
+                        vbl = Screen('Flip', Window, Until);
     
                         if iSig == 1
                             RunParams{k, FEED1ONSET} = vbl - BeginTime;
@@ -566,33 +563,38 @@ try
                 Screen('DrawTexture', Window, ImprovedTexture(2));
             end
             KbQueueFlush(DeviceIndex);
-            ImpVbl = Screen('Flip', Window, vbl + (WaitFrames - 0.1) * Refresh);
+            ImprovedVbl = Screen('Flip', Window, vbl + (WaitFrames - 0.1) * Refresh);
             KbQueueStart(DeviceIndex);
-            RunParams{k, IMPROVEDONSET} = ImpVbl - BeginTime;
+            RunParams{k, IMPROVEDONSET} = ImprovedVbl - BeginTime;
 
-            while (GetSecs - ImpVbl) < (2 - Refresh)
-                [DidRespond, TimeKeysPressed] = KbQueueCheck(DeviceIndex);
-                if DidRespond
-                    TimeKeysPressed(TimeKeysPressed == 0) = nan;
-                    [RT, Idx] = min(TimeKeysPressed);
-                    RunParams{k, IMPROVEDRESP} = KbNames{Idx};
-                    RunParams{k, IMPROVEDRT} = RT - ImpVbl;
+            %%% JITTER2 %%%
+            Screen('FillRect', Window, BgColor);
+            vbl = Screen('Flip', Window, ImprovedVbl + FlipSeconds(2));
+            RunParams{k, J2ONSET} = vbl - BeginTime;
 
-                    %%% JITTER2 %%%
-                    Screen('FillRect', Window, BgColor);
-                    vbl = Screen('Flip', Window);
-                    RunParams{k, J2ONSET} = vbl - BeginTime;
-                    break;
-                end
-            end
+            % record will improve response below
             KbQueueStop(DeviceIndex);
+            [DidRespond, TimeKeysPressed] = KbQueueCheck(DeviceIndex);
+            if DidRespond
+                TimeKeysPressed(TimeKeysPressed == 0) = nan;
+                [RT, Idx] = min(TimeKeysPressed);
+                RunParams{k, IMPROVEDRESP} = KbNames{Idx};
+                RunParams{k, IMPROVEDRT} = RT - ImprovedVbl;
+            end
 
             % print out response
             fprintf(1, 'RESPONSE: ImprovedRT       %0.4f\n', ...
                 RunParams{k, IMPROVEDRT});
             fprintf(1, 'RESPONSE: ImprovedResponse %s\n\n', ...
                 RunParams{k, IMPROVEDRESP});
+
+            Until = vbl + (RunParams{k, JITTER2} - 0.1) * Refresh;
         end
+
+        % add 10 seconds baseline
+        Screen('FillRect', Window, BgColor);
+        vbl = Screen('Flip', Window, Until);
+        Until = vbl + FlipSeconds(10);
 
         % now write out run design
         save(OutMat, 'RunParams');
@@ -606,6 +608,10 @@ try
             'InfusionNum,', ...
             'Feedback,', ...
             'Waveform,', ...
+            'Jitter1,', ...
+            'Jitter2,', ...
+            'J1Seconds,', ...
+            'J2Seconds,', ...
             'InfOnset,', ...
             'WillImpOnset,', ...
             'J1Onset,', ...
@@ -629,6 +635,10 @@ try
             fprintf(OutFid, '%d,', RunParams{DesignIdx, INFUSIONNUM});
             fprintf(OutFid, '%s,', RunParams{DesignIdx, FEEDBACK});
             fprintf(OutFid, '%d,', RunParams{DesignIdx, WAVEFORM});
+            fprintf(OutFid, '%d,', RunParams{DesignIdx, JITTER1});
+            fprintf(OutFid, '%d,', RunParams{DesignIdx, JITTER2});
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, J1SECONDS});
+            fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, J2SECONDS});
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, INFONSET});
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, WILLIMPROVEONSET});
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, J1ONSET});
@@ -704,13 +714,43 @@ try
         end
         fclose(OutFid);
         fprintf(1, '\n');
+
+        if i ~= EndRun
+            Screen('FillRect', Window, BgColor);
+            Screen('TextSize', Window, 50);
+            Screen('TextFont', Window, 'Arial');
+            Screen('TextStyle', Window, 0);
+            DrawFormattedText(Window, ...
+                [sprintf('End run %d.\n', i) ...
+                'Waiting for confirmation to begin next run.'], ...
+                'center', 'center', White);
+            vbl = Screen('Flip', Window, Until);
+            fprintf(1, ['NOTIFICATION: End run %d' ...
+                'Press any button (a-z) to move to signal waiting screen.\n', i);
+
+            KbEventFlush;
+            InLoop = 1;
+            while InLoop
+                [Pressed, Secs, KeyCode] = KbCheck;
+                if Pressed
+                    BitPressed = find(KeyCode);
+                    for iBit = BitPressed
+                        if any(strcmp(KbNames{iBit}, ConfirmKeyNames))
+                            InLoop = 0;
+                        end
+                    end
+                end
+            end
+        end
     end
     
-    Screen('TextSize', Window, 35);
+    Screen('TextSize', Window, 50);
     Screen('TextFont', Window, 'Arial');
     Screen('TextStyle', Window, 0);
-    DrawFormattedText(Window, 'Goodbye!', 'center', 'center', White);
-    Screen('Flip', Window, ImpVbl + FlipSeconds(2));
+    DrawFormattedText(Window, ...
+        sprintf('End run %d.\nFinished neurofeedback!', EndRun), ...
+        'center', 'center', White);
+    Screen('Flip', Window, Until);
     WaitSecs(1.25);
     
     % close everything
