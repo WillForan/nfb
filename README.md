@@ -2,19 +2,19 @@
 
 **Design**
 * 4 runs
-  * Run1 = 10.8 minutes (648 seconds)
-  * Run2 = 10.8 minutes (648 seconds)
-  * Run3 = 10.8 minutes (648 seconds)
-  * Run4 = 10.8 minutes (648 seconds)
-  * TotalTime = 43.2 minutes
+  * Run1 = 11.0 minutes (659 seconds)
+  * Run2 = 10.9 minutes (656 seconds)
+  * Run3 = 11.1 minutes (663 seconds)
+  * Run4 = 11.0 minutes (661 seconds)
+  * TotalTime = 44.0 minutes
   * 32 Blocks per run 
     * 4 conditions
-      * Protocol 196KJ  (A; 8 signals, 1 baseline)
-      * Protocol 564D   (B, 3 signals, 6 baseline)
-      * Calibration I   (C; 8 signals, 1 baseline)
-      * Calibration II  (D; 3 signals, 6 baseline)
-    * 9 trials for each condition
-    * 8 unique feedback signals for each run
+      * Protocol 196KJ  (A; 7 signals, 1 baseline)
+      * Protocol 564D   (B, 2 signals, 6 baseline)
+      * Calibration I   (C; 7 signals, 1 baseline)
+      * Calibration II  (D; 2 signals, 6 baseline)
+    * 8 trials for each condition
+    * 7 unique feedback signals for each run
       * B and D show signals that are subset of A and C signals
     * 6 unique feedback baselines for each run
       * A and C show baselines that are subset of B and D baselines
@@ -29,20 +29,24 @@
           * 1,2,3,4,5 = left value
           * 6,7,8,9,0 = right value
       * Random jitter
-        * Jitter duration is the remaining time of will improve after participant has responded
+        * Jitter duration is randomly selected from an exponential distribution bounded between 0.33 - 2 seconds
+        * 1 jitter length is sampled from the uniform distribution with bounds 4-6 seconds; this is to increase randomness
       * 10 seconds feedback
         * 3 stages
           * 0.25-2 seconds baseline (excluding the initial baseline screen)
           * 1.5-3.33 seconds ramp
           * rest at max
-        * Feedback consists of Gaussian noise2
+        * Feedback consists of Gaussian noise
         * For stages 2,3 two sine waves are added to signal
       * 2 seconds improved
         * Keyboard responses restricted to 1, 2, 3, 4, 5, 6, 7, 8, 9, 0
           * 1,2,3,4,5 = left value
           * 6,7,8,9,0 = right value
       * Random jitter
-        * Jitter duration is the remaining time of improved after participant has responded
+        * Jitter duration is randomly selected from an exponential distribution bounded between 0.33 - 2 seconds
+        * 1 jitter length is sampled from the uniform distribution with bounds 4-6 seconds; this is to increase randomness
+  * There are 10 seconds of baseline at the beginning and end of the paradigm; baseline displays only the background color
+  * There is now a confirmation screen requiring input to continue to the next run. Pressing any character key will advance this screen.
       
 **Design Options**
 * Scan
