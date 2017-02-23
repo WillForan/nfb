@@ -7,3 +7,11 @@ Run,Trial,Condition,Onset,Duration,ISI,Context,Emotion,Order,Gender,FaceFile,Con
 2,2,2,18.6536,5,2.5118,Pleasant,Fearful,2,Female,10F_F.png,7270.jpg
 2,3,6,26.1654,5,3.304,Unpleasant,Neutral,2,Male,39M_N.png,2703.jpg
 2,4,3,34.4693,5,2.3029,Pleasant,Neutral,2,Female,14F_N.png,2345.jpg
+1,1,1,3,5,2.2598,Pleasant,Happy,2,Female,16F_H.png,2156.jpg
+1,2,2,17.2598,5,2.3653,Pleasant,Fearful,2,Male,27M_H.png,5830.jpg
+1,3,6,24.6251,5,2.4026,Unpleasant,Neutral,2,Male,37M_N.png,6242.jpg
+1,4,3,32.0278,5,2.4382,Pleasant,Neutral,2,Male,43M_N.png,7492.jpg
+2,1,1,3,5,3.6536,Pleasant,Happy,1,Female,03F_H.png,2154.jpg
+2,2,2,18.6536,5,2.5118,Pleasant,Fearful,1,Female,10F_F.png,7270.jpg
+2,3,6,26.1654,5,3.304,Unpleasant,Neutral,1,Male,39M_N.png,2703.jpg
+2,4,3,34.4693,5,2.3029,Pleasant,Neutral,1,Female,14F_N.png,2345.jpg
