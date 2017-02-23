@@ -16,10 +16,10 @@ N = Scale*4*1/FlipSecs + Scale*FeedbackTime*1/FlipSecs-1;
 FinalVal = 80;
 NumRuns = 4;
 
-% 85% of 9 trials 
-UniquePositive = 8;
-% 65% of 9 trials
-UniqueBaseline = 6;
+% 85% of 8 trials 
+UniquePositive = 7;
+% 65% of 8 trials
+UniqueBaseline = 5;
 
 
 % Baselines
