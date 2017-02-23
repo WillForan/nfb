@@ -156,7 +156,9 @@ try
     end
     
     KbName('UnifyKeyNames');
-    % Screen('Preference', 'SkipSyncTests', 2);
+    if ~IsLinux()
+        Screen('Preference', 'SkipSyncTests', 2);
+    end
     Screen('Preference', 'VisualDebugLevel', 3); % skip introduction Screen
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
@@ -725,8 +727,8 @@ try
                 'Waiting for confirmation to begin next run.'], ...
                 'center', 'center', White);
             vbl = Screen('Flip', Window, Until);
-            fprintf(1, ['NOTIFICATION: End run %d' ...
-                'Press any button (a-z) to move to signal waiting screen.\n', i);
+            fprintf(1, ['NOTIFICATION: End run %d. ' ...
+                'Press any button (a-z) to move to signal waiting screen.\n'], i);
 
             KbEventFlush;
             InLoop = 1;
