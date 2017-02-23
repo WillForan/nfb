@@ -2,13 +2,13 @@ clear all;
 rng(1234567890);
 
 % 4 runs
-%   36 trials per run
-%   9 trials for each condition in 1 run
+%   32 trials per run
+%   8 trials for each condition in 1 run
 %       7 1,3 positive
-%       2 1,3 baseline
-%       5 2,4 positive
-%       4 2,4 baseline
-% 9 trials of each (1, 2, 3, 4)
+%       1 1,3 baseline
+%       6 2,4 positive
+%       2 2,4 baseline
+% 8 trials of each (1, 2, 3, 4)
 
 NumRuns = 4;
 NumTrials = 32;
