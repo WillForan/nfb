@@ -84,8 +84,10 @@ try
     clear i
 
     fprintf(Fid, '*** Second key set ***\n');
-    for i = 1:size(SecondKeySet, 1)
-        fprintf(Fid, '%s %0.4f\n', SecondKeySet{i, 1}, SecondKeySet{i, 2});
+    if exist('SecondKeySet')
+        for i = 1:size(SecondKeySet, 1)
+            fprintf(Fid, '%s %0.4f\n', SecondKeySet{i, 1}, SecondKeySet{i, 2});
+        end
     end
     clear i
     fclose(Fid);

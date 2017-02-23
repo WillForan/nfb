@@ -40,7 +40,7 @@ try
     %%% FEEDBACK SETUP %%%.
     % Feedback rect location; this is used as position reference for most
     % other drawn objects
-    FName = fullfile(pwd, 'Images', 'FeedNumImages', 'Feedback.png');
+    FName = fullfile(pwd, '..', 'NfbImages', 'FeedNumImages', 'Feedback.png');
     Im = imread(FName, 'png');
     FeedbackTexture = Screen('MakeTexture', Window, Im);
     
