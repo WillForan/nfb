@@ -425,7 +425,7 @@ try
         Screen('TextStyle', Window, 0);
         Screen('FillRect', Window, Black);
         DrawFormattedText(Window, ... 
-            ['The next task is the Neurofeedback task.\n', ...
+            [sprintf('The next task is Run %02d of Neurofeedback.\n', i), ...
              'The screen will remain blank for some time and then the task will begin.\n', ...
              ' Waiting for ''='' to continue.'], ...
             'center', 'center', White);
@@ -745,7 +745,8 @@ try
             end
         end
     end
-    
+
+    %%% GOODBYE %%%    
     Screen('TextSize', Window, 50);
     Screen('TextFont', Window, 'Arial');
     Screen('TextStyle', Window, 0);
