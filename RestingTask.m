@@ -30,7 +30,10 @@ try
         PsychDebugWindowConfiguration
     end
 
-    PsychDefaultSetup(2); % default settings
+    KbName('UnifyKeyNames');
+    if ~IsLinux()
+        Screen('Preference', 'SkipSyncTests', 2);
+    end
     Screen('Preference', 'VisualDebugLevel', 3); % skip introduction Screen
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
@@ -43,13 +46,18 @@ try
     Grey = White * 0.7;
 
     % we want X = Left-Right, Y = top-bottom
-    [Window, Rect] = PsychImaging('OpenWindow', ScreenNumber, Black);
+    [Window, Rect] = Screen('OpenWindow', ScreenNumber, Black);
+    Screen('ColorRange', Window, 1, [], 1);
     PriorityLevel = MaxPriority(Window);
     Priority(PriorityLevel);
     [XCenter, YCenter] = RectCenter(Rect);
     Refresh = Screen('GetFlipInterval', Window);
     ScanRect = [0 0 1024 768];
     [ScanCenter(1), ScanCenter(2)] = RectCenter(ScanRect);
+    if InScan == 1
+        HideCursor(ScreenNumber);
+        ListenChar(-1);
+    end
 
     % blend
     Screen('BlendFunction', Window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
@@ -70,7 +78,6 @@ try
          'Waiting for scanner signal ''='' to continue.'], ...
         'center', 'center', Grey);
     Screen('Flip', Window);
-    ListenChar;
     while 1
         [Pressed, Secs, KeyCode] = KbCheck(DeviceIndex);
         if Pressed && KeyCode(TriggerKey)
@@ -85,7 +92,7 @@ try
 
     % end task
     Screen('TextSize', Window, 35);
-    DrawFormattedText(Window, 'Goodbye!', 'center', 'center', Grey);
+    DrawFormattedText(Window, 'End resting state.', 'center', 'center', Grey);
     EndTime = Screen('Flip', Window, BeginTime + (NumFrames - 0.5) * Refresh); 
     WaitSecs(1);
 
