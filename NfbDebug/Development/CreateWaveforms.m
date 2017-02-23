@@ -19,7 +19,7 @@ NumRuns = 4;
 % 85% of 8 trials 
 UniquePositive = 7;
 % 65% of 8 trials
-UniqueBaseline = 5;
+UniqueBaseline = 6;
 
 
 % Baselines
