@@ -2,11 +2,11 @@
 
 **Design**
 * 4 runs
-  * Run1 = 11.0 minutes (659 seconds)
-  * Run2 = 10.9 minutes (656 seconds)
-  * Run3 = 11.1 minutes (663 seconds)
-  * Run4 = 11.0 minutes (661 seconds)
-  * TotalTime = 44.0 minutes
+  * Run1 = 11.2 minutes (670 seconds)
+  * Run2 = 11.1 minutes (665 seconds)
+  * Run3 = 11.2 minutes (672 seconds)
+  * Run4 = 11.2 minutes (671 seconds)
+  * TotalTime = 44.6 minutes
   * 32 Blocks per run 
     * 4 conditions
       * Protocol 196KJ  (A; 7 signals, 1 baseline)
@@ -94,7 +94,7 @@
 **Design**
 * 2 runs selected from 5 different versions of the run
  * Run1 = 9.8 minutes (590 seconds)
- * Run2 = 9.9 minutes (597 seconds)
+ * Run2 = 9.9 minutes (598 seconds)
  * Run3 = 9.9 minutes (592 seconds)
  * Run4 = 9.9 minutes (596 seconds)
  * Run5 = 9.9 minutes (592 seconds)
