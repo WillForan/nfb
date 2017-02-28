@@ -1,6 +1,6 @@
 function NfbTask(varargin)
 % function NfbTask([Scan], [Participant], [StartRun], [EndRun],
-%   [Testing], [Version])
+%   [Testing], [Version], [ScreenNumber])
 
 try
     sca;
@@ -12,14 +12,16 @@ try
             'Start run: 1 - 4:', ...
             'End run: 1 - 4:', ...
             'Testing: (1:Yes, 0:No)', ...
-            'Version: (1, 2, 3, 4)'}, ...
-            '', 1, {'1', '', '1', '4', '0', ''});
+            'Version: (1, 2, 3, 4)', ...
+            'Screen:'}, ...
+            '', 1, {'1', '', '1', '4', '0', '', '1'});
         InScan = str2double(Responses{1});
         Participant = Responses{2};
         StartRun = str2double(Responses{3});
         EndRun = str2double(Responses{4});
         Testing = str2double(Responses{5});
         Version = str2double(Responses{6});
+        ScreenNumber = str2double(Responses{7});
     elseif numel(varargin) == 6
         InScan = varargin{1};
         Participant = varargin{2};
@@ -27,6 +29,7 @@ try
         EndRun = varargin{4};
         Testing = varargin{5};
         Version = varargin{6};
+        ScreenNumber = varargin{7};
     else
         error('Invalid number of arguments.');
     end
@@ -48,6 +51,7 @@ try
         sprintf('OPTIONS: EndRun         %d\n', EndRun) ...
         sprintf('OPTIONS: Testing        %d\n', Testing) ...
         sprintf('OPTIONS: Version        %d\n', Version) ...
+        sprintf('OPTIONS: Screen         %d\n', ScreenNumber) ...
         sprintf('*** OPTIONS ***\n\n')];
     fprintf(1, '\n%s', OptionText);
 
@@ -163,7 +167,7 @@ try
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
     Screens = Screen('Screens'); % get screen number
-    ScreenNumber = max(Screens);
+    Offset = 0.5;
     
     % Define commonly used colors
     White = [1 1 1];
@@ -185,7 +189,6 @@ try
     [ScanCenter(1), ScanCenter(2)] = RectCenter(ScanRect);
     if InScan == 1
         HideCursor(ScreenNumber);
-        ListenChar(-1);
     end
     
     % blend
@@ -399,7 +402,7 @@ try
     end
    
     % define common times and number of frames
-    FlipSeconds = (round((1:10)/Refresh) - 0.1) * Refresh;
+    FlipSeconds = (round((1:10)/Refresh) - Offset) * Refresh;
     for i = StartRun:EndRun
         RunIdx = [Design{:, RUN}]' == i;
         RunParams = Design(RunIdx, :);
@@ -536,9 +539,9 @@ try
 
                     if Begin == 1
                         if iSig == 1
-                            Until = vbl + (RunParams{k, JITTER1} - 0.1) * Refresh;
+                            Until = vbl + (RunParams{k, JITTER1} - Offset) * Refresh;
                         else
-                            Until = vbl + (WaitFrames - 0.1) * Refresh;
+                            Until = vbl + (WaitFrames - Offset) * Refresh;
                         end
                         vbl = Screen('Flip', Window, Until);
     
@@ -551,7 +554,7 @@ try
                         end
                     else
                         vbl = Screen('Flip', Window, ...
-                            vbl + (WaitFrames - 0.1) * Refresh);
+                            vbl + (WaitFrames - Offset) * Refresh);
                     end
                     Begin = Begin + 2 * Scale;
                 end
@@ -565,7 +568,7 @@ try
                 Screen('DrawTexture', Window, ImprovedTexture(2));
             end
             KbQueueFlush(DeviceIndex);
-            ImprovedVbl = Screen('Flip', Window, vbl + (WaitFrames - 0.1) * Refresh);
+            ImprovedVbl = Screen('Flip', Window, vbl + (WaitFrames - Offset) * Refresh);
             KbQueueStart(DeviceIndex);
             RunParams{k, IMPROVEDONSET} = ImprovedVbl - BeginTime;
 
@@ -590,7 +593,7 @@ try
             fprintf(1, 'RESPONSE: ImprovedResponse %s\n\n', ...
                 RunParams{k, IMPROVEDRESP});
 
-            Until = vbl + (RunParams{k, JITTER2} - 0.1) * Refresh;
+            Until = vbl + (RunParams{k, JITTER2} - Offset) * Refresh;
         end
 
         % add 10 seconds baseline
@@ -759,7 +762,6 @@ try
     % close everything
     KbQueueRelease(DeviceIndex);
     sca;
-    ListenChar(0);
     ShowCursor;
     Priority(0);
     diary off
@@ -769,7 +771,6 @@ catch err
     % close everything
     KbQueueRelease();
     sca;
-    ListenChar(0);
     ShowCursor;
     Priority(0);
     fclose('all');

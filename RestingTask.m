@@ -7,12 +7,16 @@ try
     
     if isempty(varargin)
         Responses = inputdlg({'Scan (1:Yes, 0:No):', ...
-            'Participant ID:'});
+            'Participant ID:', ...
+            'Screen:'}, ...
+            '', 1, {'1', '', '1'});
         InScan = str2double(Responses{1});
         Participant = Responses{2};
+        ScreenNumber = str2double(Responses{3});
     elseif numel(varargin) == 2
         InScan = varargin{1};
         Participant = varargin{2};
+        ScreenNumber = varargin{3};
     else
         error('ERROR: Invalid number of arguments.');
     end
@@ -38,7 +42,7 @@ try
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
     Screens = Screen('Screens'); % get scren number
-    ScreenNumber = max(Screens);
+    Offset = 0.5;
 
     % Define black and white
     White = [1 1 1];
@@ -56,7 +60,6 @@ try
     [ScanCenter(1), ScanCenter(2)] = RectCenter(ScanRect);
     if InScan == 1
         HideCursor(ScreenNumber);
-        ListenChar(-1);
     end
 
     % blend
@@ -93,12 +96,11 @@ try
     % end task
     Screen('TextSize', Window, 35);
     DrawFormattedText(Window, 'End resting state.', 'center', 'center', Grey);
-    EndTime = Screen('Flip', Window, BeginTime + (NumFrames - 0.5) * Refresh); 
+    EndTime = Screen('Flip', Window, BeginTime + (NumFrames - Offset) * Refresh); 
     WaitSecs(1);
 
     % close everything
     sca;
-    ListenChar(0);
     ShowCursor;
     Priority(0);
 
@@ -109,7 +111,6 @@ try
     diary off
 catch err
     sca;
-    ListenChar(0);
     ShowCursor;
     Priority(0);
     fprintf(1, '%s\n', err.message);

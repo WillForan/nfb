@@ -13,8 +13,9 @@ try
             'Run1 Order: 1 - 2:', ...
             'Run2: 1 - 5:', ...
             'Run2 Order: 1 - 2:', ...
-            'Testing: (1:Yes, 0:No)'}, ...
-            '', 1, {'1', '', '', '1', '', '2', '0', '1'});
+            'Testing: (1:Yes, 0:No)', ...
+            'Screen:'}, ...
+            '', 1, {'1', '', '', '1', '', '2', '0', '1', '1'});
         InScan = str2double(Responses{1});
         Participant = Responses{2};
         if isempty(Responses{5})
@@ -24,6 +25,7 @@ try
                     str2double(Responses{5}) str2double(Responses{6})];
         end
         Testing = str2double(Responses{7});
+        ScreenNumber = str2double(Responses{8});
     elseif numel(varargin) == 7
         InScan = varargin{1};
         Participant = varargin{2};
@@ -34,6 +36,7 @@ try
                     varargin{5} varargin{6}];
         end
         Testing = varargin{7};
+        ScreenNumber = str2double(Responses{8});
     else
         error('Invalid number of arguments.');
     end
@@ -53,23 +56,24 @@ try
 
     % print out options
     OptionText = [sprintf('*** OPTIONS ***\n') ...
-        sprintf('OPTIONS: InScan      %d\n', InScan) ...
-        sprintf('OPTIONS: Participant %s\n', Participant) ...
-        sprintf('OPTIONS: Run1        %d\n', Runs(1, 1)) ...
-        sprintf('OPTIONS: Run1 Order  %d\n', Runs(1, 2))];
+        sprintf('OPTIONS: InScan       %d\n', InScan) ...
+        sprintf('OPTIONS: Participant  %s\n', Participant) ...
+        sprintf('OPTIONS: Run1         %d\n', Runs(1, 1)) ...
+        sprintf('OPTIONS: Run1 Order   %d\n', Runs(1, 2))];
 
     if size(Runs, 1) == 2
         OptionText = [OptionText ...
-            sprintf('OPTIONS: Run2        %d\n', Runs(2, 1)) ...
-            sprintf('OPTIONS: Run2 Order  %d\n', Runs(2, 2))];
+            sprintf('OPTIONS: Run2         %d\n', Runs(2, 1)) ...
+            sprintf('OPTIONS: Run2 Order   %d\n', Runs(2, 2))];
     else
         OptionText = [OptionText ...
-            sprintf('OPTIONS: Run2        NA') ...
-            sprintf('OPTIONS: Run2 Order  NA')];
+            sprintf('OPTIONS: Run2         NA') ...
+            sprintf('OPTIONS: Run2 Order   NA')];
     end
 
     OptionText = [OptionText ...
-        sprintf('OPTIONS: Testing     %d\n', Testing) ...
+        sprintf('OPTIONS: Testing      %d\n', Testing) ...
+        sprintf('OPTIONS: ScreenNumber %d\n', ScreenNumber) ...
         sprintf('*** OPTIONS ***\n\n')];
     fprintf(1, '\n%s', OptionText);
     
@@ -124,7 +128,7 @@ try
     end
     Screen('Preference', 'VisualDebugLevel', 3);
     Screens = Screen('Screens');
-    ScreenNumber = max(Screens);
+    Offset = 0.5;
     
     % Define black and white
     White = [1 1 1];
@@ -143,7 +147,6 @@ try
     ScanCentered = CenterRectOnPoint(ScanRect, XCenter, YCenter);
     if InScan == 1
         HideCursor(ScreenNumber);
-        ListenChar(-1);
     end
 
     % Set up alpha-blending for smooth (anti-aliased) lines
@@ -221,7 +224,7 @@ try
     FaceCenter(1) = XCenter - (ScanCenter(1) - FaceCenter(1));
     FaceCenter(2) = YCenter - (ScanCenter(2) - FaceCenter(2));
 
-    FlipSeconds = (round((1:10)/Refresh) - 0.1) * Refresh;
+    FlipSeconds = (round((1:10)/Refresh) - Offset) * Refresh;
     % run the experiment
     for i = 1:size(Runs, 1)
         OrderIdx = [Design{:, ORDER}]' == Runs(i, 2);
@@ -302,7 +305,7 @@ try
             Screen('DrawTexture', Window, JitterTexture);
             vbl = Screen('Flip', Window, FaceVbl + FlipSeconds(2));
             RunParams{k, JITTERONSET} = vbl - BeginTime;
-            Until = vbl + RunParams{k, ACTUALISI} - 0.1 * Refresh;
+            Until = vbl + RunParams{k, ACTUALISI} - Offset * Refresh;
         end
 
         % record last response after last jitter
@@ -441,7 +444,6 @@ try
     % close everything
     KbQueueRelease();
     sca;
-    ListenChar(0);
     ShowCursor;
     Priority(0);
     diary off
@@ -451,7 +453,6 @@ catch err
     % close everything
     KbQueueRelease();
     sca;
-    ListenChar(0);
     ShowCursor;
     Priority(0);
     fclose('all');
