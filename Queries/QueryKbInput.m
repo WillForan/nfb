@@ -2,12 +2,19 @@ clear all;
 
 try
     % change preferences
-    Screen('Preference', 'SkipSyncTests', 2);
+    KbName('UnifyKeyNames');
+    if ~IsLinux()
+        Screen('Preference', 'SkipSyncTests', 2);
+    end
     Screen('Preference', 'VisualDebugLevel', 3);
 
     % screen initialization and refresh
     Screens = Screen('Screens'); % get scren number
-    ScreenNumber = max(Screens);
+    if IsLinux || IsOSX
+        ScreenNumber = max(Screens);
+    else
+        ScreenNumber = 1;
+    end
     [Window, Rect] = Screen('OpenWindow', ScreenNumber, [0 0 0]);
     Screen('ColorRange', Window, 1, [], 1);
     PriorityLevel = MaxPriority(Window);
@@ -15,7 +22,6 @@ try
     [XCenter, YCenter] = RectCenter(Rect);
     [Refresh] = Screen('GetFlipInterval', Window);
     
-    KbName('UnifyKeyNames');
     KbNames = KbName('KeyNames');
     EscapeKey = KbName('ESCAPE');
     SignalKey = KbName('6^');
@@ -32,7 +38,6 @@ try
     DrawFormattedText(Window, 'Waiting for keyboard input...', 'center', 'center');
     Screen('Flip', Window);
 
-    ListenChar(2);
     OutIndex = 1;    
     fprintf(1, '\n*** QueryKbInput INFORMATION ***\n');
     while 1
@@ -72,13 +77,11 @@ try
 
     sca;
     ShowCursor;
-    ListenChar(0);
     Priority(0);
 catch err
     fclose('all');
     ShowCursor;
     sca;
-    ListenChar(0);
     Priority(0);
 
     OutDir = fullfile(pwd, 'QueryScanner');

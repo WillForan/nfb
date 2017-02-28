@@ -6,12 +6,19 @@ try
     PsychDebugWindowConfiguration
     
     PsychDefaultSetup(2); % default settings
-    % Screen('Preference', 'SkipSyncTests', 1);
+    KbName('UnifyKeyNames');
+    if ~IsLinux()
+        Screen('Preference', 'SkipSyncTests', 2);
+    end
     Screen('Preference', 'VisualDebugLevel', 1); % skip introduction Screen
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
     Screens = Screen('Screens'); % get scren number
-    ScreenNumber = max(Screens);
+    if IsLinux || IsOSX
+        ScreenNumber = max(Screens);
+    else
+        ScreenNumber = 1;
+    end
     
     % Define black and white
     White = WhiteIndex(ScreenNumber);
@@ -20,8 +27,8 @@ try
     FilledColor = [41 249 64] * 1/255;
     
     % we want X = Left-Right, Y = top-bottom
-    [Window, Rect] = PsychImaging('OpenWindow', ScreenNumber, Black);
-    %     Screen('Resolution', Window, 1024, 768);
+    [Window, Rect] = Screen('OpenWindow', ScreenNumber, Black);
+    Screen('ColorRange', Window, 1, [], 1);
     
     PriorityLevel = MaxPriority(Window);
     Priority(PriorityLevel);
@@ -53,13 +60,13 @@ try
     for i = 1:size(fonts)
         str = sprintf('Screen %d\n%s\n%s\n%d', i, fonts{i, 1}, TestStr, fonts{i, 2});
         Screen('TextFont', Window, fonts{i, 1});
-        Screen('TextStyle', Window, fonts{i, 2})
+        Screen('TextStyle', Window, fonts{i, 2});
         DrawFormattedText(Window, str, 'center', 'center', FilledColor);
         Screen('Flip', Window);
         KbStrokeWait;
     end
 
-    DrawFormattedText(Window, 'Goodbye!', 'center', 'center', FilledColor);
+    DrawFormattedText(Window, 'Goodbye! (Press any key to quit.)', 'center', 'center', FilledColor);
     Screen('Flip', Window);
     KbStrokeWait;
     sca;

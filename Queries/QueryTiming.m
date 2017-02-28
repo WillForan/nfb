@@ -11,15 +11,20 @@ try
     diary(OutFile);
     
     % hide intro screens
+    KbName('UnifyKeyNames');
+    if ~IsLinux()
+        Screen('Preference', 'SkipSyncTests', 2);
+    end
     Screen('Preference', 'VisualDebugLevel', 3);
     
-    % enter default setup
-    PsychDefaultSetup(2);
-
     % screen initialization and refresh
     Screens = Screen('Screens'); % get scren number
-    ScreenNumber = max(Screens);
-    [Window, Rect] = PsychImaging('OpenWindow', ScreenNumber, [0 0 0]);
+    if IsLinux || IsOSX
+        ScreenNumber = max(Screens);
+    else
+        ScreenNumber = 1;
+    end
+    [Window, Rect] = Screen('OpenWindow', ScreenNumber, [0 0 0]);
     Screen('ColorRange', Window, 1, [], 1);
     PriorityLevel = MaxPriority(Window);
     Priority(PriorityLevel);
@@ -61,32 +66,35 @@ try
         Vbl = CurVbl;
     end
     WaitSecs(1);
-    
+   
+    fprintf(1, '*** QueryTiming INFORMATION ***\n'); 
     OutFile = fullfile(OutDir, 'QueryTiming.csv');
     Fid = fopen(OutFile, 'w');
     fprintf(Fid, 'Offset,Flip,Duration\n');
+    fprintf(1, 'Offset,Flip,Duration\n');
     for i = 1:size(data, 1)
         for k = 1:size(data, 2)
             if k == size(data, 2)
                 fprintf(Fid, '%0.4f\n', data(i, k));
+                fprintf(1, '%0.4f\n', data(i, k));
             else
                 fprintf(Fid, '%0.4f,', data(i, k));
+                fprintf(1, '%0.4f,', data(i, k));
             end
         end
     end
     fclose(Fid);
+    fprintf(1, '*** QueryTiming INFORMATION ***\n'); 
 
     % now close everything
     ShowCursor;
     sca;
-    ListenChar(0);
     Priority(0);
     diary off
 catch err
     fclose('all');
     ShowCursor;
     sca;
-    ListenChar(0);
     Priority(0);
     diary off
 

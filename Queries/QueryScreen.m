@@ -11,6 +11,10 @@ try
     diary(OutFile);
     
     % hide intro screens
+    KbName('UnifyKeyNames');
+    if ~IsLinux()
+        Screen('Preference', 'SkipSyncTests', 2);
+    end
     Screen('Preference', 'VisualDebugLevel', 3);
     
     % enter default setup
@@ -18,8 +22,12 @@ try
 
     % screen initialization and refresh
     Screens = Screen('Screens'); % get scren number
-    ScreenNumber = max(Screens);
-    [Window, Rect] = PsychImaging('OpenWindow', ScreenNumber, [0 0 0]);
+    if IsLinux || IsOSX
+        ScreenNumber = max(Screens);
+    else
+        ScreenNumber = 1;
+    end
+    [Window, Rect] = Screen('OpenWindow', ScreenNumber, [0 0 0]);
     Screen('ColorRange', Window, 1, [], 1);
     PriorityLevel = MaxPriority(Window);
     Priority(PriorityLevel);
@@ -56,7 +64,6 @@ try
     % now close everything
     ShowCursor;
     sca;
-    ListenChar(0);
     Priority(0);
     
     % print diagnostic file
@@ -69,7 +76,6 @@ catch err
     fclose('all');
     ShowCursor;
     sca;
-    ListenChar(0);
     Priority(0);
     diary off
 

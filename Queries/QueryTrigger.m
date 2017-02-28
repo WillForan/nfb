@@ -5,12 +5,19 @@ try
     KbReleaseWait;
 
     % change preferences
-    Screen('Preference', 'SkipSyncTests', 2);
+    KbName('UnifyKeyNames');
+    if ~IsLinux()
+        Screen('Preference', 'SkipSyncTests', 2);
+    end
     Screen('Preference', 'VisualDebugLevel', 3);
 
     % screen initialization and refresh
     Screens = Screen('Screens'); % get scren number
-    ScreenNumber = max(Screens);
+    if IsLinux || IsOSX
+        ScreenNumber = max(Screens);
+    else
+        ScreenNumber = 1;
+    end
     [Window, Rect] = Screen('OpenWindow', ScreenNumber, [0 0 0]);
     Screen('ColorRange', Window, 1, [], 1);
     PriorityLevel = MaxPriority(Window);
@@ -18,7 +25,6 @@ try
     [XCenter, YCenter] = RectCenter(Rect);
     [Refresh] = Screen('GetFlipInterval', Window);
     
-    KbName('UnifyKeyNames');
     KbNames = KbName('KeyNames');
 
     % set up text properties
@@ -27,7 +33,6 @@ try
     Screen('TextColor', Window, [1 1 1]);
 
     % create KbQueue
-    ListenChar(-1);
     KbQueueCreate([]);
 
     DrawFormattedText(Window, ['Waiting for scanner trigger\n\n' ...
@@ -94,13 +99,11 @@ try
 
     sca;
     ShowCursor;
-    ListenChar(0);
     Priority(0);
 catch err
     fclose('all');
     ShowCursor;
     sca;
-    ListenChar(0);
     Priority(0);
 
     OutDir = fullfile(pwd, 'QueryScanner');

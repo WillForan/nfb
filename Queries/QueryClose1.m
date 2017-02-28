@@ -11,12 +11,19 @@ try
     diary(OutFile);
     
     % change preferences
-    % Screen('Preference', 'SkipSyncTests', 2);
+    KbName('UnifyKeyNames');
+    if ~IsLinux()
+        Screen('Preference', 'SkipSyncTests', 2);
+    end
     Screen('Preference', 'VisualDebugLevel', 3);
     
     % screen initialization and refresh
     Screens = Screen('Screens'); % get scren number
-    ScreenNumber = max(Screens);
+    if IsLinux || IsOSX
+        ScreenNumber = max(Screens);
+    else
+        ScreenNumber = 1;
+    end
     [Window, Rect] = Screen('OpenWindow', ScreenNumber);
     fprintf(1, 'Done opening screen.\n');
     Screen('ColorRange', Window, 1, [], 1);
@@ -54,14 +61,12 @@ try
     fprintf(1, 'sca\n');
     sca;
     ShowCursor;
-    ListenChar(0);
     Priority(0);
     diary off
     fprintf(1, 'Script ended successfully.\n');
 catch err
     ShowCursor;
     sca;
-    ListenChar(0);
     Priority(0);
     fprintf(1, 'ERROR: %s\n', err.message);
     diary off

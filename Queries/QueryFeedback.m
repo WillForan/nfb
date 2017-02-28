@@ -11,12 +11,19 @@ try
     diary(OutFile);
     
     % change preferences
-    % Screen('Preference', 'SkipSyncTests', 2);
+    KbName('UnifyKeyNames');
+    if ~IsLinux()
+        Screen('Preference', 'SkipSyncTests', 2);
+    end
     Screen('Preference', 'VisualDebugLevel', 3);
     
     % screen initialization and refresh
     Screens = Screen('Screens'); % get scren number
-    ScreenNumber = max(Screens);
+    if IsLinux || IsOSX
+        ScreenNumber = max(Screens);
+    else
+        ScreenNumber = 1;
+    end
     [Window, Rect] = Screen('OpenWindow', ScreenNumber);
     Screen('ColorRange', Window, 1, [], 1);
     PriorityLevel = MaxPriority(Window);
@@ -152,7 +159,6 @@ try
     end
     
     % set up keys of interest
-    KbName('UnifyKeyNames');
     KbNames = KbName('KeyNames');
     EscapeKey = KbName('ESCAPE');
     TabKey = KbName('tab');
@@ -181,7 +187,6 @@ try
     
     % prepare for display
     HideCursor;
-    ListenChar(-1);
     
     % initialize screen display
     Screen('DrawTexture', Window, FeedbackTexture);
@@ -281,13 +286,11 @@ try
 
     sca;
     ShowCursor;
-    ListenChar(0);
     Priority(0);
     diary off
 catch err
     sca;
     ShowCursor;
-    ListenChar(0);
     Priority(0);
     fprintf(1, '%s\n', err.message);
     diary off

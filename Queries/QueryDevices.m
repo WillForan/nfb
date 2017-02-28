@@ -3,12 +3,20 @@ clear all;
 
 try
     % change preferences
-    % Screen('Preference', 'SkipSyncTests', 2);
+    KbName('UnifyKeyNames');
+    if ~IsLinux()
+        Screen('Preference', 'SkipSyncTests', 2);
+    end
     Screen('Preference', 'VisualDebugLevel', 3);
 
     % screen initialization and refresh
     Screens = Screen('Screens'); % get scren number
-    [Window, Rect] = Screen('OpenWindow', max(Screens));
+    if IsLinux || IsOSX
+        ScreenNumber = max(Screens);
+    else
+        ScreenNumber = 1;
+    end
+    [Window, Rect] = Screen('OpenWindow', ScreenNumber);
     Info = Screen('GetWindowInfo', Window);
     PriorityLevel = MaxPriority(Window);
     Priority(PriorityLevel);
@@ -78,13 +86,11 @@ try
 
     sca;
     ShowCursor;
-    ListenChar(0);
     Priority(0);
 catch err
     fclose('all');
     ShowCursor;
     sca;
-    ListenChar(0);
     Priority(0);
 
     % print error text file
