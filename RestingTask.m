@@ -5,11 +5,13 @@ try
     sca;
     DeviceIndex = [];
     
+    Screens = Screen('Screens'); % get scren number
     if isempty(varargin)
         Responses = inputdlg({'Scan (1:Yes, 0:No):', ...
             'Participant ID:', ...
             'Screen:'}, ...
-            '', 1, {'1', '', '1'});
+            'OPTIONS', 1, ...
+            {'1', '', sprintf('%d', max(Screens))});
         InScan = str2double(Responses{1});
         Participant = Responses{2};
         ScreenNumber = str2double(Responses{3});
@@ -95,7 +97,7 @@ try
 
     % end task
     Screen('TextSize', Window, 35);
-    DrawFormattedText(Window, 'End resting state.', 'center', 'center', Grey);
+    DrawFormattedText(Window, 'End.', 'center', 'center', Grey);
     EndTime = Screen('Flip', Window, BeginTime + (NumFrames - Offset) * Refresh); 
     WaitSecs(1);
 
@@ -105,7 +107,10 @@ try
     Priority(0);
 
     TotalTime = EndTime - BeginTime;
-    fprintf(1, 'Total duration: %0.2f seconds (%0.2f minutes)\n', ...
+    fprintf(1, 'NOTIFICATION: Completed REST.\n');
+    fprintf(1, 'NOTIFICATION: Using offest %0.2f.\n', Offset);
+    fprintf(1, 'NOTIFICATION: Participant number %s.\n', Participant);
+    fprintf(1, 'NOTIFICATION: Total duration: %0.2f seconds (%0.2f minutes)\n', ...
         TotalTime, TotalTime/60);
     
     diary off
