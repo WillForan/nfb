@@ -6,6 +6,7 @@ try
     sca;
     DeviceIndex = [];
 
+    Screens = Screen('Screens'); % get screen number
     if isempty(varargin)
         Responses = inputdlg({'Scan (1:Yes, 0:No):', ...
             'Participant ID:', ...
@@ -14,7 +15,8 @@ try
             'Testing: (1:Yes, 0:No)', ...
             'Version: (1, 2, 3, 4)', ...
             'Screen:'}, ...
-            '', 1, {'1', '', '1', '4', '0', '', '1'});
+            'OPTIONS', 1, ...
+            {'1', '', '1', '4', '0', '', sprintf('%d', max(Screens))});
         InScan = str2double(Responses{1});
         Participant = Responses{2};
         StartRun = str2double(Responses{3});
@@ -33,6 +35,9 @@ try
     else
         error('Invalid number of arguments.');
     end
+
+    % list expected onsets
+    ExpectedOnsets = [657.533 653.433 660.8667 658.1000];
 
     % make participant out directory
     OutDir = fullfile(pwd, 'NfbResponses', Participant);
@@ -719,18 +724,32 @@ try
         fclose(OutFid);
         fprintf(1, '\n');
 
+        % print out previous run information
+        fprintf(1, 'NOTIFICATION: Completed NFB run %d.\n', i);
+        fprintf(1, 'NOTIFICATION: Using offset %0.2f.\n', Offset);
+        fprintf(1, 'NOTIFICATION: Using version %d.\n', Version);
+        fprintf(1, 'NOTIFICATION: Participant number %s.\n', Participant);
+        if Testing == 0 
+            fprintf(1, 'NOTIFICATION: Last trial onset %0.4f.\n', ...
+                RunParams{end, J2ONSET});
+            fprintf(1, 'NOTIFICATION: Expected last trial onset %0.4f.\n', ...
+                ExpectedOnsets(i));
+        end
+
+        % display confirmation screen to avoid triggering next run
         if i ~= EndRun
             Screen('FillRect', Window, BgColor);
             Screen('TextSize', Window, 50);
             Screen('TextFont', Window, 'Arial');
             Screen('TextStyle', Window, 0);
             DrawFormattedText(Window, ...
-                [sprintf('End run %d.\n', i) ...
-                'Waiting for confirmation to begin next run.'], ...
+                [sprintf('End infusion set %d.\n', i) ...
+                'Waiting for confirmation.'], ...
                 'center', 'center', White);
             vbl = Screen('Flip', Window, Until);
             fprintf(1, ['NOTIFICATION: End run %d. ' ...
                 'Press any button (a-z) to move to signal waiting screen.\n'], i);
+            fprintf(1, '\n');
 
             KbEventFlush;
             InLoop = 1;
@@ -753,7 +772,7 @@ try
     Screen('TextFont', Window, 'Arial');
     Screen('TextStyle', Window, 0);
     DrawFormattedText(Window, ...
-        sprintf('End run %d.\nFinished neurofeedback!', EndRun), ...
+        sprintf('End infusion %d.', EndRun), ...
         'center', 'center', White);
     Screen('Flip', Window, Until);
     WaitSecs(1.25);
