@@ -6,6 +6,7 @@ try
     sca;
     DeviceIndex = [];
 
+    Screens = Screen('Screens'); 
     if isempty(varargin)
         Responses = inputdlg({'Scan (1:Yes, 0:No):', ...
             'Participant ID:', ...
@@ -15,7 +16,8 @@ try
             'Run2 Order: 1 - 2:', ...
             'Testing: (1:Yes, 0:No)', ...
             'Screen:'}, ...
-            '', 1, {'1', '', '', '1', '', '2', '0', '1', '1'});
+            'OPTIONS', 1, ...
+            {'1', '', '', '1', '', '2', '0', sprintf('%d', max(Screens))});
         InScan = str2double(Responses{1});
         Participant = Responses{2};
         if isempty(Responses{5})
@@ -40,6 +42,9 @@ try
     else
         error('Invalid number of arguments.');
     end
+
+    % list expected onsets
+    ExpectedOnsets = [579.5167 586.7333 581.5 585.1833 581.6833];
 
     if InScan == 0
         PsychDebugWindowConfiguration
@@ -73,7 +78,7 @@ try
 
     OptionText = [OptionText ...
         sprintf('OPTIONS: Testing      %d\n', Testing) ...
-        sprintf('OPTIONS: ScreenNumber %d\n', ScreenNumber) ...
+        sprintf('OPTIONS: Screen       %d\n', ScreenNumber) ...
         sprintf('*** OPTIONS ***\n\n')];
     fprintf(1, '\n%s', OptionText);
     
@@ -397,8 +402,20 @@ try
             fprintf(OutFid, '%0.4f\n', RunParams{DesignIdx, FACERT});
         end
         fclose(OutFid);
-    
         fprintf(1, '\n');
+
+        % print out previous run information
+        fprintf(1, 'NOTIFICATION: Completed SC run %d.\n', i);
+        fprintf(1, 'NOTIFICATION: Used paradigm %d.\n', Runs(i, 1));
+        fprintf(1, 'NOTIFICATION: Used run order %d.\n', Runs(i, 2));
+        fprintf(1, 'NOTIFICATION: Using offset %0.2f.\n', Offset);
+        fprintf(1, 'NOTIFICATION: Participant number %s.\n', Participant);
+        if Testing == 0 
+            fprintf(1, 'NOTIFICATION: Last trial onset %0.4f.\n', ...
+                RunParams{end, JITTERONSET});
+            fprintf(1, 'NOTIFICATION: Expected last trial onset %0.4f.\n', ...
+                ExpectedOnsets(Runs(i, 1)));
+        end
 
         % confirmation screen
         if i ~= size(Runs, 1)
@@ -407,8 +424,8 @@ try
             Screen('TextFont', Window, 'Arial');
             Screen('TextStyle', Window, 0);
             DrawFormattedText(Window, ...
-                [sprintf('End run %d.\n', i) ...
-                'Waiting for confirmation to begin next run.'], ...
+                [sprintf('End image set %d.\n', i) ...
+                'Waiting for confirmation.'], ...
                 'center', 'center', White);
             vbl = Screen('Flip', Window, Until);
             fprintf(1, ['NOTIFICATION: End run %d. ' ...
@@ -435,7 +452,7 @@ try
     Screen('TextFont', Window, 'Arial');
     Screen('TextStyle', Window, 0);
     DrawFormattedText(Window, ...
-        sprintf('End run %d.\nFinished social cognition!', i), ...
+        sprintf('End image set %d.', i), ...
         'center', 'center', White);
     Screen('Flip', Window, Until);
     WaitSecs(1.25);
