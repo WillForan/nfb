@@ -14,11 +14,10 @@ try
     Screen('Preference', 'DefaultFontSize', 35);
     Screen('Preference', 'DefaultFontName', 'Arial');
     Screens = Screen('Screens'); % get scren number
-    if IsLinux || IsOSX
-        ScreenNumber = max(Screens);
-    else
-        ScreenNumber = 1;
-    end
+    ScreenNumber = max(Screens);
+    Responses = inputdlg({'Screen:'}, 'ScreenNumber', 1, ...
+         {sprintf('%d', ScreenNumber)});
+    ScreenNumber = str2double(Responses{1});
     
     % Define black and white
     White = WhiteIndex(ScreenNumber);

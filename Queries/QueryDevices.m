@@ -11,11 +11,10 @@ try
 
     % screen initialization and refresh
     Screens = Screen('Screens'); % get scren number
-    if IsLinux || IsOSX
-        ScreenNumber = max(Screens);
-    else
-        ScreenNumber = 1;
-    end
+    ScreenNumber = max(Screens);
+    Responses = inputdlg({'Screen:'}, 'ScreenNumber', 1, ...
+         {sprintf('%d', ScreenNumber)});
+    ScreenNumber = str2double(Responses{1});
     [Window, Rect] = Screen('OpenWindow', ScreenNumber);
     Info = Screen('GetWindowInfo', Window);
     PriorityLevel = MaxPriority(Window);
