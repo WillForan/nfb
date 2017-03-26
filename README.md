@@ -60,26 +60,49 @@
   * 1 = Yes, this will use NfbTestOrder.csv as the design which is signficiantly shorter for testing purposes
   * 2 = No, this will use NfbDesign.csv as the design which is what you want to use in the scanner
 * Version controls the color scheme
-  * 1
-    * Protocol 196KJ = red
-    * Protocol 564D = light blue
-    * Calibration I = green
-    * Calibration II = yellow
-  * 2
-    * Protocol 196KJ = light blue
-    * Protocol 564D = red
-    * Calibration I = yellow
-    * Calibration II = green
-  * 3
-    * Protocol 196Kj = green
-    * Protocol 564D = yellow
-    * Calibration I = red
-    * Calibration II = light blue
-  * 4
-    * Protocol 196Kj = yellow
-    * Protocol 564D = green
-    * Calibration I = light blue
-    * Calibration II = red
+* Color set controls what colors are displayed
+  * Color set 1
+    * Version 1
+      * Protocol 196KJ = red
+      * Protocol 564D = light blue
+      * Calibration I = green
+      * Calibration II = yellow
+    * Version 2
+      * Protocol 196KJ = light blue
+      * Protocol 564D = red
+      * Calibration I = yellow
+      * Calibration II = green
+    * Version 3
+      * Protocol 196Kj = green
+      * Protocol 564D = yellow
+      * Calibration I = red
+      * Calibration II = light blue
+    * Verison 4
+      * Protocol 196Kj = yellow
+      * Protocol 564D = green
+      * Calibration I = light blue
+      * Calibration II = red
+  * Color set 2
+    * Version 1
+      * Protocol 196KJ = orange
+      * Protocol 564D = pink
+      * Calibration I = purple
+      * Calibration II = dark blue
+    * Version 2
+      * Protocol 196KJ = pink
+      * Protocol 564D = orange
+      * Calibration I = dark blue
+      * Calibration II = purple
+    * Version 3
+      * Protocol 196KJ = purple
+      * Protocol 564D = dark blue
+      * Calibration I = orange
+      * Calibration II = pink
+    * Version 4
+      * Protocol 196KJ = dark blue
+      * Protocol 564D = purple
+      * Calibration I = pink
+      * Calibration II = orange
     
 **File/Directory Descriptions**
 * NfbTask.m - matlab script to run the social cognition task
