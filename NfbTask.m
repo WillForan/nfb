@@ -14,16 +14,18 @@ try
             'End run: 1 - 4:', ...
             'Testing: (1:Yes, 0:No)', ...
             'Version: (1, 2, 3, 4)', ...
+            'Color set: (1:r,b,g,y; 2:o,p,pur,db)', ...
             'Screen:'}, ...
             'OPTIONS', 1, ...
-            {'1', '', '1', '4', '0', '', sprintf('%d', max(Screens))});
+            {'1', '', '1', '4', '0', '', '1', sprintf('%d', max(Screens))});
         InScan = str2double(Responses{1});
         Participant = Responses{2};
         StartRun = str2double(Responses{3});
         EndRun = str2double(Responses{4});
         Testing = str2double(Responses{5});
         Version = str2double(Responses{6});
-        ScreenNumber = str2double(Responses{7});
+        ColorSet = str2double(Responses{7});
+        ScreenNumber = str2double(Responses{8});
     elseif numel(varargin) == 6
         InScan = varargin{1};
         Participant = varargin{2};
@@ -31,7 +33,8 @@ try
         EndRun = varargin{4};
         Testing = varargin{5};
         Version = varargin{6};
-        ScreenNumber = varargin{7};
+        ColorSet = varargin{7};
+        ScreenNumber = varargin{8};
     else
         error('Invalid number of arguments.');
     end
@@ -56,6 +59,7 @@ try
         sprintf('OPTIONS: EndRun         %d\n', EndRun) ...
         sprintf('OPTIONS: Testing        %d\n', Testing) ...
         sprintf('OPTIONS: Version        %d\n', Version) ...
+        sprintf('OPTIONS: Color set      %d\n', ColorSet) ...
         sprintf('OPTIONS: Screen         %d\n', ScreenNumber) ...
         sprintf('*** OPTIONS ***\n\n')];
     fprintf(1, '\n%s', OptionText);
@@ -82,10 +86,11 @@ try
     Tmp = textscan(DesignFid, '%f%f%s%s%f%f%f%f%f', ...
         'Delimiter', ',', 'Headerlines', 1);
     fclose(DesignFid);
-    % more columns: J1Seconds, J2Seconds, InfuisonNum, InfOnset, WillImpOnset, J1Onset, Feed1Onset, 
+    % more columns: TrialColor, J1Seconds, J2Seconds, InfuisonNum, 
+    %               InfOnset, WillImpOnset, J1Onset, Feed1Onset, 
     %               Feed2Onset, Feed3Onset, ImprovedOnset, J2Onset, WillImpResp, 
     %               WillImpRespText, WillImpRt, ImproveResp, ImproveRespText, ImprovedRt
-    Design = cell(numel(Tmp{1}), numel(Tmp) + 17);
+    Design = cell(numel(Tmp{1}), numel(Tmp) + 18);
     for i = 1:numel(Tmp)
         for k = 1:numel(Tmp{1})
             if iscell(Tmp{i})
@@ -107,23 +112,45 @@ try
     JITTER2 = 7;
     J1SECONDS = 8;
     J2SECONDS = 9;
-    INFUSIONNUM = 10;
-    INFONSET = 11;
-    WILLIMPROVEONSET = 12;
-    J1ONSET = 13;
-    FEED1ONSET = 14;
-    FEED2ONSET = 15;
-    FEED3ONSET = 16;
-    IMPROVEDONSET = 17;
-    J2ONSET = 18;
-    WILLIMPROVERESP = 19;
-    WILLIMPROVERESPTEXT = 20;
-    WILLIMPROVERT = 21;
-    IMPROVEDRESP = 22;
-    IMPROVEDRESPTEXT = 23;
-    IMPROVEDRT = 24;
+    TRIALCOLOR = 10;
+    INFUSIONNUM = 11;
+    INFONSET = 12;
+    WILLIMPROVEONSET = 13;
+    J1ONSET = 14;
+    FEED1ONSET = 15;
+    FEED2ONSET = 16;
+    FEED3ONSET = 17;
+    IMPROVEDONSET = 18;
+    J2ONSET = 19;
+    WILLIMPROVERESP = 20;
+    WILLIMPROVERESPTEXT = 21;
+    WILLIMPROVERT = 22;
+    IMPROVEDRESP = 23;
+    IMPROVEDRESPTEXT = 24;
+    IMPROVEDRT = 25;
 
-    % assign jitter seconds and INFUSIONNUM
+    % set InfColors here, so whole trial colors can be set
+    InfColors = {
+        {'Red', 'Blue', 'Green', 'Yellow'}
+        {'Orange', 'Pink', 'Purple', 'DarkBlue'}
+    };
+    InfColors = InfColors{ColorSet};
+
+    % set Colors color order based on Version 
+    if Version == 1
+        ColorOrder = [1 2 3 4];
+    elseif Version == 2
+        ColorOrder = [2 1 4 3];
+    elseif Version == 3
+        ColorOrder = [3 4 1 2];
+    elseif Version == 4
+        ColorOrder = [4 3 2 1];
+    else
+        sca;
+        error('Unknown error version: %d\n', Version);
+    end
+
+    % assign jitter seconds, INFUSIONNUM, and TRIALCOLORS
     for i = 1:size(Design, 1)
         Design{i, J1SECONDS} = Design{i, JITTER1} / 60;
         Design{i, J2SECONDS} = Design{i, JITTER2} / 60;
@@ -139,31 +166,30 @@ try
         else
             error('Unknown infusion: %s, row: %d', Design{i, INFUSION}, i);
         end
+
+        Design{i, TRIALCOLOR} = InfColors{ColorOrder(Design{i, INFUSIONNUM})};
     end
     clear i
 
     % default color scheme (used in infusion and feedback)
     Colors = {
-        [1 0 0];
-        [7/255 255 255];
-        [0 1 0];
-        [1 1 0];
+        {
+            % color set 1
+            [1 0 0]; % red
+            [7 255 255] * 1/255; % light blue
+            [0 1 0]; % green
+            [1 1 0]; % yellow
+        }
+        {
+            % color set 2
+            [248 157 33] * 1/255; % orange
+            [247 0 157] * 1/255; % pink
+            [194 0 244] * 1/255; % purple
+            [52 0 253] * 1/255; % dark blue
+        }
     };
+    Colors = Colors{ColorSet};
    
-    % set Colors color order based on Version 
-    if Version == 1
-        ColorOrder = [1 2 3 4];
-    elseif Version == 2
-        ColorOrder = [2 1 4 3];
-    elseif Version == 3
-        ColorOrder = [3 4 1 2];
-    elseif Version == 4
-        ColorOrder = [4 3 2 1];
-    else
-        sca;
-        error('Unknown error version: %d\n', Version);
-    end
-    
     KbName('UnifyKeyNames');
     if ~IsLinux()
         Screen('Preference', 'SkipSyncTests', 2);
@@ -247,7 +273,6 @@ try
         InterfaceLoc{1}(2));
 
     % create Infusion number textures
-    InfColors = {'Red', 'Blue', 'Green', 'Yellow'};
     InfNumbers = {'000', '033', '067', '100'};
     InfNumTextures = zeros(numel(InfColors), numel(InfNumbers));
     for i = 1:numel(InfColors)
@@ -422,8 +447,8 @@ try
         clear k;
         
         % handle file naming
-        OutName = sprintf('%s_Nfb_V%d_Run_%02d_%s', Participant, Version, i, ...
-            datestr(now, 'yyyymmdd_HHMMSS'));
+        OutName = sprintf('%s_Nfb_V%d_CS%d_Run_%02d_%s', ...
+            Participant, Version, ColorSet, i, datestr(now, 'yyyymmdd_HHMMSS'));
         OutCsv = fullfile(OutDir, [OutName '.csv']);
         OutMat = fullfile(OutDir, [OutName '.mat']);
     
@@ -611,6 +636,7 @@ try
         fprintf(OutFid, ...
             ['Participant,', ...
             'Version,', ...
+            'ColorSet,', ...
             'Run,', ...
             'TrialNum,', ...
             'Infusion,', ...
@@ -621,6 +647,7 @@ try
             'Jitter2,', ...
             'J1Seconds,', ...
             'J2Seconds,', ...
+            'TrialColor,', ...
             'InfOnset,', ...
             'WillImpOnset,', ...
             'J1Onset,', ...
@@ -638,6 +665,7 @@ try
         for DesignIdx = 1:size(RunParams, 1)
             fprintf(OutFid, '%s,', Participant);
             fprintf(OutFid, '%d,', Version);
+            fprintf(OutFid, '%d,', ColorSet);
             fprintf(OutFid, '%d,', RunParams{DesignIdx, RUN});
             fprintf(OutFid, '%d,', RunParams{DesignIdx, TRIALNUM});
             fprintf(OutFid, '%s,', RunParams{DesignIdx, INFUSION});
@@ -648,6 +676,7 @@ try
             fprintf(OutFid, '%d,', RunParams{DesignIdx, JITTER2});
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, J1SECONDS});
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, J2SECONDS});
+            fprintf(OutFid, '%s,', RunParams{DesignIdx, TRIALCOLOR});
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, INFONSET});
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, WILLIMPROVEONSET});
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, J1ONSET});
@@ -728,6 +757,7 @@ try
         fprintf(1, 'NOTIFICATION: Completed NFB run %d.\n', i);
         fprintf(1, 'NOTIFICATION: Using offset %0.2f.\n', Offset);
         fprintf(1, 'NOTIFICATION: Using version %d.\n', Version);
+        fprintf(1, 'NOTIFICATION: Using color set %d.\n', ColorSet);
         fprintf(1, 'NOTIFICATION: Participant number %s.\n', Participant);
         if Testing == 0 
             fprintf(1, 'NOTIFICATION: Last trial onset %0.4f.\n', ...
