@@ -183,7 +183,7 @@ try
     
     % set default text type for window
     Screen('TextFont', Window, 'Arial');
-    Screen('TextSize', Window, 50);
+    Screen('TextSize', Window, 35);
     Screen('TextColor', Window, White);
 
     % preload images and assign values for bar and text location
