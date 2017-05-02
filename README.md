@@ -2,10 +2,10 @@
 
 **Design**
 * 4 runs
-  * Run1 = 11.2 minutes (670 seconds)
-  * Run2 = 11.1 minutes (665 seconds)
-  * Run3 = 11.2 minutes (672 seconds)
-  * Run4 = 11.2 minutes (671 seconds)
+  * Run1 = 11.2 minutes (671 seconds)
+  * Run2 = 11.1 minutes (666 seconds)
+  * Run3 = 11.2 minutes (673 seconds)
+  * Run4 = 11.2 minutes (672 seconds)
   * TotalTime = 44.6 minutes
   * 32 Blocks per run 
     * 4 conditions
