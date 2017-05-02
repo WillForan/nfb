@@ -89,7 +89,7 @@ try
         DesignFile = fullfile(pwd, 'ScDebug', 'Development', 'ScDesign.csv');
     end
     DesignFid = fopen(DesignFile, 'r');
-    Tmp = textscan(DesignFid, '%f%f%f%f%f%f%s%s%d%s%s%s', ...
+    Tmp = textscan(DesignFid, '%f%f%f%f%f%f%s%s%d%s%s%d%s', ...
         'Delimiter', ',', 'Headerlines', 1);
     fclose(DesignFid);
     % more columns: ActualIsi, ContextOnset, FaceOnset, JitterOnset, 
@@ -116,16 +116,17 @@ try
     CONTEXT = 7;
     EMOTION = 8;
     ORDER = 9;
-    GENDER = 10;
+    CONTEXTFILE = 10;
     FACEFILE = 11;
-    CONTEXTFILE = 12;
-    ACTUALISI = 13;
-    CONTEXTONSET = 14;
-    FACEONSET = 15;
-    JITTERONSET = 16;
-    FACERESPONSE = 17;
-    FACERESPONSETEXT = 18;
-    FACERT = 19;
+    FACENUM = 12;
+    GENDER = 13;
+    ACTUALISI = 14;
+    CONTEXTONSET = 15;
+    FACEONSET = 16;
+    JITTERONSET = 17;
+    FACERESPONSE = 18;
+    FACERESPONSETEXT = 19;
+    FACERT = 20;
     
     KbName('UnifyKeyNames');
     if ~IsLinux()
@@ -339,9 +340,10 @@ try
             'ISI,', ...
             'Context,', ...
             'Emotion,', ...
-            'Gender,', ...
-            'FaceFile,', ...
             'ContextFile,', ...
+            'FaceFile,', ...
+            'FaceNum,', ...
+            'Gender,', ...
             'ActualIsi,', ...
             'ContextOnset,', ...
             'FaceOnset,', ...
@@ -360,9 +362,10 @@ try
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, ISI});
             fprintf(OutFid, '%s,', RunParams{DesignIdx, CONTEXT});
             fprintf(OutFid, '%s,', RunParams{DesignIdx, EMOTION});
-            fprintf(OutFid, '%s,', RunParams{DesignIdx, GENDER});
-            fprintf(OutFid, '%s,', RunParams{DesignIdx, FACEFILE});
             fprintf(OutFid, '%s,', RunParams{DesignIdx, CONTEXTFILE});
+            fprintf(OutFid, '%s,', RunParams{DesignIdx, FACEFILE});
+            fprintf(OutFid, '%d,', RunParams{DesignIdx, FACENUM});
+            fprintf(OutFid, '%s,', RunParams{DesignIdx, GENDER});
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, ACTUALISI});
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, CONTEXTONSET});
             fprintf(OutFid, '%0.4f,', RunParams{DesignIdx, FACEONSET});
