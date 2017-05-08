@@ -63,6 +63,7 @@ try
         sprintf('OPTIONS: Screen         %d\n', ScreenNumber) ...
         sprintf('*** OPTIONS ***\n\n')];
     fprintf(1, '\n%s', OptionText);
+    fprintf(1, 'VERSION: Correct buttons.\n');
 
     if InScan == 0
         PsychDebugWindowConfiguration
@@ -239,8 +240,8 @@ try
     ConfirmKeyNames = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', ...
         'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', ...
         'y', 'z'};
-    LeftResponses = {'1!', '2@', '3#', '4$', '5%', '1', '2', '3', '4', '5'};
-    RightResponses = {'6^', '7&', '8*', '9(', '0)', '6', '7', '8', '9', '0'};
+    RightResponses = {'1!', '2@', '3#', '4$', '5%', '1', '2', '3', '4', '5'};
+    LeftResponses = {'6^', '7&', '8*', '9(', '0)', '6', '7', '8', '9', '0'};
 
     %%% INFUSION SETUP %%%
     InfBgPng = {'InfBgA.png', 'InfBgB.png', 'InfBgC.png', 'InfBgD.png'};
