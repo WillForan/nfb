@@ -2,6 +2,7 @@ function NfbTask(varargin)
 % function NfbTask([Scan], [Participant], [StartRun], [EndRun],
 %   [Testing], [Version], [ScreenNumber])
 
+% 20180510 WF - add waitForScannerTrigger
 try
     sca;
     DeviceIndex = [];
@@ -26,7 +27,7 @@ try
         Version = str2double(Responses{6});
         ColorSet = str2double(Responses{7});
         ScreenNumber = str2double(Responses{8});
-    elseif numel(varargin) == 6
+    elseif numel(varargin) == 8
         InScan = varargin{1};
         Participant = varargin{2};
         StartRun = varargin{3};
@@ -211,7 +212,14 @@ try
     FilledColor = [41 249 64] * 1/255;
     
     % we want X = Left-Right, Y = top-bottom
-    [Window, Rect] = Screen('OpenWindow', ScreenNumber, BgColor);
+    
+    % debugging, use a smaller screen
+    [~,host ] = system('hostname');
+    if contains(host,{'reese'}), winRect=[0 0 800 600];
+    else winRect=[];
+    end
+    
+    [Window, Rect] = Screen('OpenWindow', ScreenNumber, BgColor,winRect);
     Screen('ColorRange', Window, 1, [], 1);
     PriorityLevel = MaxPriority(Window);
     Priority(PriorityLevel);
@@ -229,13 +237,14 @@ try
     % set up keyboard response
     KbNames = KbName('KeyNames');
     KeyNamesOfInterest = {'1!', '2@', '3#', '4$', '5%', '6^', '7&', '8*', ...
-        '9(', '0)', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'};
+        '9(', '0)', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0','=+'};
     KeysOfInterest = zeros(1, 256);
     for i = 1:numel(KeyNamesOfInterest)
         KeysOfInterest(KbName(KeyNamesOfInterest{i})) = 1;
     end
     clear i
     KbQueueCreate(DeviceIndex, KeysOfInterest);
+    % WF20180510 -- below is not put into the queue?
     TriggerKey = KbName('=+');
     ConfirmKeyNames = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', ...
         'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', ...
@@ -466,12 +475,18 @@ try
 
         Screen('Flip', Window);
         Screen('FillRect', Window, BgColor);
-        while 1
-            [Pressed, Secs, KeyCode] = KbCheck;
-            if Pressed && KeyCode(TriggerKey)
-                break;
-            end
-        end
+        % REMOVED 20180509WF -- KbCheck is too slow for new button box 
+%         while 1
+%             [Pressed, Secs, KeyCode] = KbCheck;
+%             if Pressed && KeyCode(TriggerKey)
+%                 break;
+%             end
+%         end
+        % instead use kbqueue to wait
+        % function releases queue. adds 90ms overhead
+        KbQueueStop(DeviceIndex);
+        KbQueueFlush(DeviceIndex);
+        waitForScannerTrigger();
 
         BeginTime = Screen('Flip', Window);
         Until = BeginTime + FlipSeconds(10);
