@@ -480,7 +480,7 @@ try
         % new button box; instead use kbqueue to wait
         KbQueueStop(DeviceIndex);  % we're already using KbQueue, so stop it
         KbQueueFlush(DeviceIndex); % and flush anything in there
-        waitForScannerTrigger();   % mod. to not create/release queue
+        waitForScannerTrigger('kb_created',1);   % mod. to not create/release queue
 
         BeginTime = Screen('Flip', Window);
         Until = BeginTime + FlipSeconds(10);
