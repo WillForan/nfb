@@ -83,12 +83,7 @@ try
          'Waiting for scanner signal ''='' to continue.'], ...
         'center', 'center', Grey);
     Screen('Flip', Window);
-    while 1
-        [Pressed, Secs, KeyCode] = KbCheck(DeviceIndex);
-        if Pressed && KeyCode(TriggerKey)
-            break;
-        end
-    end
+    waitForScannerTrigger()
 
     % do the resting task   
     Screen('TextSize', Window, 100); 

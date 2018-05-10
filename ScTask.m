@@ -161,7 +161,7 @@ try
     % set up keyboard
     KbNames = KbName('KeyNames');
     KeyNamesOfInterest = {'1!', '2@', '3#', '4$', '5%', ...
-        '6^', '7&', '8*', '9(', '0)', ...
+        '6^', '7&', '8*', '9(', '0)','=+', ...
         '1', '2', '3', '4', '5', ...
         '6', '7', '8', '9', '0'};
     KeysOfInterest = zeros(1, 256);
@@ -256,12 +256,7 @@ try
             'Waiting for scanner signal ''='' to continue.'], ...
             'center', 'center');
         Screen('Flip', Window);
-        while 1
-            [Pressed, Secs, KeyCode] = KbCheck;
-            if Pressed && KeyCode(TriggerKey)
-                break;
-            end
-        end
+        waitForScannerTrigger('kb_created',1)
 
         % initial crosshair display
         Screen('DrawTexture', Window, JitterTexture);
