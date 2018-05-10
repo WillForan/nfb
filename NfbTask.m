@@ -2,7 +2,8 @@ function NfbTask(varargin)
 % function NfbTask([Scan], [Participant], [StartRun], [EndRun],
 %   [Testing], [Version], [ScreenNumber])
 
-% 20180510 WF - add waitForScannerTrigger
+% 20180510 WF - new button box with super quick trigger keying
+%   add 'waitForScannerTrigger', removed while+kbcheck loop
 try
     sca;
     DeviceIndex = [];
@@ -475,18 +476,11 @@ try
 
         Screen('Flip', Window);
         Screen('FillRect', Window, BgColor);
-        % REMOVED 20180509WF -- KbCheck is too slow for new button box 
-%         while 1
-%             [Pressed, Secs, KeyCode] = KbCheck;
-%             if Pressed && KeyCode(TriggerKey)
-%                 break;
-%             end
-%         end
-        % instead use kbqueue to wait
-        % function releases queue. adds 90ms overhead
-        KbQueueStop(DeviceIndex);
-        KbQueueFlush(DeviceIndex);
-        waitForScannerTrigger();
+        % 20180509WF -- REMOVED while + KbCheck loop is too slow to catch
+        % new button box; instead use kbqueue to wait
+        KbQueueStop(DeviceIndex);  % we're already using KbQueue, so stop it
+        KbQueueFlush(DeviceIndex); % and flush anything in there
+        waitForScannerTrigger();   % mod. to not create/release queue
 
         BeginTime = Screen('Flip', Window);
         Until = BeginTime + FlipSeconds(10);

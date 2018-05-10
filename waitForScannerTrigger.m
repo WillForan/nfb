@@ -1,6 +1,8 @@
 % Use KbQueue to wait for scanner trigger 
-% optional argument is device id
+%   assume trigger key is =+
+%   assume keyboard "DeviceID" is []
 function trgrtime = waitForScannerTrigger()
+% 20190510 WF - task uses kbqueue, so do not create/release
 % 20180103 WF - wait for trigger keypess
 %  use PTB's KbQueue for new Psychology Software Tools button box
 %  because simulated keypress is too fast to be consistently captured by ListenChar/KbWait/KbCheck
@@ -15,9 +17,10 @@ scannerTrigger = 0;
 KbName('UnifyKeyNames');
 triggerIdx = KbName(triggerKeys);
 ListenChar(2); % we can tell matlab to not show keypresses
-%KbQueueCreate(); KbQueueStart();
- 
-fprintf('WAITING FOR TRIGGER')
+
+fprintf('WAITING FOR TRIGGER\n')
+%KbQueueCreate(); % for nfb, we already have a KbQueue created
+KbQueueStart();
 
 % keep checking until the scanner says it started
 while ~scannerTrigger
@@ -29,18 +32,12 @@ end
 % grab the time of the button push. look at press of first (by key orsca
 [~,~, trgrtime ] = find(firstPress(triggerIdx),1);
  
-% release queue -- unblock listening to keyboard -- so we can use KbWait later
-% this takes about .090 seconds
-% which is why we grab time above
+
 KbQueueStop();
+KbQueueFlush();
 
 % in Nfb we will continue to use KbQueue -- so dont release it
+% not releasing also saves us 90ms
 % KbQueueRelease()
- 
-% % previously trigger simulated "key press" was long enough to be captured by KbWait
-% while ~ scannerTrigger
-%   [~, keyCode, ~]  = KbWait;
-%   scannerTrigger = any(ismember({'=','=+'}, KbName(keyCode)));
-% end
  
 end
